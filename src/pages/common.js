@@ -48,6 +48,8 @@ export function initPage() {
   initPointer(null, { reduced }) // pulsanti magnetici
   navState()
   footerLogo()
+  // l'esagono finale dei titoli e' nascosto da subito: compare con il suo titolo
+  if (!reduced) gsap.set('.hexdot', { scale: 0, transformOrigin: '50% 50%' })
 
   const ready = fontsReady().then(() => {
     prepareText(reduced)
@@ -133,16 +135,19 @@ function observeReveals() {
     { rootMargin: '0px 0px -6% 0px' },
   )
   document.querySelectorAll('[data-split], [data-reveal]').forEach((el) => io.observe(el))
-  if (!reduced) gsap.set('.hexdot', { scale: 0, transformOrigin: '50% 50%' })
 }
 
 /**
  * Elementi che salgono e compaiono entrando in scena, a gruppi (schede dei prodotti, righe).
- * Ritorna l'observer: observe(el) per gli elementi aggiunti dopo.
+ * Sono nascosti da subito; con after (di solito ready di initPage) cominciano a comparire solo dopo,
+ * insieme ai titoli. (Nascondendoli solo a pagina pronta, con una rete lenta si vedevano comparire,
+ * sparire all'arrivo dei font e rientrare.) observe(el) per gli elementi aggiunti dopo.
  */
-export function rise(els, { y = 56, stagger = 0.08 } = {}) {
+export function rise(els, { y = 56, stagger = 0.08, after = null } = {}) {
   const list = [...els]
-  gsap.set(list, { autoAlpha: 0, y: reduced ? 0 : y })
+  const hide = (el) => gsap.set(el, { autoAlpha: 0, y: reduced ? 0 : y })
+  const begin = after ?? Promise.resolve()
+  hide(list)
   const io = new IntersectionObserver(
     (entries) => {
       const batch = entries.filter((e) => e.isIntersecting).map((e) => e.target)
@@ -160,11 +165,11 @@ export function rise(els, { y = 56, stagger = 0.08 } = {}) {
     },
     { rootMargin: '0px 0px -6% 0px' },
   )
-  list.forEach((el) => io.observe(el))
+  begin.then(() => list.forEach((el) => io.observe(el)))
   return {
     observe(el) {
-      gsap.set(el, { autoAlpha: 0, y: reduced ? 0 : y })
-      io.observe(el)
+      hide(el)
+      begin.then(() => io.observe(el))
     },
   }
 }

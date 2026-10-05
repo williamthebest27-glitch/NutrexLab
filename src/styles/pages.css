@@ -149,6 +149,12 @@
   font-weight: 600;
 }
 
+/* elementi che salgono entrando in scena (rise in src/pages/common.js): nascosti dal primo disegno,
+   altrimenti con una rete lenta si vedevano un attimo prima dell'animazione */
+[data-rise] {
+  visibility: hidden;
+}
+
 /* filetto che si disegna sotto la testata */
 .rule {
   height: 1px;

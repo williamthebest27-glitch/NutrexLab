@@ -129,12 +129,12 @@ form.addEventListener('submit', (e) => {
 })
 
 // ---------------------------------------------------------------------------
+// ingresso: modulo e riepilogo, o il carrello vuoto, nascosti da subito e saliti con i titoli (si
+// preparano entrambi: il carrello puo' cambiare da un'altra scheda e mostrare l'altro)
+rise(form.querySelectorAll('.notice, [data-rise]'), { y: 40, stagger: 0.08, after: ready })
+rise([document.querySelector('.summary')], { y: 40, after: ready })
+rise(emptyEl.children, { y: 30, stagger: 0.07, after: ready })
+if (!reduced) gsap.set('.steps .step__line', { scaleX: 0 })
 ready.then(() => {
-  if (cart.items.length) {
-    rise(form.querySelectorAll('.notice, [data-rise]'), { y: 40, stagger: 0.08 })
-    rise([document.querySelector('.summary')], { y: 40 })
-  } else {
-    rise(emptyEl.children, { y: 30, stagger: 0.07 })
-  }
-  if (!reduced) gsap.fromTo('.steps .step__line', { scaleX: 0 }, { scaleX: 1, duration: 1, ease: 'expo.inOut', stagger: 0.15, delay: 0.5 })
+  if (!reduced) gsap.to('.steps .step__line', { scaleX: 1, duration: 1, ease: 'expo.inOut', stagger: 0.15, delay: 0.5 })
 })

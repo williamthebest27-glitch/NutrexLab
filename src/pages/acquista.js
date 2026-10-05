@@ -178,10 +178,11 @@ new IntersectionObserver(([e]) => {
 renderDock()
 
 // ---------------------------------------------------------------------------
-// Ingresso: filetto, poi le schede salgono a gruppi entrando nello schermo
+// Ingresso: con i titoli si disegna il filetto, poi le schede salgono a gruppi entrando nello schermo
+// (nascoste da subito: niente lampeggio se i font arrivano tardi)
+if (!reduced) gsap.set('[data-rule]', { scaleX: 0 })
+rise(cards, { stagger: 0.09, after: ready })
+rise(document.querySelectorAll('.toolbar > *'), { y: 24, after: ready })
 ready.then(() => {
-  if (!reduced) gsap.fromTo('[data-rule]', { scaleX: 0 }, { scaleX: 1, duration: 1.6, ease: 'expo.inOut', delay: 0.3 })
-  rise(cards, { stagger: 0.09 })
-  rise(document.querySelectorAll('.toolbar > *'), { y: 24 })
-  // arrivando con #p-id (dagli esagoni o da un link) la scheda e' gia' al suo posto
+  if (!reduced) gsap.to('[data-rule]', { scaleX: 1, duration: 1.6, ease: 'expo.inOut', delay: 0.3 })
 })

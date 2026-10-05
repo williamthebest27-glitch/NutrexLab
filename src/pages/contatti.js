@@ -115,9 +115,8 @@ hex.setAttribute('fill-rule', 'evenodd')
 mark.appendChild(hex)
 document.querySelector('[data-seal]').appendChild(mark)
 
-ready.then(() => {
-  rise(document.querySelectorAll('.channel'), { y: 30, stagger: 0.07 })
-  rise(document.querySelectorAll('[data-rise]'), { y: 24 })
-  rise([form], { y: 50 })
-  rise([document.querySelector('[data-seal]')], { y: 0 })
-})
+// ingresso: recapiti, modulo e sigillo nascosti da subito, salgono con i titoli
+rise(document.querySelectorAll('.channel'), { y: 30, stagger: 0.07, after: ready })
+rise(document.querySelectorAll('.contact__aside'), { y: 24, after: ready })
+rise([form], { y: 50, after: ready })
+rise([document.querySelector('[data-seal]')], { y: 0, after: ready })

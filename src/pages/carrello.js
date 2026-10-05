@@ -201,9 +201,9 @@ picksEl.addEventListener('click', (e) => {
 
 render()
 
-ready.then(() => {
-  const els = cart.items.length ? [...rows.values(), document.querySelector('.summary')] : [...picksEl.children]
-  if (!cart.items.length) rise([...emptyEl.children].filter((el) => el !== picksEl), { y: 30, stagger: 0.07 })
-  rise(els, { y: 40, stagger: 0.08 })
-  entered = true
-})
+// ingresso: righe e riepilogo, o il carrello vuoto, nascosti da subito e saliti con i titoli (si
+// preparano entrambi: il carrello puo' cambiare da un'altra scheda e mostrare l'altro)
+rise([...rows.values(), document.querySelector('.summary')], { y: 40, stagger: 0.08, after: ready })
+rise([...emptyEl.children].filter((el) => el !== picksEl), { y: 30, stagger: 0.07, after: ready })
+rise(picksEl.children, { y: 40, stagger: 0.08, after: ready })
+ready.then(() => (entered = true))
