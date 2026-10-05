@@ -18,15 +18,22 @@ Apri http://127.0.0.1:5173
 
 ## Pubblicazione
 
-Online su Vercel: https://nutrex-collagene-marino.vercel.app (progetto `nutrex-collagene-marino`,
-gia' collegato a questa cartella). Per pubblicare una nuova versione:
+Online su Vercel: https://nutrex-collagene-marino.vercel.app (progetto `nutrex-collagene-marino`).
+Codice su GitHub: https://github.com/williamthebest27-glitch/NutrexLab (questa cartella e' la radice
+del repository). Vercel e' collegato al repository: ogni push sul ramo `main` pubblica da solo il
+sito in produzione, gli altri rami creano un'anteprima.
 
 ```bash
-vercel deploy --prod
+git add -A
+git commit -m "Descrizione della modifica"
+git push
 ```
 
+Per pubblicare senza passare da GitHub resta `vercel deploy --prod`.
+
 Vercel esegue da solo `npm run build` (impostazioni in `vercel.json`); i modelli 3D sono gia' in
-`public/models`, quindi sul server non servono le cartelle di Blender.
+`public/models`, quindi sul server non servono le cartelle di Blender (dopo averli rigenerati,
+`npm run dev` o `npm run build` in locale li copia in `public/models`: vanno poi committati).
 
 In alternativa `npm run build` produce in `dist/` un sito statico adatto a qualsiasi hosting.
 `npm run preview` mostra la build in locale.
