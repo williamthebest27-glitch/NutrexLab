@@ -151,8 +151,12 @@ function update() {
   const chosen = findVariation()
   const prices = chosen ? chosen.prices : product.prices
   const off = discountPercent(prices)
-  root.querySelector('[data-price]').innerHTML =
-    priceHtml(prices, { from: !chosen && isVariable }) + (off && (chosen || !isVariable) ? ` <span class="pp__off">−${off}%</span>` : '')
+  // prezzo non ancora inserito in WooCommerce: niente "0,00 €"
+  const hasPrice = ((isVariable && !chosen ? prices?.range?.min : null) ?? prices?.price ?? 0) > 0
+  root.querySelector('[data-price]').innerHTML = hasPrice
+    ? priceHtml(prices, { from: !chosen && isVariable }) + (off && (chosen || !isVariable) ? ` <span class="pp__off">−${off}%</span>` : '')
+    : '<span class="amount amount--soon">Prezzo in arrivo</span>'
+  root.querySelector('.pp__vat').hidden = !hasPrice
 
   const stock = availability(item.stock)
   const stockEl = root.querySelector('[data-stock]')
@@ -171,9 +175,10 @@ function update() {
   if (!add.classList.contains('is-added')) {
     if (isVariable && !chosen) label.textContent = 'Scegli una variante'
     else if (!item.stock.inStock) label.textContent = 'Esaurito'
+    else if (!item.stock.purchasable || !hasPrice) label.textContent = 'Presto disponibile'
     else label.textContent = 'Aggiungi al carrello'
   }
-  add.disabled = (isVariable && !chosen) || !item.stock.inStock || !item.stock.purchasable
+  add.disabled = (isVariable && !chosen) || !item.stock.inStock || !item.stock.purchasable || !hasPrice
 
   const badges = []
   if (!item.stock.inStock) badges.push('<span class="mono badge badge--out">Esaurito</span>')

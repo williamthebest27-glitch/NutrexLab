@@ -19,9 +19,19 @@ function availability(stock) {
   return stock.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
 }
 
+/** Ha un prezzo (in WooCommerce un prodotto ancora senza prezzo vale 0 e non e' acquistabile). */
+const priced = (item) => (item.prices.price ?? 0) > 0
+
+/** Il prezzo piu' basso in vendita (minor units), null se il prodotto non ha ancora un prezzo. */
+function lowestPrice(product) {
+  const items = product.variations?.length ? product.variations : [product]
+  const prices = items.filter(priced).map((i) => i.prices.price)
+  return prices.length ? Math.min(...prices) : null
+}
+
 function jsonLd(product, url) {
   const cur = product.prices.currency
-  const variations = product.variations ?? []
+  const variations = (product.variations ?? []).filter(priced)
   const base = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -33,8 +43,10 @@ function jsonLd(product, url) {
     category: product.categories[0]?.name,
     url,
   }
-  if (variations.length) {
-    const prices = variations.map((v) => v.prices.price).filter((p) => p != null)
+  // senza prezzo niente offerta: Google non deve vedere un prodotto "a 0 euro"
+  if (product.variations?.length) {
+    if (!variations.length) return base
+    const prices = variations.map((v) => v.prices.price)
     base.offers = {
       '@type': 'AggregateOffer',
       priceCurrency: cur.code,
@@ -52,7 +64,7 @@ function jsonLd(product, url) {
         url,
       })),
     }
-  } else {
+  } else if (priced(product)) {
     base.offers = {
       '@type': 'Offer',
       price: money(product.prices.price, cur).toFixed(cur.minorUnit),
@@ -68,13 +80,14 @@ function jsonLd(product, url) {
 /** Blocco di testo per chi legge la pagina senza JavaScript (motori di ricerca); il negozio lo sostituisce. */
 function seoBlock(product) {
   const cur = product.prices.currency
-  const price = money(product.prices.price, cur).toFixed(cur.minorUnit).replace('.', cur.decimalSep || ',')
+  const low = lowestPrice(product)
+  const price = low === null ? 'Prezzo in arrivo' : `${cur.prefix || ''}${money(low, cur).toFixed(cur.minorUnit).replace('.', cur.decimalSep || ',')}${cur.suffix || ''}`
   const img = product.images[0]
   return (
     `<article class="pseo">` +
     (img ? `<img src="${esc(img.src)}" alt="${esc(img.alt || product.name)}" width="800" height="1000" />` : '') +
     `<h1>${esc(product.name)}</h1>` +
-    `<p>${esc(cur.prefix || '')}${esc(price)}${esc(cur.suffix || '')}</p>` +
+    `<p>${esc(price)}</p>` +
     (product.shortDescription || '') +
     (product.description || '') +
     `</article>`
@@ -94,6 +107,7 @@ export function renderProductPage(template, { product, site, slug, status = 200 
     const description = (product.summary || `${product.name}, integratore Nutrex Lab prodotto in Italia.`).slice(0, 160)
     const img = product.images[0]?.src
     const cur = product.prices.currency
+    const low = lowestPrice(product)
     title = `${product.name} | Nutrex Lab`
     head = [
       `<meta name="description" content="${esc(description)}" />`,
@@ -105,9 +119,9 @@ export function renderProductPage(template, { product, site, slug, status = 200 
       `<meta property="og:description" content="${esc(description)}" />`,
       `<meta property="og:url" content="${esc(url)}" />`,
       img ? `<meta property="og:image" content="${esc(img)}" />` : '',
-      `<meta property="product:price:amount" content="${money(product.prices.price, cur).toFixed(cur.minorUnit)}" />`,
-      `<meta property="product:price:currency" content="${esc(cur.code)}" />`,
-      `<meta property="product:availability" content="${product.stock.inStock ? 'in stock' : 'out of stock'}" />`,
+      low !== null ? `<meta property="product:price:amount" content="${money(low, cur).toFixed(cur.minorUnit)}" />` : '',
+      low !== null ? `<meta property="product:price:currency" content="${esc(cur.code)}" />` : '',
+      low !== null ? `<meta property="product:availability" content="${product.stock.inStock ? 'in stock' : 'out of stock'}" />` : '',
       `<meta name="twitter:card" content="summary_large_image" />`,
       `<meta name="twitter:title" content="${esc(title)}" />`,
       `<meta name="twitter:description" content="${esc(description)}" />`,

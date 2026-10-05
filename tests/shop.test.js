@@ -252,6 +252,16 @@ describe('pagina prodotto per Google e social', () => {
     assert.equal(data.product.name, tricky.name)
   })
 
+  test('prodotto ancora senza prezzo: "Prezzo in arrivo", nessuna offerta per Google', async () => {
+    const product = await getProduct('magnesio')
+    const unpriced = { ...product, prices: { ...product.prices, price: 0, regular: 0, sale: 0 }, stock: { ...product.stock, purchasable: false } }
+    const html = renderProductPage(template, { product: unpriced, site: 'https://negozio.test', slug: 'magnesio' })
+    const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])
+    assert.equal(ld.offers, undefined)
+    assert.doesNotMatch(html, /product:price:amount|0,00/)
+    assert.match(html, /<p>Prezzo in arrivo<\/p>/)
+  })
+
   test('prodotto non trovato: noindex', () => {
     const html = renderProductPage(template, { product: null, site: 'https://negozio.test', slug: 'niente', status: 404 })
     assert.match(html, /<meta name="robots" content="noindex" \/>/)

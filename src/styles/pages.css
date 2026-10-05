@@ -2326,6 +2326,12 @@ a.channel:hover .channel__arrow {
   font-size: 0.55em;
 }
 
+/* prezzo non ancora inserito in WooCommerce */
+.pp__price .amount--soon {
+  color: var(--fg-soft);
+  font-size: 0.62em;
+}
+
 .pp__price .pp__off {
   align-self: center;
   padding: 6px 10px;

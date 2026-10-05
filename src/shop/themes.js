@@ -46,6 +46,8 @@ export const esc = (s) =>
 export function availability(stock) {
   if (!stock) return { text: '', tone: '' }
   if (!stock.inStock) return { text: 'Esaurito', tone: 'out' }
+  // in WooCommerce ma non ancora acquistabile (per esempio senza prezzo)
+  if (stock.purchasable === false) return { text: 'Presto disponibile', tone: 'back' }
   if (stock.backorder) return { text: 'Disponibile su ordinazione', tone: 'back' }
   if (stock.low) return { text: stock.low === 1 ? 'Ultimo pezzo' : `Solo ${stock.low} disponibili`, tone: 'low' }
   return { text: 'Disponibile', tone: 'in' }
