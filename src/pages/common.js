@@ -16,6 +16,7 @@ import { initPointer } from '../ui/pointer.js'
 import { prepareText, show } from '../ui/text.js'
 import { makeGrain } from '../ui/grain.js'
 import { bindCartCount } from '../shop/cart.js'
+import { initCookieNotice } from '../ui/cookieNotice.js'
 
 gsap.registerPlugin(SplitText)
 
@@ -56,6 +57,8 @@ export function initPage() {
     prepareText(reduced)
     observeReveals()
   })
+  // avviso sui cookie dopo l'ingresso dei titoli
+  ready.then(() => setTimeout(initCookieNotice, 1200))
   return { lenis, ready }
 }
 

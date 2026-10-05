@@ -2824,3 +2824,226 @@ a.shop:hover {
     transition: none;
   }
 }
+
+/* --------------------------------------------------------------------------
+   PAGINE LEGALI (note-legali, privacy-policy, cookie-policy, termini-e-condizioni,
+   spedizioni-e-resi): indice a sinistra, testo a destra
+   -------------------------------------------------------------------------- */
+.legal__date {
+  margin-top: 18px;
+  font-size: 11px;
+  color: var(--fg-soft);
+}
+
+.legal {
+  display: grid;
+  grid-template-columns: minmax(200px, 270px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(32px, 6vw, 110px);
+  padding-bottom: clamp(90px, 14vh, 160px);
+}
+
+.legal__toc {
+  position: sticky;
+  top: 96px;
+}
+
+.legal__toc-t {
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: var(--fg-soft);
+}
+
+.legal__toc ol {
+  display: grid;
+  gap: 2px;
+  padding-left: 16px;
+  border-left: 1px solid var(--line);
+}
+
+.legal__toc .link {
+  padding: 4px 0;
+  font-size: 14px;
+  color: var(--fg-soft);
+}
+
+.legal__toc .link:hover {
+  color: var(--fg);
+}
+
+.legal__body {
+  max-width: 74ch;
+}
+
+.legal__sec {
+  scroll-margin-top: 96px;
+}
+
+.legal__sec + .legal__sec {
+  margin-top: clamp(36px, 5vh, 56px);
+  padding-top: clamp(36px, 5vh, 56px);
+  border-top: 1px solid var(--line);
+}
+
+.legal__h {
+  margin: 0 0 18px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 600;
+  font-stretch: 105%;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.legal__h3 {
+  margin: 26px 0 10px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.legal__body p,
+.legal__body li {
+  font-size: clamp(15.5px, 1.1vw, 17px);
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--fg) 84%, transparent);
+}
+
+.legal__body p + p {
+  margin-top: 14px;
+}
+
+.legal__body ul,
+.legal__body ol {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+  padding-left: 22px;
+}
+
+.legal__body ul {
+  list-style: disc;
+}
+
+.legal__body ol {
+  list-style: decimal;
+}
+
+.legal__body li::marker {
+  color: var(--accent);
+}
+
+.legal__body strong {
+  color: var(--fg);
+}
+
+.legal__body .link {
+  padding: 0;
+  color: var(--accent);
+}
+
+.legal__body code {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
+
+/* dati del titolare */
+.legal__card {
+  margin: 18px 0;
+  padding: 6px clamp(16px, 2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, #fff 55%, transparent);
+}
+
+.legal__card > div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.legal__card > div + div {
+  border-top: 1px solid var(--line);
+}
+
+.legal__card dt {
+  font-size: 10.5px;
+  color: var(--fg-soft);
+  line-height: 1.9;
+}
+
+.legal__card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* finalita' e basi giuridiche, elenco dei cookie */
+.legal__table {
+  margin: 18px 0;
+  border-top: 1px solid var(--line);
+}
+
+.legal__table > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 8px 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.legal__table--3 > div {
+  grid-template-columns: minmax(130px, 0.7fr) minmax(0, 1.5fr) minmax(90px, 0.6fr);
+}
+
+.legal__table dt {
+  font-weight: 600;
+}
+
+.legal__table dd {
+  margin: 0;
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+}
+
+.legal__dur {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.legal__links {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px 26px !important;
+  padding-left: 0 !important;
+  list-style: none !important;
+}
+
+@media (max-width: 900px) {
+  .legal {
+    grid-template-columns: 1fr;
+  }
+
+  .legal__toc {
+    position: static;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+  }
+
+  .legal__toc ol {
+    padding-left: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .legal__card > div,
+  .legal__table > div,
+  .legal__table--3 > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

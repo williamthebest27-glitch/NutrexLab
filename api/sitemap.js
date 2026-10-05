@@ -6,7 +6,16 @@ import { siteUrl } from '../server/env.js'
   GET /sitemap.xml  (riscritto qui da vercel.json): pagine del sito e prodotti pubblicati in WooCommerce.
 */
 
-const PAGES = ['/', '/acquista', '/contatti']
+const PAGES = [
+  '/',
+  '/acquista',
+  '/contatti',
+  '/note-legali',
+  '/privacy-policy',
+  '/cookie-policy',
+  '/termini-e-condizioni',
+  '/spedizioni-e-resi',
+]
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[c])
 
 export const GET = route('sitemap', async (request) => {

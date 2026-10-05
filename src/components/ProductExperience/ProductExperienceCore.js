@@ -191,6 +191,7 @@ export class ProductExperience {
     this.el.eyebrowN.textContent = this.o.chapter || ''
     this.el.eyebrowT.textContent = c.eyebrow
     this.el.eyebrow.classList.toggle('has-n', !!this.o.chapter)
+    this.el.eyebrow.hidden = !c.eyebrow && !this.o.chapter // senza frase ne' numero non compare
     const name = [this.o.productName, this.o.productNote].filter(Boolean).join(' · ')
     this.el.product.textContent = name
     for (const pin of this.pins) {

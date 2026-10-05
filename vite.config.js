@@ -151,6 +151,12 @@ export default defineConfig({
         pagamenti: resolve('pagamenti.html'),
         ordine: resolve('ordine.html'),
         contatti: resolve('contatti.html'),
+        // pagine legali (link nel footer)
+        'note-legali': resolve('note-legali.html'),
+        'privacy-policy': resolve('privacy-policy.html'),
+        'cookie-policy': resolve('cookie-policy.html'),
+        'termini-e-condizioni': resolve('termini-e-condizioni.html'),
+        'spedizioni-e-resi': resolve('spedizioni-e-resi.html'),
       },
     },
   },

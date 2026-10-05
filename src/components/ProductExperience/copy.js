@@ -14,7 +14,7 @@ export const stepsFor = (type) => (type === 'powder' ? STEPS : SHOWCASE_STEPS)
 
 export const DEFAULT_COPY = {
   powder: {
-    eyebrow: 'Il rituale, in un bicchiere',
+    eyebrow: '', // nessuna frase sopra il titolo
     titleA: ['Precisione', 'in ogni', 'misurino.'],
     titleB: ['La scienza', 'in un', 'bicchiere.'],
     pins: {
@@ -23,7 +23,7 @@ export const DEFAULT_COPY = {
     },
   },
   capsule: {
-    eyebrow: 'Il rituale, con un bicchiere d’acqua',
+    eyebrow: '', // nessuna frase sopra il titolo
     titleA: ['Scienza.', 'Semplificata.'],
     titleB: ['Formulata', 'con', 'precisione.'],
     pins: {
@@ -32,7 +32,7 @@ export const DEFAULT_COPY = {
     },
   },
   tablet: {
-    eyebrow: 'Il rituale, con un bicchiere d’acqua',
+    eyebrow: '', // nessuna frase sopra il titolo
     titleA: ['Scienza.', 'Semplificata.'],
     titleB: ['Formulata', 'con', 'precisione.'],
     pins: {

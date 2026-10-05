@@ -25,6 +25,7 @@ import { initNavMenu } from './ui/navMenu.js'
 import { createProductMenu } from './ui/productMenu.js'
 import { createMenuMorph } from './ui/menuMorph.js'
 import { createMobileMenu } from './ui/mobileMenu.js'
+import { initCookieNotice } from './ui/cookieNotice.js'
 import { makeGrain } from './ui/grain.js'
 import { bindCartCount } from './shop/cart.js'
 import { applyCopy, fitIngredients, fitScience } from './ui/copy.js'
@@ -396,6 +397,7 @@ function intro() {
     tl.add(() => heroTexts.forEach((el) => el && (el._state = 'shown')), 0.5)
     tl.add(() => lenis?.start(), 0.5)
     tl.add(() => ritual?.preload(), 1.5)
+    tl.add(initCookieNotice, 1.5)
     return
   }
 
@@ -522,6 +524,8 @@ function intro() {
   tl.add(() => lenis?.start(), at(1.7))
   // a intro finita la sezione del bicchiere si prepara in anticipo, nei momenti in cui non si scorre
   tl.add(() => ritual?.preload(), at(3.8))
+  // avviso sui cookie a intro finita (non copre il preload e l'ingresso della hero)
+  tl.add(initCookieNotice, at(3.4))
 }
 
 /** Pulsante finale ("Acquista il collagene"): la pagina del prodotto mostrato (prezzo, varianti, carrello). */
