@@ -174,7 +174,17 @@ export function buildMaster(T, layout, palette = COLORS) {
   const blur = layout !== 'mobile'
 
   // --- palette che evolve con la narrazione
+  // Lo sfondo sfuma direttamente sul body e sul velo della navbar: ricalcolano lo stile solo loro
+  // (~0.1 ms a fotogramma). Le variabili del tema sulla radice (--bg, --fg, --accent) cambiano solo
+  // quando cambia il colore dei testi (due volte in tutta la pagina), a meta' passaggio, quando i
+  // testi sono gia' usciti o devono ancora entrare: ogni cambio sulla radice fa ricalcolare lo
+  // stile di tutta la pagina (~10 ms su un computer, 60-100 ms su un telefono medio). Sfumate a ogni
+  // fotogramma erano scatti continui a ogni cambio di scena, anche all'uscita dal bicchiere. Il resto
+  // di navbar e menu prodotti (pulsanti, numeri) legge il fondo del momento da --page-bg (base.css),
+  // cambiato a meta' passaggio e sfumato dalle loro transizioni CSS: ricalcola solo loro.
   const vars = (k) => ({ '--bg': k.bg, '--fg': k.fg, '--accent': k.accent })
+  const chrome = document.querySelectorAll('.nav, .pmenu')
+  const fills = [document.body, ...document.querySelectorAll('.nav__bg')]
   const C = palette
   let prev = { bg: C.paper, fg: C.ink, accent: C.berry }
   tl.set(root, vars(prev), 0)
@@ -188,16 +198,10 @@ export function buildMaster(T, layout, palette = COLORS) {
   ]
   for (const step of steps) {
     const next = { ...prev, ...step }
-    if (layout === 'mobile') {
-      // telefono: lo sfondo sfuma direttamente sul body (circa 0.1 ms a fotogramma) e le variabili del
-      // tema cambiano una volta sola, a meta' passaggio (quando i testi sono gia' usciti o devono
-      // ancora entrare). Sfumate a ogni fotogramma facevano ricalcolare lo stile di tutta la pagina:
-      // ~40 ms a fotogramma su un telefono medio, scatti a ogni cambio di scena.
-      tl.fromTo(document.body, { backgroundColor: prev.bg }, { backgroundColor: next.bg, duration: step.dur, ease: 'power1.inOut', immediateRender: false }, step.at)
-      tl.set(root, vars(next), step.at + step.dur / 2)
-    } else {
-      tl.fromTo(root, vars(prev), { ...vars(next), duration: step.dur, ease: 'power1.inOut', immediateRender: false }, step.at)
-    }
+    const mid = step.at + step.dur / 2
+    tl.fromTo(fills, { backgroundColor: prev.bg }, { backgroundColor: next.bg, duration: step.dur, ease: 'power1.inOut', immediateRender: false }, step.at)
+    if (next.fg !== prev.fg || next.accent !== prev.accent) tl.set(root, vars(next), mid)
+    if (chrome.length) tl.set(chrome, { '--page-bg': next.bg }, mid)
     prev = next
   }
 

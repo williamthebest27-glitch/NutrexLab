@@ -43,15 +43,19 @@ void main() {
 }
 `
 
+/** Lato delle facce del cubo dell'ambiente (PMREM). */
+const ENV_SIZE = 256
+
 export class ProductLighting {
   constructor(renderer) {
     this.renderer = renderer
-    this.envTexture = this.buildEnvironment()
-    this.defines = envDefines(this.envTexture)
     this.rigs = []
+    this.studio = this.buildStudio()
+    this.pmrem = new THREE.PMREMGenerator(renderer)
   }
 
-  buildEnvironment() {
+  /** Lo studio che si riflette nel vetro: stanza quasi nera e pannelli luminosi. */
+  buildStudio() {
     const scene = new THREE.Scene()
     const disposables = []
     const room = new THREE.Mesh(
@@ -84,13 +88,66 @@ export class ProductLighting {
     panel(1.8, 2.4, 2.6, '#fff3e8', [-3.4, 1.5, 1.6], [0, 0.3, 0])
     // riempimento debolissimo a destra
     panel(1.8, 1.8, 0.4, '#eef3ff', [3.2, 0.9, 2.8], [0, 0.4, 0])
+    return { scene, disposables }
+  }
 
-    const pmrem = new THREE.PMREMGenerator(this.renderer)
-    const target = pmrem.fromScene(scene, 0, 0.1, 30, { size: 256, position: new THREE.Vector3(0, 0.06, 0) })
-    pmrem.dispose()
-    for (const d of disposables) d.dispose()
+  /**
+   * Compila in anticipo, in parallelo e senza fermare la pagina (KHR_parallel_shader_compile), i
+   * programmi che servono a generare l'ambiente: poi build() e' solo disegno. Senza, build() li
+   * compila in modo sincrono e la pagina resta ferma (decine di ms, di piu' su un telefono).
+   * pause (facoltativa): attesa tra i due gruppi di programmi (prepararli costa qualche ms di
+   * JavaScript, decine su un telefono).
+   */
+  async precompile(pause = null) {
+    const r = this.renderer
+    const extra = new THREE.Scene()
+    // fondo della generazione: PMREMGenerator usa un suo MeshBasicMaterial sul retro, stesso programma
+    this.bg = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ side: THREE.BackSide, depthWrite: false, depthTest: false }))
+    extra.add(this.bg)
+    // filtro GGX della generazione: interno a PMREMGenerator (three r186). Se un giorno cambia, si
+    // salta e build() lo compila da sola
+    const p = this.pmrem
+    if (typeof p._setSize === 'function' && typeof p._allocateTargets === 'function') {
+      p._setSize(ENV_SIZE)
+      p._allocateTargets().dispose()
+      if (p._ggxMaterial && p._lodMeshes?.[1]) extra.add(new THREE.Mesh(p._lodMeshes[1].geometry, p._ggxMaterial))
+    }
+    // (con un render target come destinazione: stesse varianti dei programmi della generazione)
+    const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType })
+    const camera = new THREE.PerspectiveCamera(90, 1, 0.1, 30)
+    const compile = (scene) => {
+      r.setRenderTarget(target)
+      const job = r.compileAsync(scene, camera)
+      r.setRenderTarget(null)
+      return job
+    }
+    const jobs = [compile(this.studio.scene)]
+    if (pause) await pause()
+    jobs.push(compile(extra))
+    await Promise.all(jobs)
+    target.dispose()
+  }
+
+  /** Genera l'ambiente (PMREM): texture dei riflessi e define per gli shader propri. */
+  build() {
+    const target = this.pmrem.fromScene(this.studio.scene, 0, 0.1, 30, { size: ENV_SIZE, position: new THREE.Vector3(0, 0.06, 0) })
+    this.releaseStudio()
     this.envTarget = target
-    return target.texture
+    this.envTexture = target.texture
+    this.defines = envDefines(this.envTexture)
+  }
+
+  /** Lo studio serve solo a generare l'ambiente. */
+  releaseStudio() {
+    this.pmrem?.dispose()
+    this.pmrem = null
+    for (const d of this.studio?.disposables ?? []) d.dispose()
+    this.studio = null
+    if (this.bg) {
+      this.bg.geometry.dispose()
+      this.bg.material.dispose()
+      this.bg = null
+    }
   }
 
   /** Luci per gli oggetti opachi di una scena (una copia per ogni strato di rendering). */
@@ -125,6 +182,7 @@ export class ProductLighting {
   }
 
   dispose() {
+    this.releaseStudio()
     this.envTarget?.dispose()
   }
 }

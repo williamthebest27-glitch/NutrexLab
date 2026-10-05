@@ -90,9 +90,14 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 
 - La parte 3D si carica quando la sezione si avvicina (IntersectionObserver) oppure prima, con
   `exp.preload()`: in anticipo lavora a piccoli passi solo nei momenti tranquilli (`calm`) e, se la
-  sezione intanto si avvicina, completa subito. Scarica soltanto il codice e il modello del tipo
-  attuale (bicchiere + misurino, capsula o compressa; GLB compressi Draco, 30-55 KB l'uno).
-  Disegna solo mentre la sezione e' sullo schermo.
+  sezione intanto si avvicina, completa un passo per fotogramma. Scarica soltanto il codice e il
+  modello del tipo attuale (bicchiere + misurino, capsula o compressa; GLB compressi Draco, 30-55 KB
+  l'uno), in parallelo alla preparazione del renderer. Disegna solo mentre la sezione e' sullo schermo.
+- Passi brevi (pochi ms su un computer): contesto WebGL e ambiente dello studio separati
+  (`new ProductScene()`, poi `scene.init()`), granelli della polvere calcolati in un worker
+  (`powderPour.js`: stesso risultato di prima, deterministico), ScrollTrigger creati una volta sola
+  (`rebuild()` rifa' solo le timeline), shader preparati una passata per fotogramma, primo uso
+  della GPU uno strato per fotogramma (`primeSteps()`) prima di mostrare il canvas.
 - Gli shader si compilano in parallelo (KHR_parallel_shader_compile) con il render target in cui
   ogni scena viene davvero disegnata: nessuna compilazione sincrona al primo fotogramma.
 - Cambio prodotto con un tipo diverso mentre la sezione e' lontana: la nuova esperienza si prepara
@@ -116,6 +121,7 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 | `ProductCamera.js`, `ProductLighting.js` | camera cinematografica, luci e ambiente dello studio |
 | `ScrollAnimation.js` | chiavi -> tween GSAP, righe mascherate, ScrollTrigger della sezione |
 | `PowderExperience.js` | misurino, polvere, acqua che si intorbida |
+| `powderPour.js`, `powderPour.worker.js` | calcolo della versata (granelli, nuvola, increspature) in un worker |
 | `ShowcaseExperience.js`, `CapsuleExperience.js`, `TabletExperience.js` | capsula e compressa |
 | `kit.js`, `assets.js`, `etching.js`, `quality.js`, `copy.js` | particelle, caricamento modelli, logo inciso, qualita', testi di default |
 | `shaders/` | vetro, acqua, fondale, particelle, composizione finale |

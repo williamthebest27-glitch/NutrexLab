@@ -111,6 +111,22 @@ export class ProductExperience {
     })
     this._onResize = () => this.onResize()
     window.addEventListener('resize', this._onResize)
+    // la larghezza della sezione puo' cambiare senza resize della finestra (la barra di scorrimento
+    // compare a fine caricamento): il pin fissa la larghezza quando misura, va rimisurato
+    if ('ResizeObserver' in window) {
+      let width = 0
+      let winW = window.innerWidth
+      this._ro = new ResizeObserver((entries) => {
+        const w = Math.round(entries[entries.length - 1].contentRect.width)
+        if (!width || w === width) return void (width = w)
+        width = w
+        // (se e' cambiata la finestra ci pensa il resize del sito, che rimisura tutto)
+        if (window.innerWidth !== winW) return void (winW = window.innerWidth)
+        this.scroll?.triggers[0].refresh()
+        if (this.scene) this.resize()
+      })
+      this._ro.observe(this.section)
+    }
     this._onPointer = (e) => this.onPointer(e)
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) window.addEventListener('pointermove', this._onPointer, { passive: true })
   }
@@ -245,8 +261,6 @@ export class ProductExperience {
   // ---------------------------------------------------------------------------
   // Timeline e scroll
   rebuild() {
-    const progress = this.scroll ? this.scroll.progress : 0
-    this.scroll?.kill()
     this.main?.kill()
     this.intro?.kill()
 
@@ -294,20 +308,22 @@ export class ProductExperience {
     addFade(intro, this.el.steps, { at: 0.55, dur: 0.3, y: 0 })
     addFade(intro, this.el.product, { at: 0.6, dur: 0.3, y: 0 })
 
-    if (this.exp) this.exp.prepare(main)
-    main.progress(progress)
+    this.exp?.prepare?.(main)
 
-    this.scroll = createScrollAnimation({
+    // i trigger si creano una volta sola e leggono sempre le timeline attuali (this.main, this.intro)
+    this.scroll ??= createScrollAnimation({
       section: this.section,
       stage: this.stage,
       steps: this.o.steps,
       getVh: this.o.getVh,
       scrub: this.o.scrub,
-      main,
-      intro,
+      timelines: () => this,
       onActive: (on) => this.setActive(on),
       onUpdate: (self) => this.updateSteps(self.progress),
     })
+    // le timeline nuove partono dal punto in cui si trova lo scroll
+    main.progress(this.scroll.progress)
+    intro.progress(this.scroll.introProgress)
     this.updateSteps(main.progress())
   }
 
@@ -384,46 +400,80 @@ export class ProductExperience {
     // Dopo ogni attesa: se nel frattempo la sezione e' stata smontata (destroy) ci si ferma
     this.initing = (async () => {
       try {
-        const [{ ProductScene }, { ProductCamera }, { loadModel }] = await Promise.all([
+        const [{ ProductScene }, { ProductCamera }, { loadModel }, Exp] = await Promise.all([
           import('./ProductScene.js'),
           import('./ProductCamera.js'),
           import('./assets.js'),
+          EXPERIENCES[this.type](),
         ])
+        // modelli: download e decodifica (Draco, nei suoi worker) mentre si prepara il renderer
+        const load = { dracoPath: this.o.dracoPath }
+        const models = Promise.all([
+          loadModel(this.modelUrl('glass.glb'), load),
+          ...Exp.models.map((file, i) => loadModel(this.modelUrl(file, i === 0), load)),
+          this.o.etch ? import('./etching.js') : null,
+        ])
+        models.catch(() => {}) // (l'errore arriva con l'await qui sotto)
         await this.breath()
         if (this.destroyed) return
-        this.scene = new ProductScene(this.canvas, this.quality)
-        this.cam = new ProductCamera(this.scene.camera)
-        this.cam.live = this.reduced ? 0 : 1
-        this.scene.setTheme(this.theme)
+        // contesto WebGL, gia' alla misura dello stage (cambiarla dopo fa aspettare la GPU)
+        const scene = new ProductScene(this.canvas, this.quality, this.stageSize())
         this.canvas.addEventListener('webglcontextlost', (e) => {
           e.preventDefault()
           if (!this.destroyed) this.useFallback()
         })
-        const [glass, exp, etching] = await Promise.all([
-          loadModel(this.modelUrl('glass.glb'), { dracoPath: this.o.dracoPath }),
-          this.createExperience(this.type),
-          this.o.etch ? import('./etching.js') : null,
-        ])
         await this.breath()
-        if (this.destroyed) return exp.dispose()
-        this.scene.setGlass(glass)
+        if (this.destroyed) return scene.dispose()
+        await scene.prepare(() => this.breath()) // programmi dell'ambiente, in parallelo
+        await this.breath()
+        if (this.destroyed) return scene.dispose()
+        scene.buildStudio() // riflessi dello studio (PMREM)
+        await this.breath()
+        if (this.destroyed) return scene.dispose()
+        scene.init() // buffer, fondale, passate finali
+        this.scene = scene
+        this.cam = new ProductCamera(this.scene.camera)
+        this.cam.live = this.reduced ? 0 : 1
+        this.scene.setTheme(this.theme)
+        const loaded = await models
+        await this.breath()
+        if (this.destroyed) return
+        this.scene.setGlass(loaded[0])
+        const etching = loaded[loaded.length - 1]
         if (etching) this.scene.setEtch(etching.createEtchTexture(this.o.etch), this.o.etchOptions)
+        const type = this.type // (se nel frattempo e' cambiato, il modello si scarica adesso)
+        const exp = await this.createExperience(type)
         await this.breath()
         if (this.destroyed) return exp.dispose()
-        this.attachExperience(exp)
+        this.attachExperience(exp, type)
+        // il lavoro pesante dell'esperienza (i granelli della polvere) va in un worker, intanto il resto
+        const heavy = exp.prepareAsync?.()
+        await this.breath()
+        if (this.destroyed) return
         this.resize()
         await this.breath()
         if (this.destroyed) return
         this.rebuild()
+        await heavy
         await this.breath()
         if (this.destroyed) return
-        await this.scene.warmup()
+        await this.scene.warmup(() => this.breath())
+        // primo uso della GPU (buffer di rendering, geometrie, texture) un pezzo per fotogramma, a
+        // canvas ancora nascosto: il primo fotogramma vero non ha piu' niente da preparare
+        for (const step of this.scene.primeSteps()) {
+          await this.breath()
+          if (this.destroyed) return
+          step()
+        }
+        await this.breath()
         if (this.destroyed) return
         this.ready = true
         this.polite = false
         this.renderFrame(gsap.ticker.time, 0)
         this.section.classList.add('is-live')
         this.setActive(this.active)
+        // il prodotto e' cambiato tipo durante la preparazione (se il cambio non riesce resta il precedente)
+        this.swapExperience().catch((err) => console.warn('ProductExperience: cambio prodotto non riuscito.', err))
       } catch (err) {
         if (this.destroyed) return
         console.warn('ProductExperience: uso l\'immagine statica.', err)
@@ -446,9 +496,10 @@ export class ProductExperience {
     return exp
   }
 
-  attachExperience(exp) {
+  attachExperience(exp, type) {
     this.exp?.dispose()
     this.exp = exp
+    this.expType = type
     exp.build()
     exp.setTheme(this.theme)
   }
@@ -687,9 +738,13 @@ export class ProductExperience {
   }
 
   // ---------------------------------------------------------------------------
+  /** Misura dello stage (px CSS). */
+  stageSize() {
+    return { w: this.stage.clientWidth || window.innerWidth, h: this.stage.clientHeight || window.innerHeight }
+  }
+
   resize() {
-    const w = this.stage.clientWidth || window.innerWidth
-    const h = this.stage.clientHeight || window.innerHeight
+    const { w, h } = this.stageSize()
     this.size = { w, h }
     this.scene?.resize(w, h)
     for (const pin of this.pins) pin.textW = 0
@@ -734,31 +789,42 @@ export class ProductExperience {
     if (this.scene) this.scene.setTheme(this.theme)
     this.exp?.setTheme(this.theme)
     this.rebuild() // i testi nuovi entrano subito nelle timeline
-    if (typeChanged && this.scene && !this.section.classList.contains('is-fallback')) {
-      const token = (this._swap = {})
-      // cambio dalla hero, sezione lontana: il nuovo prodotto 3D si prepara in un momento
-      // tranquillo, non durante l'animazione del cambio (se la sezione compare, subito)
-      if (!this.active) {
-        await Promise.race([
-          this.o.calm?.() ?? new Promise((r) => setTimeout(r, 300)),
-          new Promise((r) => (this._swapHurry = r)),
-        ])
-      }
-      // nel frattempo e' arrivato un altro cambio, o la sezione e' stata smontata
-      if (token !== this._swap || this.destroyed) return
-      const exp = await this.createExperience(this.type)
-      if (token !== this._swap || this.destroyed) return exp.dispose()
-      this.attachExperience(exp)
-      await this.scene.warmup()
-      if (this.destroyed) return
-      this.rebuild()
+    if (typeChanged) await this.swapExperience()
+  }
+
+  /**
+   * Il tipo e' cambiato: esperienza nuova (il suo modello si scarica solo adesso). Se la scena 3D
+   * non e' ancora pronta non serve: init3D prepara gia' quella del tipo attuale (e alla fine
+   * controlla che sia ancora lui).
+   */
+  async swapExperience() {
+    if (!this.ready || this.expType === this.type) return
+    const token = (this._swap = {})
+    // cambio dalla hero, sezione lontana: il nuovo prodotto 3D si prepara in un momento
+    // tranquillo, non durante l'animazione del cambio (se la sezione compare, subito)
+    if (!this.active) {
+      await Promise.race([
+        this.o.calm?.() ?? new Promise((r) => setTimeout(r, 300)),
+        new Promise((r) => (this._swapHurry = r)),
+      ])
     }
+    // nel frattempo e' arrivato un altro cambio, o la sezione e' stata smontata
+    if (token !== this._swap || this.destroyed) return
+    const type = this.type
+    const exp = await this.createExperience(type)
+    if (token !== this._swap || this.destroyed) return exp.dispose()
+    this.attachExperience(exp, type)
+    this.rebuild()
+    await exp.prepareAsync?.()
+    if (this.destroyed) return
+    await this.scene.warmup(() => this.breath())
   }
 
   destroy() {
     this.destroyed = true
     this.setActive(false)
     this.io?.disconnect()
+    this._ro?.disconnect()
     clearTimeout(this._resizeTimer)
     this.scroll?.kill()
     this.main?.kill()

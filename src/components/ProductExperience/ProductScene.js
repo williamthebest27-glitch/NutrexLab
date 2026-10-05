@@ -31,9 +31,17 @@ function blankTexture() {
 }
 
 export class ProductScene {
-  constructor(canvas, quality) {
+  /** size (facoltativa): misura dello stage in px CSS, { w, h }. */
+  constructor(canvas, quality, size = null) {
     this.canvas = canvas
     this.quality = quality
+    this.dpr = quality.dpr
+    // misura giusta prima di creare il contesto: il buffer di disegno nasce gia' grande cosi'.
+    // Cambiarla dopo fa aspettare la GPU (controlli sincroni, decine di ms se sta disegnando la pagina)
+    if (size) {
+      canvas.width = Math.max(1, Math.floor(size.w * this.dpr))
+      canvas.height = Math.max(1, Math.floor(size.h * this.dpr))
+    }
     const renderer = (this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
@@ -48,6 +56,10 @@ export class ProductScene {
     renderer.toneMappingExposure = 1.0
     renderer.localClippingEnabled = true
     renderer.debug.checkShaderErrors = !!import.meta.env?.DEV
+    // estensioni che serviranno piu' avanti, chieste subito: attivarne una fa aspettare la GPU (una
+    // chiamata sincrona, lunga se intanto la GPU disegna la pagina). Qui l'attesa c'e' comunque
+    // (creazione del contesto); dopo, a meta' preparazione, sarebbe un fotogramma lungo in piu'
+    for (const ext of ['KHR_parallel_shader_compile', 'EXT_texture_filter_anisotropic']) renderer.extensions.has(ext)
 
     this.camera = new THREE.PerspectiveCamera(14, 1, 0.04, 8)
     this.back = new THREE.Scene()
@@ -56,22 +68,9 @@ export class ProductScene {
     this.screen = new THREE.Scene()
     this.screenCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
 
-    this.lighting = new ProductLighting(renderer)
-    this.back.environment = this.lighting.envTexture
-    this.inside.environment = this.lighting.envTexture
-    this.lighting.rig(this.back)
-    this.lighting.rig(this.inside)
-    this.envDefines = this.lighting.defines
-
-    this.dpr = quality.dpr
     this.size = { w: 1, h: 1 }
     this.bufferSize = new THREE.Vector2(1, 1)
     this.clearColor = new THREE.Color(0x060508)
-
-    this.buildTargets()
-    this.u = this.sharedUniforms()
-    this.buildBackdrop()
-    this.buildComposite()
 
     // piani di taglio: sopra / sotto il pelo dell'acqua (gli oggetti che attraversano la superficie
     // vengono disegnati in due strati)
@@ -79,6 +78,35 @@ export class ProductScene {
     this.belowWater = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0.071)
 
     this._frames = []
+  }
+
+  /**
+   * Preparazione a piccoli passi, uno per fotogramma (pause tra l'uno e l'altro), separati dal
+   * contesto WebGL: programmi dell'ambiente compilati in parallelo (prepare, facoltativo), ambiente
+   * dello studio (buildStudio, PMREM), poi buffer intermedi, fondale e passate finali (init).
+   */
+  prepare(pause = null) {
+    this.lighting ??= new ProductLighting(this.renderer)
+    return this.lighting.precompile(pause)
+  }
+
+  buildStudio() {
+    if (this.envDefines) return
+    this.lighting ??= new ProductLighting(this.renderer)
+    this.lighting.build()
+    this.back.environment = this.lighting.envTexture
+    this.inside.environment = this.lighting.envTexture
+    this.lighting.rig(this.back)
+    this.lighting.rig(this.inside)
+    this.envDefines = this.lighting.defines
+  }
+
+  init() {
+    this.buildStudio()
+    this.buildTargets()
+    this.u = this.sharedUniforms()
+    this.buildBackdrop()
+    this.buildComposite()
   }
 
   buildTargets() {
@@ -310,8 +338,12 @@ export class ProductScene {
   resize(width, height) {
     this.size = { w: width, h: height }
     const r = this.renderer
-    r.setPixelRatio(this.dpr)
-    r.setSize(width, height, false)
+    // il buffer di disegno si rifa' solo se la misura cambia davvero (ogni volta la GPU va aspettata);
+    // un solo cambio, non due (setPixelRatio + setSize ne facevano uno intermedio)
+    const c = this.canvas
+    if (c.width !== Math.max(1, Math.floor(width * this.dpr)) || c.height !== Math.max(1, Math.floor(height * this.dpr))) {
+      r.setDrawingBufferSize(width, height, this.dpr)
+    }
     r.getDrawingBufferSize(this.bufferSize)
     const W = this.bufferSize.x
     const H = this.bufferSize.y
@@ -375,8 +407,10 @@ export class ProductScene {
    * tone mapping), solo l'ultima passata va sullo schermo. Compilandole verso lo schermo three
    * prepara varianti che non usa mai e al primo fotogramma compila quelle vere in modo sincrono:
    * pagina ferma per secondi proprio mentre ci si avvicina alla sezione.
+   * pause (facoltativa): attesa tra una passata e l'altra. Preparare i programmi di una passata
+   * costa qualche ms di JavaScript (decine su un telefono): uno per fotogramma.
    */
-  async warmup() {
+  async warmup(pause = null) {
     const r = this.renderer
     const compile = (scene, camera, target) => {
       r.setRenderTarget(target)
@@ -384,31 +418,64 @@ export class ProductScene {
       r.setRenderTarget(null)
       return job
     }
-    // tutte insieme: il browser le compila in parallelo (KHR_parallel_shader_compile)
-    const jobs = [
-      compile(this.inside, this.camera, this.insideRT),
-      compile(this.back, this.camera, this.backRT),
-      compile(this.front, this.camera, this.mainRT),
+    const passes = [
+      () => compile(this.inside, this.camera, this.insideRT),
+      () => compile(this.back, this.camera, this.backRT),
+      () => compile(this.front, this.camera, this.mainRT),
+      () => {
+        this.quad.material = this.copyMaterial
+        return compile(this.screen, this.screenCamera, this.mainRT)
+      },
+      // (stesso quad: la seconda passata va compilata dopo aver ripreso il materiale)
+      () => {
+        this.quad.material = this.outputMaterial
+        return compile(this.screen, this.screenCamera, null)
+      },
     ]
-    this.quad.material = this.copyMaterial
-    jobs.push(compile(this.screen, this.screenCamera, this.mainRT))
-    // (stesso quad: la seconda passata va compilata dopo aver ripreso il materiale)
-    this.quad.material = this.outputMaterial
-    jobs.push(compile(this.screen, this.screenCamera, null))
+    // il browser le compila in parallelo (KHR_parallel_shader_compile) mentre si avviano le altre
+    const jobs = []
+    for (const pass of passes) {
+      if (jobs.length && pause) await pause()
+      jobs.push(pass())
+    }
     await Promise.all(jobs)
   }
 
+  /**
+   * Primo uso della GPU a piccoli pezzi, da eseguire uno per fotogramma prima di mostrare il canvas:
+   * buffer intermedi (texture e framebuffer, MSAA compreso), poi gli strati uno alla volta (caricano
+   * geometrie, particelle e texture). Al primo fotogramma vero non resta niente da preparare.
+   */
+  primeSteps() {
+    const r = this.renderer
+    const pass = (scene, target) => () => {
+      r.setRenderTarget(target)
+      r.render(scene, this.camera)
+      r.setRenderTarget(null)
+    }
+    return [
+      () => {
+        for (const rt of [this.insideRT, this.backRT, this.mainRT]) r.initRenderTarget(rt)
+        r.initTexture(this.u.uEtch.value)
+      },
+      pass(this.inside, this.insideRT),
+      pass(this.back, this.backRT),
+      pass(this.front, this.mainRT),
+    ]
+  }
+
   dispose() {
-    for (const rt of [this.backRT, this.insideRT, this.mainRT]) rt.dispose()
-    this.copyMaterial.dispose()
-    this.lighting.dispose()
+    // (anche a meta' preparazione: init() puo' non esserci ancora stato)
+    for (const rt of [this.backRT, this.insideRT, this.mainRT]) rt?.dispose()
+    this.copyMaterial?.dispose()
+    this.lighting?.dispose()
     for (const s of [this.back, this.inside, this.front, this.screen]) {
       s.traverse((o) => {
         if (o.geometry) o.geometry.dispose()
         if (o.material) [].concat(o.material).forEach((m) => m.dispose())
       })
     }
-    this.outputMaterial.dispose()
+    this.outputMaterial?.dispose()
     this.renderer.dispose()
     // libera subito il contesto WebGL (in un'app a pagina singola i contesti aperti sono pochi)
     this.renderer.forceContextLoss()

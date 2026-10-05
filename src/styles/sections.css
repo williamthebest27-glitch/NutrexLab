@@ -865,9 +865,17 @@ html.no-lines .ing__lines {
 }
 
 .cert__seal {
+  position: relative;
   flex: none;
   width: clamp(84px, 7.4vw, 116px);
-  height: auto;
+  aspect-ratio: 1;
+}
+
+.cert__seal svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow: visible;
 }
 
@@ -896,9 +904,17 @@ html.no-lines .ing__lines {
   fill: var(--fg);
 }
 
+/* la scritta circolare gira su un livello suo, una trasformazione che fa la scheda grafica: ruotando
+   un gruppo dentro l'SVG la pagina ridisegnava il sigillo a ogni fotogramma (~4 ms su un telefono,
+   anche a sigillo fuori schermo). E gira solo mentre il sigillo e' sullo schermo (.is-on, main.js) */
 .cert__spin {
-  transform-origin: 60px 60px;
-  animation: cert-spin 28s linear infinite;
+  position: absolute;
+  inset: 0;
+  animation: cert-spin 28s linear infinite paused;
+}
+
+.cert__seal.is-on .cert__spin {
+  animation-play-state: running;
 }
 
 @keyframes cert-spin {

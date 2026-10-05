@@ -232,18 +232,22 @@ function createRitual() {
 /**
  * Risolve in un momento tranquillo: nessuno scroll da almeno 0.4 s e il browser libero.
  * Il lavoro pesante (preparazione della sezione del bicchiere) si fa solo li': mai durante lo scroll.
+ * La calma si conta da quando la pagina si e' fermata, non da quando la si chiede: a pagina ferma
+ * i passi della preparazione si susseguono senza attese.
  */
+let lastBusy = 0
+lenis?.on('scroll', () => (lastBusy = performance.now()))
 function calmMoment() {
   return new Promise((resolve) => {
-    let quiet = 0
-    const id = setInterval(() => {
+    const check = () => {
       // fermo = nessuno scroll e nessun cambio prodotto in corso (barattolo che gira, colori che sfumano)
-      quiet = lenis?.isScrolling || switching || performance.now() - lastSwitch < 2200 ? 0 : quiet + 100
-      if (quiet < 400) return
-      clearInterval(id)
+      const now = performance.now()
+      if (lenis?.isScrolling || switching || now - lastSwitch < 2200) lastBusy = now
+      if (now - lastBusy < 400) return setTimeout(check, 100)
       if (window.requestIdleCallback) requestIdleCallback(() => resolve(), { timeout: 400 })
       else resolve()
-    }, 100)
+    }
+    check()
   })
 }
 
@@ -339,6 +343,7 @@ async function boot() {
   initNav()
   initBuy()
   initFooterLogo()
+  initSeal()
   ritual = createRitual()
   ScrollTrigger.refresh()
   gsap.ticker.add(tick)
@@ -550,6 +555,14 @@ function initFooterLogo() {
     onEnter: () => tl.restart(),
     onLeaveBack: () => tl.reverse(),
   })
+}
+
+/** Sigillo Made in Italy: la scritta circolare gira solo mentre il sigillo e' sullo schermo. */
+function initSeal() {
+  const seal = document.querySelector('.cert__seal')
+  if (!seal) return
+  if (!('IntersectionObserver' in window)) return seal.classList.add('is-on')
+  new IntersectionObserver((list) => seal.classList.toggle('is-on', list[list.length - 1].isIntersecting)).observe(seal)
 }
 
 // ---------------------------------------------------------------------------
@@ -771,7 +784,7 @@ function jump(t) {
     return
   }
   const veil = document.querySelector('.veil')
-  veil.style.background = getComputedStyle(html).getPropertyValue('--bg')
+  veil.style.background = getComputedStyle(document.body).backgroundColor // il fondo del momento (choreography.js)
   gsap
     .timeline()
     .to(veil, { opacity: 1, duration: 0.5, ease: 'power2.inOut' })

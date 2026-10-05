@@ -99,25 +99,32 @@
           </a>
 
 
-          <!-- certificazione Made in Italy (uguale per tutti i prodotti): sigillo con la bandiera -->
+          <!-- certificazione Made in Italy (uguale per tutti i prodotti): sigillo con la bandiera.
+               La scritta circolare e' un livello a parte che gira sulla scheda grafica (.cert__spin) -->
           <div class="s3__cert" data-reveal="s3cert">
-            <svg class="cert__seal" viewBox="0 0 120 120" aria-hidden="true">
-              <defs>
-                <path id="cert-arc" d="M60 60m-47.5 0a47.5 47.5 0 1 1 95 0a47.5 47.5 0 1 1-95 0" />
-                <clipPath id="cert-disc"><circle cx="60" cy="60" r="29" /></clipPath>
-              </defs>
-              <circle class="cert__ring" cx="60" cy="60" r="58" />
-              <circle class="cert__rule" cx="60" cy="60" r="37" />
-              <g class="cert__spin">
-                <text class="cert__arc"><textPath href="#cert-arc" textLength="292" lengthAdjust="spacing">MADE IN ITALY &#8226; PRODOTTO IN ITALIA &#8226;</textPath></text>
-              </g>
-              <g clip-path="url(#cert-disc)">
-                <rect x="31" y="31" width="19.4" height="58" fill="#009246" />
-                <rect x="50.3" y="31" width="19.4" height="58" fill="#f4f5f0" />
-                <rect x="69.6" y="31" width="19.4" height="58" fill="#ce2b37" />
-              </g>
-              <circle class="cert__edge" cx="60" cy="60" r="29" />
-            </svg>
+            <span class="cert__seal" aria-hidden="true">
+              <svg viewBox="0 0 120 120">
+                <defs>
+                  <clipPath id="cert-disc"><circle cx="60" cy="60" r="29" /></clipPath>
+                </defs>
+                <circle class="cert__ring" cx="60" cy="60" r="58" />
+                <circle class="cert__rule" cx="60" cy="60" r="37" />
+                <g clip-path="url(#cert-disc)">
+                  <rect x="31" y="31" width="19.4" height="58" fill="#009246" />
+                  <rect x="50.3" y="31" width="19.4" height="58" fill="#f4f5f0" />
+                  <rect x="69.6" y="31" width="19.4" height="58" fill="#ce2b37" />
+                </g>
+                <circle class="cert__edge" cx="60" cy="60" r="29" />
+              </svg>
+              <span class="cert__spin">
+                <svg viewBox="0 0 120 120">
+                  <defs>
+                    <path id="cert-arc" d="M60 60m-47.5 0a47.5 47.5 0 1 1 95 0a47.5 47.5 0 1 1-95 0" />
+                  </defs>
+                  <text class="cert__arc"><textPath href="#cert-arc" textLength="292" lengthAdjust="spacing">MADE IN ITALY &#8226; PRODOTTO IN ITALIA &#8226;</textPath></text>
+                </svg>
+              </span>
+            </span>
             <p class="cert__text">
               <span class="cert__flag" aria-hidden="true"><i></i><i></i><i></i></span>
               <b>Made in Italy</b>

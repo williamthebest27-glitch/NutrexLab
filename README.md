@@ -176,6 +176,21 @@ in `vite.config.js` (`build.rolldownOptions.input`), altrimenti `npm run build` 
   a piccoli passi e solo quando nessuno sta scorrendo (`calmMoment`). Gli shader si compilano in
   parallelo con il render target giusto (`ProductScene.warmup`): compilarli "per lo schermo"
   faceva ricompilare tutto al primo fotogramma e fermava la pagina per 2-4 secondi.
+  Nessun passo deve superare qualche ms: i ~30.000 granelli della polvere si calcolano in un worker
+  (`powderPour.js`), i ScrollTrigger della sezione si creano una volta sola (ricostruire le timeline
+  non li tocca: ricrearli rimetteva il pin e rimisurava la pagina), gli shader si preparano una
+  passata per fotogramma e la GPU si "scalda" uno strato per fotogramma (`ProductScene.primeSteps`).
+- Colori della pagina durante lo scroll (`buildMaster` in `choreography.js`): il fondo sfuma sul
+  body e sul velo della navbar (`.nav__bg`), le variabili della radice (`--bg`, `--fg`, `--accent`)
+  cambiano solo quando cambia il colore dei testi (2 volte), a meta' passaggio. Ogni modifica di
+  una variabile sulla radice fa ricalcolare lo stile di tutta la pagina (~10 ms su un computer,
+  60-100 ms su un telefono): mai a ogni fotogramma. Navbar e menu prodotti leggono il fondo del
+  momento da `--page-bg`. In home `--bg` sulla radice non e' il fondo che si vede: per il colore
+  attuale leggere `getComputedStyle(document.body).backgroundColor`.
+- Niente animazioni continue sul thread della pagina: la scritta del sigillo Made in Italy gira come
+  livello a parte (trasformazione CSS, la fa la scheda grafica) e solo quando il sigillo e' sullo
+  schermo. Ruotare un gruppo dentro un SVG ridisegnava il sigillo a ogni fotogramma, anche fuori
+  schermo: ~4 ms a fotogramma su un telefono, in tutta la pagina.
 - Shader del vetro (`shaders/glass.js`): i rami seguono solo la geometria del raggio, sfondo e
   ambiente si leggono una volta alla fine. Su Windows il compilatore DirectX espande ogni chiamata:
   non rimettere `pe_env` / `pe_seen` dentro i rami, e dentro i rami usare `textureLod`.

@@ -1,10 +1,9 @@
 import * as THREE from 'three'
 import { loadModel, findMesh } from './assets.js'
 import { NOISE } from './shaders/chunks.js'
-import {
-  random, fall, hitTime, Table, sampleTimeline, addParticles, updatePixelScale, disposeParticles,
-  particleGeometry, DEG, smooth, clamp01,
-} from './kit.js'
+import { Table, addParticles, updatePixelScale, disposeParticles, particleGeometry, DEG, smooth } from './kit.js'
+import { sampleKeys } from './ScrollAnimation.js'
+import { computePour } from './powderPour.js'
 
 /*
   POLVERE: misurino + polvere a raso -> si avvicina al bicchiere, ruota, si inclina, la polvere cade
@@ -13,8 +12,8 @@ import {
 
   Tutto e' funzione del progresso della timeline (scroll): il cumulo nel misurino e' una superficie
   calcolata nel vertex shader (piano della polvere dentro la coppa conica), i granelli sono
-  particelle deterministiche (shaders/particles.js) con i punti di partenza calcolati leggendo la
-  timeline nei momenti in cui il misurino li lascia cadere.
+  particelle deterministiche (shaders/particles.js) con i punti di partenza calcolati dalle chiavi
+  della coreografia nei momenti in cui il misurino li lascia cadere (powderPour.js, in un worker).
 */
 
 const TOTAL = 16            // secondi del "racconto" lungo tutta la sezione
@@ -58,6 +57,9 @@ const SCOOP = [
   { at: 0.86, px: 0.01, py: 0.152, roll: 112, pitch: 2 },
   { at: 1.0, px: 0.16, py: 0.26, pz: -0.11, yaw: 40, roll: 38, pitch: 12, ease: 'power2.in' },
 ]
+
+/** Tempo del racconto: scorre uniforme lungo tutta la sezione. */
+const STORY = [{ at: 0, T: 0 }, { at: 1, T: TOTAL, ease: 'none' }]
 
 const FILL = [
   { at: 0.0, fill: 1 },
@@ -205,7 +207,7 @@ export class PowderExperience {
   /** Tracce della timeline (l'orchestratore le trasforma in tween GSAP). */
   tracks(layout) {
     return [
-      { target: this.s, keys: [{ at: 0, T: 0 }, { at: 1, T: TOTAL, ease: 'none' }] },
+      { target: this.s, keys: STORY },
       // il bicchiere gira piano su se stesso per tutta la sezione (il logo inciso scorre)
       { target: this.s, keys: [{ at: 0, glassRot: -14 }, { at: 1, glassRot: 26, ease: 'none' }] },
       { target: this.s, keys: SCOOP },
@@ -214,113 +216,49 @@ export class PowderExperience {
     ]
   }
 
-  /** Dopo aver costruito la timeline: granelli, nuvola e increspature dai momenti in cui la polvere esce. */
-  prepare(tl) {
-    // la versata non dipende da testi, colori o impaginazione: i granelli calcolati una volta restano
-    // validi a ogni nuova timeline (cambio prodotto, resize) e non si ricalcolano durante le animazioni
-    if (this.grains) return
+  /**
+   * Granelli, nuvola e increspature dai momenti in cui la polvere esce. Il calcolo (~30.000
+   * granelli) gira in un worker (powderPour.js): la pagina continua a scorrere. Non dipende da testi,
+   * colori o impaginazione: si fa una volta sola e resta valido a ogni nuova timeline.
+   */
+  prepareAsync() {
+    this._pour ??= computePourOffThread(this.pourInput()).then((data) => {
+      if (!this.disposed) this.applyPour(data)
+    })
+    return this._pour
+  }
+
+  /** Stato del misurino durante la versata (dalle chiavi, come la timeline) e misure della scena. */
+  pourInput() {
+    const n = 360
+    const samples = []
+    for (let i = 0; i <= n; i++) {
+      const p = POUR[0] + ((POUR[1] - POUR[0]) * i) / n
+      const st = sampleKeys(STORY, p)
+      sampleKeys(SCOOP, p, st)
+      sampleKeys(FILL, p, st)
+      samples.push(st)
+    }
+    const k = this.ctx.quality.particles
+    return {
+      samples,
+      rimR: this.dim.riTop,
+      waterY: this.scene.glassInfo.waterY,
+      total: TOTAL,
+      gravity: G,
+      drag: DRAG,
+      counts: {
+        grain: Math.round(22000 * k),
+        dust: Math.round(4000 * k),
+        veil: Math.round(2600 * Math.max(0.5, k)),
+        plume: Math.round(260 * Math.max(0.4, k)),
+      },
+    }
+  }
+
+  /** Sistemi di particelle e tabelle dal calcolo della versata. */
+  applyPour(data) {
     this.disposeParticles()
-    const s = this.s
-    const q = this.ctx.quality
-    const g = this.scene.glassInfo
-    const samples = sampleTimeline(tl, POUR[0], POUR[1], 360, () => ({
-      T: s.T, fill: s.fill, px: s.px, py: s.py, pz: s.pz, yaw: s.yaw, roll: s.roll, pitch: s.pitch,
-    }))
-    const f0 = samples[0].fill
-    const f1 = samples[samples.length - 1].fill
-    const keys = Object.keys(samples[0])
-    // stato del misurino quando la polvere e' scesa a una certa frazione (quantile 0..1).
-    // Dentro emit() u cresce sempre: la ricerca riparte dal campione trovato per il granello prima
-    // (stesso risultato della scansione da capo, senza ripercorrere 360 campioni per ognuno dei
-    // ~30.000 granelli: era il blocco piu' lungo della preparazione della sezione)
-    let cursor = 0
-    const state = {} // riusato per ogni granello (niente oggetti nuovi a ogni chiamata)
-    const at = (u) => {
-      const target = f0 - u * (f0 - f1)
-      let i = cursor
-      while (i < samples.length - 2 && samples[i + 1].fill > target) i++
-      cursor = i
-      const a = samples[i]
-      const b = samples[i + 1]
-      const span = a.fill - b.fill
-      const f = span > 1e-6 ? clamp01((a.fill - target) / span) : 0
-      for (const k of keys) state[k] = a[k] + (b[k] - a[k]) * f
-      return state
-    }
-
-    const rnd = random(7)
-    const euler = new THREE.Euler(0, 0, 0, 'YZX')
-    const quat = new THREE.Quaternion()
-    const A = new THREE.Vector3()
-    const dir = new THREE.Vector3()
-    const tan = new THREE.Vector3()
-    const down = new THREE.Vector3(0, -1, 0)
-    const rimR = this.dim.riTop
-    const impacts = []
-
-    const emit = (count, kind) => {
-      const start = new Float32Array(count * 3)
-      const vel = new Float32Array(count * 3)
-      const seed = new Float32Array(count * 4)
-      const release = new Float32Array(count)
-      const size = new Float32Array(count)
-      const p0 = new THREE.Vector3()
-      const v0 = new THREE.Vector3()
-      const hit = new THREE.Vector3()
-      cursor = 0
-      for (let i = 0; i < count; i++) {
-        // quantile: piu' denso a meta' versata, con un piccolo sbuffo iniziale di polvere fine
-        let u = (i + rnd()) / count
-        if (kind === 'dust') u = Math.pow(u, 1.4)
-        const st = at(u)
-        euler.set(st.roll * DEG, st.yaw * DEG, st.pitch * DEG, 'YZX')
-        quat.setFromEuler(euler)
-        A.set(0, 1, 0).applyQuaternion(quat)
-        dir.copy(down).addScaledVector(A, -A.dot(down))
-        if (dir.lengthSq() < 1e-8) dir.set(0, 0, 1)
-        dir.normalize()
-        tan.crossVectors(A, dir).normalize()
-        // la polvere scivola fuori da un tratto stretto del labbro: un nastro compatto
-        const spread = kind === 'dust' ? 0.9 : kind === 'veil' ? 0.5 : 0.42
-        const delta = (rnd() + rnd() - 1) * spread
-        const rr = rimR * (0.94 + 0.05 * rnd())
-        p0.set(st.px, st.py, st.pz)
-          .addScaledVector(dir, Math.cos(delta) * rr)
-          .addScaledVector(tan, Math.sin(delta) * rr)
-          .addScaledVector(A, -0.0012 * rnd())
-        const speed = kind === 'dust' ? 0.01 + 0.016 * rnd() : 0.016 + 0.022 * rnd()
-        v0.copy(A).multiplyScalar(0.45).addScaledVector(dir, 0.9).normalize().multiplyScalar(speed)
-        const jitter = kind === 'dust' ? 0.008 : 0.003
-        v0.x += (rnd() - 0.5) * jitter
-        v0.z += (rnd() - 0.5) * jitter
-        start[i * 3] = p0.x
-        start[i * 3 + 1] = p0.y
-        start[i * 3 + 2] = p0.z
-        vel[i * 3] = v0.x
-        vel[i * 3 + 1] = v0.y
-        vel[i * 3 + 2] = v0.z
-        for (let k = 0; k < 4; k++) seed[i * 4 + k] = rnd()
-        release[i] = st.T
-        size[i] =
-          kind === 'dust' ? 0.0004 + 0.0008 * rnd()
-          : kind === 'veil' ? 0.0016 + 0.0024 * rnd()
-          : 0.0002 + 0.00034 * rnd() * rnd()
-        if (kind === 'grain') {
-          const th = hitTime(p0, v0, g.waterY, G, DRAG.grain)
-          fall(th, p0, v0, G, DRAG.grain, hit)
-          impacts.push({ T: st.T + th, x: hit.x, z: hit.z })
-        }
-      }
-      return particleGeometry({ start, vel, seed, release, size })
-    }
-
-    const nGrain = Math.round(22000 * q.particles)
-    const nDust = Math.round(4000 * q.particles)
-    const nVeil = Math.round(2600 * Math.max(0.5, q.particles))
-    const grainGeo = emit(nGrain, 'grain')
-    const dustGeo = emit(nDust, 'dust')
-    const veilGeo = emit(nVeil, 'veil')
-
     const u = this.scene.u
     const common = (drag, extra) => ({
       uT: { value: 0 },
@@ -342,40 +280,24 @@ export class PowderExperience {
       uColorWet: { value: new THREE.Color(0x9a9894) },
       ...extra,
     })
-    this.grains = addParticles(this.scene, grainGeo, common(DRAG.grain, { uFlutter: { value: 0.0012 } }))
+    this.grains = addParticles(this.scene, particleGeometry(data.grain), common(DRAG.grain, { uFlutter: { value: 0.0012 } }))
     this.dust = addParticles(
       this.scene,
-      dustGeo,
+      particleGeometry(data.dust),
       common(DRAG.dust, { uFlutter: { value: 0.012 }, uOpacity: { value: 0.32 }, uDissolve: { value: new THREE.Vector2(0.8, 2.4) } }),
       { renderOrder: 61 },
     )
     // velo: sprite grandi e quasi trasparenti lungo le stesse traiettorie, il filo diventa continuo
     this.veil = addParticles(
       this.scene,
-      veilGeo,
+      particleGeometry(data.veil),
       common(DRAG.grain, { uFlutter: { value: 0.002 }, uOpacity: { value: 0.07 }, uDissolve: { value: new THREE.Vector2(1.2, 3.2) } }),
       { renderOrder: 59 },
     )
-
     // nuvola lattiginosa: nasce dove i granelli entrano in acqua
-    impacts.sort((a, b) => a.T - b.T)
-    const nPlume = Math.round(260 * Math.max(0.4, q.particles))
-    const pStart = new Float32Array(nPlume * 3)
-    const pSeed = new Float32Array(nPlume * 4)
-    const pRelease = new Float32Array(nPlume)
-    const pSize = new Float32Array(nPlume)
-    for (let i = 0; i < nPlume; i++) {
-      const im = impacts[Math.floor(rnd() * impacts.length)]
-      const a = rnd() * Math.PI * 2
-      const r = 0.002 + 0.006 * rnd()
-      pStart.set([im.x + Math.cos(a) * r, g.waterY - 0.002 - 0.004 * rnd(), im.z + Math.sin(a) * r], i * 3)
-      pSeed.set([rnd(), rnd(), rnd(), rnd()], i * 4)
-      pRelease[i] = im.T + 0.05 + 0.25 * rnd()
-      pSize[i] = 0.007 + 0.016 * rnd()
-    }
     this.plume = addParticles(
       this.scene,
-      particleGeometry({ start: pStart, seed: pSeed, release: pRelease, size: pSize }),
+      particleGeometry(data.plume),
       {
         uT: { value: 0 },
         uTime: u.uTime,
@@ -392,63 +314,14 @@ export class PowderExperience {
       },
       { kind: 'plume', above: false, renderOrder: 55 },
     )
-
     // increspature (quanti granelli cadono adesso) e opalescenza dell'acqua (si scioglie col tempo)
-    const T0 = impacts[0]?.T ?? 0
-    this.ripple = new Table(0, TOTAL, 320)
-    this.cloud = new Table(0, TOTAL, 320)
-    let mx = 0
-    let mz = 0
-    for (const im of impacts) {
-      this.ripple.add(im.T, 1)
-      mx += im.x
-      mz += im.z
-    }
-    this.impactXZ = new THREE.Vector2(mx / Math.max(1, impacts.length), mz / Math.max(1, impacts.length))
-    let peak = 0
-    for (let i = 0; i < this.ripple.v.length; i++) peak = Math.max(peak, this.ripple.v[i])
-    // morbida nel tempo, normalizzata a 1
-    const smoothR = new Float32Array(this.ripple.v.length)
-    for (let i = 0; i < smoothR.length; i++) {
-      let acc = 0
-      let w = 0
-      for (let j = -6; j <= 6; j++) {
-        const k = i + j
-        if (k < 0 || k >= smoothR.length) continue
-        const ww = Math.exp(-(j * j) / 18)
-        acc += this.ripple.v[k] * ww
-        w += ww
-      }
-      smoothR[i] = acc / w
-    }
-    peak = Math.max(...smoothR, 1e-6)
-    this.ripple.v = smoothR.map((v) => v / peak)
-    // opalescenza: somma, su un impatto ogni 4, di (1 - e^(-dt/0.5)) * e^(-dt/tau) =
-    // e^(-dt*a) - e^(-dt*b). Le due somme di esponenziali si aggiornano da un istante al successivo
-    // (stesso risultato del doppio ciclo istanti x impatti, che costava milioni di esponenziali)
-    const tau = 2.4
-    const a1 = 1 / tau
-    const b1 = 1 / 0.5 + 1 / tau
-    let sumA = 0
-    let sumB = 0
-    let tPrev = 0
-    let next = 0
-    for (let i = 0; i < this.cloud.v.length; i++) {
-      const t = (i / (this.cloud.v.length - 1)) * TOTAL
-      sumA *= Math.exp(-(t - tPrev) * a1)
-      sumB *= Math.exp(-(t - tPrev) * b1)
-      tPrev = t
-      for (; next < impacts.length && impacts[next].T < t; next++) {
-        if (next % 4) continue
-        const dt = t - impacts[next].T
-        sumA += Math.exp(-dt * a1)
-        sumB += Math.exp(-dt * b1)
-      }
-      this.cloud.v[i] = sumA - sumB
-    }
-    const cPeak = Math.max(...this.cloud.v, 1e-6)
-    this.cloud.v = this.cloud.v.map((v) => v / cPeak)
-    this.firstImpact = T0
+    this.ripple = new Table(0, TOTAL, data.ripple.length)
+    this.ripple.v = data.ripple
+    this.cloud = new Table(0, TOTAL, data.cloud.length)
+    this.cloud.v = data.cloud
+    this.impactXZ = new THREE.Vector2(data.impactXZ[0], data.impactXZ[1])
+    this.firstImpact = data.firstImpact
+    if (this.theme) this.setTheme(this.theme)
   }
 
   /** Piano della polvere nella coppa: fermo fino all'angolo di riposo, poi scivola verso il labbro. */
@@ -523,6 +396,7 @@ export class PowderExperience {
   }
 
   setTheme(theme) {
+    this.theme = theme
     // polvere bianca con un velo del colore del prodotto (resta realistica)
     const tint = new THREE.Color(theme.powder ?? '#ffffff')
     this.powderMat?.color.set(0xefebe4).lerp(tint, 0.06)
@@ -539,6 +413,7 @@ export class PowderExperience {
   }
 
   dispose() {
+    this.disposed = true
     this.disposeParticles()
     this.rig?.parent?.remove(this.rig)
     this.scoopMat?.dispose()
@@ -548,4 +423,30 @@ export class PowderExperience {
     u.uRipple.value = 0
     for (const r of u.uRipples.value) r.set(0, 0, 0, 0)
   }
+}
+
+/**
+ * Calcola la versata in un worker; se i worker non ci sono (o falliscono) qui, sul thread della
+ * pagina: piu' lento, stesso risultato.
+ */
+function computePourOffThread(input) {
+  return new Promise((resolve) => {
+    let worker = null
+    try {
+      worker = new Worker(new URL('./powderPour.worker.js', import.meta.url), { type: 'module' })
+    } catch {
+      resolve(computePour(input))
+      return
+    }
+    const done = (out) => {
+      worker.terminate()
+      resolve(out)
+    }
+    worker.onmessage = (e) => done(e.data)
+    worker.onerror = (e) => {
+      e.preventDefault()
+      done(computePour(input))
+    }
+    worker.postMessage(input)
+  })
 }
