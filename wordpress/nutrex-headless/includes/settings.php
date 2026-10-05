@@ -41,11 +41,18 @@ add_filter(
 				'desc_tip'    => __( 'Lo slug della categoria (come WOOCOMMERCE_CATEGORY su Vercel). Vale anche per le sue sottocategorie.', 'nutrex-headless' ),
 			),
 			array(
+				'title'   => __( 'Aspetto Nutrex Lab', 'nutrex-headless' ),
+				'id'      => 'nutrex_headless_look',
+				'type'    => 'checkbox',
+				'default' => 'yes',
+				'desc'    => __( 'Checkout, "Ordine ricevuto" ed email degli ordini Nutrex con logo, colori e caratteri di Nutrex Lab (senza intestazione e pie\' di pagina di questo sito)', 'nutrex-headless' ),
+			),
+			array(
 				'title'       => __( 'Mittente delle email degli ordini Nutrex', 'nutrex-headless' ),
 				'id'          => 'nutrex_headless_email_from_name',
 				'type'        => 'text',
 				'placeholder' => 'Nutrex Lab',
-				'desc_tip'    => __( 'Vuoto: il mittente normale di WooCommerce.', 'nutrex-headless' ),
+				'desc_tip'    => __( 'Vuoto: "Nutrex Lab" con l\'aspetto Nutrex attivo, altrimenti il mittente normale di WooCommerce.', 'nutrex-headless' ),
 			),
 			array(
 				'title'    => __( 'Indirizzo mittente delle email degli ordini Nutrex', 'nutrex-headless' ),

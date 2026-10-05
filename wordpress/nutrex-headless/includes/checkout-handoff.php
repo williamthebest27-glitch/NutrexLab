@@ -38,8 +38,10 @@ add_action(
 		}
 		nocache_headers();
 
-		// il cliente ospite deve avere la sua sessione WooCommerce (cookie) prima di riempire il carrello
+		// il cliente ospite deve avere la sua sessione WooCommerce (cookie) prima di riempire il carrello;
+		// la sessione ricorda che arriva dal negozio Nutrex (aspetto del checkout, link al carrello)
 		WC()->session->set_customer_session_cookie( true );
+		WC()->session->set( 'nutrex_headless', 1 );
 		WC()->cart->empty_cart();
 		$limited = (bool) nutrex_headless_category_ids();
 

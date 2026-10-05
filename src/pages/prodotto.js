@@ -79,7 +79,9 @@ function variantsHtml() {
 
 function specsHtml() {
   const rows = product.attributes.filter((a) => !a.variation).map((a) => [a.name, a.values.join(', ')])
-  if (product.weight) rows.push(['Peso', `${product.weight} kg`])
+  // peso di spedizione inserito in WooCommerce (kg, come nei negozi italiani)
+  const weight = Number.parseFloat(product.weight)
+  if (weight > 0) rows.push(['Peso della confezione', `${new Intl.NumberFormat('it-IT', { maximumFractionDigits: 3 }).format(weight)} kg`])
   if (!rows.length) return ''
   return `<table class="pp__specs"><tbody>${rows.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table>`
 }

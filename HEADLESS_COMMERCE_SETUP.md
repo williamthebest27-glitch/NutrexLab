@@ -25,7 +25,8 @@ sito Nutrex (Vercel)                        WooCommerce di thedoubletwenty
    Si rifa' comprimendo la cartella `wordpress/nutrex-headless` (lo ZIP deve contenere la cartella
    `nutrex-headless/`).
 2. WordPress di thedoubletwenty: **Plugin > Aggiungi nuovo plugin > Carica plugin**, scegli lo ZIP,
-   **Installa ora**, poi **Attiva**.
+   **Installa ora**, poi **Attiva**. Per aggiornarlo si carica allo stesso modo lo ZIP nuovo e si sceglie
+   **Sostituisci la versione attuale con quella caricata** (le impostazioni restano).
 
 Serve WooCommerce attivo (WordPress 6.4+, PHP 7.4+). Il plugin riguarda solo i prodotti della categoria
 Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
@@ -35,8 +36,19 @@ Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
 1. **Prodotti > Categorie**: crea la categoria **Nutrex Lab** con slug `nutrex-lab`. Le sue
    sottocategorie (es. Polvere, Compresse, Capsule) diventano i filtri della pagina Acquista; compaiono
    solo quelle con almeno un prodotto.
-2. Ogni prodotto Nutrex va in quella categoria (o in una sua sottocategoria), pubblicato.
-3. **Slug del prodotto** = id del prodotto nel sito: cosi' prende i colori del sito e il link
+2. **I 12 prodotti in un colpo solo**: **Prodotti > Importa**, scegli `nutrex-prodotti-woocommerce.csv`
+   (nella cartella `Website`), **Continua**; nella pagina dopo la colonna "Slug" deve essere abbinata a
+   "Slug" (lo fa il plugin, dalla versione 2.1), poi **Esegui l'importazione**. Le foto si scaricano
+   durante l'importazione: ci vuole qualche minuto.
+   - Il file ha nome, slug, categoria, descrizione breve e lunga (testi del sito e del negozio Amazon,
+     valori per dose, ingredienti, avvertenze), caratteristiche, peso e misure, la foto del barattolo
+     come immagine principale e le foto di Amazon nella galleria, l'ASIN (campo `amazon_asin`).
+   - I prodotti arrivano **in bozza**, senza prezzo e senza SKU: aggiungi a ognuno il **prezzo** e lo
+     **SKU di Seller Central** (serve ad Amazon MCF), controlla descrizione e avvertenze con
+     l'etichetta, poi pubblicali (anche tutti insieme: seleziona, **Modifica**, Stato **Pubblicato**).
+   - Il D-Mannosio non e' su Amazon: nel file ha solo la foto del barattolo e i testi del sito.
+3. Ogni prodotto Nutrex va in quella categoria (o in una sua sottocategoria), pubblicato.
+4. **Slug del prodotto** = id del prodotto nel sito: cosi' prende i colori del sito e il link
    "Scopri il prodotto in 3D". Un prodotto con un altro slug funziona lo stesso, con i colori del marchio.
 
    | Prodotto | Slug |
@@ -54,7 +66,7 @@ Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
    | Vitamina C | `vitamina-c` |
    | Vitamina D3 + K2 | `vitamina-d3-k2` |
 
-4. Cosa usa il sito di ogni prodotto:
+5. Cosa usa il sito di ogni prodotto:
 
    | In WooCommerce | Sul sito |
    | --- | --- |
@@ -69,10 +81,11 @@ Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
    | Ordinamento (Prodotti > Ordinamento) | ordine delle schede nella pagina Acquista |
    | Visibilita' catalogo: Nascosto | il prodotto non e' nell'elenco ne' nella sitemap, ma il suo link funziona |
 
-   Le foto dei barattoli (sfondo trasparente) sono in `public/images/prodotti/<slug>.webp`, pronte da
-   caricare.
-5. I prezzi sul sito sono indicati "IVA inclusa": in **WooCommerce > Impostazioni > IVA**, "Visualizza
-   prezzi nel negozio" deve essere "IVA inclusa" (come si fa in Italia per i privati).
+   Le foto dei barattoli (sfondo trasparente) sono in `public/images/prodotti/<slug>.webp` (online su
+   `/images/prodotti/<slug>.webp`).
+6. I prezzi sul sito sono indicati "IVA inclusa": in **WooCommerce > Impostazioni > IVA**, "Visualizza
+   prezzi nel negozio" deve essere "IVA inclusa" (come si fa in Italia per i privati). L'aliquota degli
+   integratori puo' essere diversa da quella dei cuscini: si imposta con la "Classe di imposta" del prodotto.
 
 ### 3. Impostazioni del plugin
 
@@ -82,7 +95,8 @@ Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
 | --- | --- |
 | Indirizzo del negozio | l'indirizzo del sito, es. `https://nutrexlab.it` (uguale a `SITE_URL`) |
 | Categoria dei prodotti Nutrex | `nutrex-lab` (uguale a `WOOCOMMERCE_CATEGORY`) |
-| Mittente delle email degli ordini Nutrex | `Nutrex Lab` (facoltativo) |
+| Aspetto Nutrex Lab | attivo: checkout, "Ordine ricevuto" ed email degli ordini Nutrex con logo, colori e caratteri di Nutrex |
+| Mittente delle email degli ordini Nutrex | vuoto = "Nutrex Lab" (facoltativo) |
 | Indirizzo mittente delle email degli ordini Nutrex | lascialo vuoto, a meno che il server di posta del sito possa inviare da quell'indirizzo (altrimenti le email finiscono nello spam) |
 
 ### 4. Variabili su Vercel
@@ -117,17 +131,20 @@ thedoubletwenty.
 ## Cosa vede il cliente
 
 - Acquista, pagine prodotto, carrello e "Grazie" sono sul sito Nutrex. Il checkout e' quello di
-  thedoubletwenty, con il suo tema.
+  WooCommerce su thedoubletwenty, ma con l'aspetto di Nutrex Lab: logo, colori e caratteri di Nutrex,
+  titolo "Pagamento sicuro | Nutrex Lab", senza intestazione, menu e pie' di pagina di thedoubletwenty.
+  Restano l'indirizzo nella barra del browser e, nei link di termini e privacy, le pagine di
+  thedoubletwenty. Chi compra i cuscini vede il checkout di sempre.
 - Dopo il pagamento il cliente torna su `nutrexlab.it/ordine`. Con bonifico o assegno, o se il pagamento
-  non e' ancora confermato, resta sulla pagina "Ordine ricevuto" di WooCommerce (li' ci sono le istruzioni
-  per pagare) con il pulsante "Torna su Nutrex Lab".
-- Le email sono quelle di WooCommerce; per gli ordini Nutrex il plugin cambia il mittente e il nome del
-  sito nell'oggetto e nel titolo. Logo, colori e pie' di pagina sono quelli impostati in WooCommerce > Impostazioni > Email.
+  non e' ancora confermato, resta sulla pagina "Ordine ricevuto" (anche questa con l'aspetto Nutrex), con
+  le istruzioni per pagare e il pulsante "Torna su Nutrex Lab".
+- Le email degli ordini Nutrex hanno mittente, nome, logo, colore e pie' di pagina di Nutrex Lab;
+  l'indirizzo del mittente resta quello di WooCommerce (vedi le impostazioni del plugin).
 - Chi apre su thedoubletwenty il link di un prodotto Nutrex arriva alla sua pagina sul sito Nutrex (gli
   amministratori vedono ancora la pagina WooCommerce).
-- Il checkout mostra condizioni di vendita e privacy di thedoubletwenty (stesso titolare di Nutrex Lab):
-  devono valere anche per gli integratori. Sull'estratto conto il cliente vede il nome impostato nel
-  metodo di pagamento (Stripe, PayPal...).
+- Il checkout collega condizioni di vendita e privacy di thedoubletwenty (stesso titolare di Nutrex Lab):
+  devono valere anche per gli integratori. Sull'estratto conto, e nelle finestre di Apple Pay e Google
+  Pay, il cliente vede il nome impostato nel metodo di pagamento (Stripe, PayPal...).
 
 ## Da sapere
 
@@ -155,6 +172,8 @@ thedoubletwenty.
 | Pagina prodotto "non trovata" | lo slug non esiste o il prodotto non e' nella categoria Nutrex |
 | Il checkout di WooCommerce si apre con il carrello vuoto | plugin non attivo, oppure una cache delle pagine o un firewall che toglie i parametri `?nutrex-checkout=...` |
 | Dopo il pagamento il cliente resta su WooCommerce | "Indirizzo del negozio" vuoto nel plugin, oppure pagamento con bonifico/assegno o non ancora confermato (voluto: c'e' il pulsante "Torna su Nutrex Lab") |
+| Il checkout ha ancora l'aspetto di thedoubletwenty | plugin precedente alla 2.1, "Aspetto Nutrex Lab" spento, oppure nel carrello WooCommerce c'e' anche un prodotto non Nutrex |
+| Nell'importazione la colonna "Slug" non e' abbinata | plugin precedente alla 2.1: aggiornalo e ripeti l'importazione (senza, lo slug viene dal nome e il prodotto perde colori e link 3D del sito) |
 | Un prezzo cambiato non si vede subito | cache di un paio di minuti: nel carrello e nel checkout e' gia' quello nuovo |
 
 ## Sviluppo in locale
@@ -177,12 +196,14 @@ npx @wp-playground/cli@latest server --port=9400 --php=8.3 --login `
 
 (Da Git Bash: stesso comando su una riga, preceduto da `MSYS_NO_PATHCONV=1`.)
 
-Il WooCommerce di prova (http://127.0.0.1:9400, accesso automatico come amministratore) ha: italiano,
-euro, IVA 22%, spedizione in Italia, la categoria Nutrex Lab con Polvere/Compresse/Capsule, i 12
-prodotti (uno variabile, uno esaurito, uno con pochi pezzi, due in offerta), un prodotto di "un altro
-negozio" che il sito non deve mai mostrare, il coupon `PROVA10`, pagamento alla consegna e bonifico di
-prova. Le credenziali di prova finiscono in `wordpress/sviluppo/out` (esclusa da git).
-`wordpress/sviluppo/mu-plugins` serve solo in locale (database SQLite e http): mai in produzione.
+Il WooCommerce di prova (http://127.0.0.1:9400) si chiama "Cuscini Prova": fa la parte dell'altro
+negozio, che il checkout Nutrex non deve mai mostrare. Ha italiano, euro, kg e cm, IVA 22%, spedizione
+in Italia, la categoria Nutrex Lab con Polvere/Compresse/Capsule, i 12 prodotti (uno variabile, uno
+esaurito, uno con pochi pezzi, due in offerta), un prodotto dell'altro negozio, il coupon `PROVA10`,
+pagamento alla consegna e bonifico di prova. Le credenziali di prova finiscono in
+`wordpress/sviluppo/out` (esclusa da git), le email (che non partono) in `wordpress/sviluppo/out/mail`.
+`wordpress/sviluppo/mu-plugins` serve solo in locale (database SQLite e http, email, importazione di
+prova di un CSV con `POST /wp-json/nutrex-dev/v1/import`): mai in produzione.
 
 Poi il sito, in un altro terminale (le variabili si passano dal terminale: il sito non legge file `.env`):
 

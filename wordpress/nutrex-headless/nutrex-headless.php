@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Nutrex Headless
- * Description:       Collega WooCommerce al negozio nutrexlab.it: il carrello del negozio passa al checkout di WooCommerce, dopo il pagamento il cliente torna su nutrexlab.it, i link e le email degli ordini Nutrex parlano di Nutrex Lab. Il resto del sito non cambia.
- * Version:           2.0.0
+ * Description:       Collega WooCommerce al negozio nutrexlab.it: il carrello del negozio passa al checkout di WooCommerce, con l'aspetto di Nutrex Lab; dopo il pagamento il cliente torna su nutrexlab.it; link ed email degli ordini Nutrex parlano di Nutrex Lab. Il resto del sito non cambia.
+ * Version:           2.1.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
@@ -21,7 +21,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NUTREX_HEADLESS_VERSION', '2.0.0' );
+define( 'NUTREX_HEADLESS_VERSION', '2.1.0' );
+define( 'NUTREX_HEADLESS_FILE', __FILE__ );
 
 add_action(
 	'plugins_loaded',
@@ -32,10 +33,22 @@ add_action(
 		require_once __DIR__ . '/includes/settings.php';
 		require_once __DIR__ . '/includes/checkout-handoff.php';
 		require_once __DIR__ . '/includes/frontend-links.php';
+		require_once __DIR__ . '/includes/checkout-look.php';
 		require_once __DIR__ . '/includes/emails.php';
+		require_once __DIR__ . '/includes/import.php';
 	},
 	11
 );
+
+/** Aspetto di Nutrex Lab per checkout ed email degli ordini Nutrex (impostazione, attivo di base). */
+function nutrex_headless_look_enabled() {
+	return 'no' !== get_option( 'nutrex_headless_look', 'yes' ) && '' !== nutrex_headless_frontend_url();
+}
+
+/** URL di un file del plugin (cartella assets). */
+function nutrex_headless_asset( $file ) {
+	return plugins_url( 'assets/' . $file, NUTREX_HEADLESS_FILE );
+}
 
 /** Indirizzo del negozio (es. https://nutrexlab.it), senza barra finale. Vuoto = nessun link cambiato. */
 function nutrex_headless_frontend_url() {

@@ -1,0 +1,371 @@
+/*
+  Pagina di pagamento con l'aspetto di Nutrex Lab (plugin Nutrex Headless, templates/checkout.php):
+  colori, caratteri e pulsanti del negozio Nutrex sopra al checkout di WooCommerce (a blocchi o classico).
+*/
+
+@font-face {
+  font-family: 'Nutrex Archivo';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url(fonts/archivo-latin-wdth-normal.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Nutrex Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2');
+}
+
+body.nutrex-look {
+  --nx-paper: #f1f0f3;
+  --nx-card: rgba(255, 255, 255, 0.6);
+  --nx-ink: #0e0c11;
+  --nx-soft: rgba(14, 12, 17, 0.62);
+  --nx-line: rgba(14, 12, 17, 0.14);
+  --nx-field: rgba(14, 12, 17, 0.2);
+  --nx-berry: #9e2e65;
+  --nx-sans: 'Nutrex Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --nx-mono: 'Nutrex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --nx-gutter: clamp(18px, 2.6vw, 44px);
+  margin: 0;
+  background: var(--nx-paper);
+  color: var(--nx-ink);
+  font-family: var(--nx-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.nutrex-look a {
+  color: var(--nx-berry);
+}
+
+body.nutrex-look a:hover {
+  color: var(--nx-ink);
+}
+
+body.nutrex-look :is(h1, h2, h3, h4, legend, input, select, textarea, button) {
+  font-family: var(--nx-sans);
+}
+
+/* ---------------------------------------------------------------- cornice */
+.nx-top,
+.nx-main,
+.nx-foot {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-left: var(--nx-gutter);
+  padding-right: var(--nx-gutter);
+}
+
+.nx-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  /* filetto largo quanto il contenuto */
+  background: linear-gradient(var(--nx-line), var(--nx-line)) center bottom / calc(100% - 2 * var(--nx-gutter)) 1px no-repeat;
+}
+
+.nx-top__logo {
+  display: block;
+  line-height: 0;
+}
+
+.nx-top__logo img {
+  display: block;
+  width: 140px;
+  height: auto;
+}
+
+.nx-top__safe {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--nx-soft);
+  font: 500 12px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.nx-top__safe svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.nx-main {
+  padding-top: clamp(28px, 4vw, 56px);
+  padding-bottom: clamp(48px, 6vw, 88px);
+}
+
+body.nutrex-look .nx-title {
+  margin: 0 0 clamp(24px, 3vw, 44px);
+  color: var(--nx-ink);
+  font-family: var(--nx-sans);
+  font-size: clamp(42px, 6.4vw, 92px);
+  font-weight: 600;
+  font-stretch: 112%;
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+.nx-title__dot {
+  display: inline-block;
+  width: 0.2em;
+  height: 0.18em;
+  margin-left: 0.06em;
+  background: var(--nx-berry);
+  clip-path: polygon(27.7% 10.4%, 72.3% 10.4%, 93.8% 50%, 72.3% 89.6%, 27.7% 89.6%, 6.2% 50%);
+}
+
+.nx-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-top: 24px;
+  padding-bottom: 40px;
+  background: linear-gradient(var(--nx-line), var(--nx-line)) center top / calc(100% - 2 * var(--nx-gutter)) 1px no-repeat;
+  color: var(--nx-soft);
+  font: 500 12px/1.5 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+body.nutrex-look .nx-foot a {
+  color: var(--nx-ink);
+  text-decoration: none;
+}
+
+body.nutrex-look .nx-foot a:hover {
+  color: var(--nx-berry);
+}
+
+/* il contenuto di WooCommerce occupa la larghezza della cornice */
+body.nutrex-look .nx-main > :is(.wp-block-woocommerce-checkout, .woocommerce, .wp-block-group, .wp-block-woocommerce-page-content-wrapper) {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ---------------------------------------------------------------- titoli */
+body.nutrex-look :is(
+    .wc-block-components-checkout-step__title,
+    .wc-block-components-title,
+    #order_review_heading,
+    .woocommerce-billing-fields > h3,
+    .woocommerce-shipping-fields h3,
+    .woocommerce-additional-fields h3,
+    .woocommerce-order-details__title,
+    .woocommerce-column__title,
+    .wc-bacs-bank-details-heading
+  ) {
+  color: var(--nx-ink);
+  font-family: var(--nx-sans);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------- campi */
+body.nutrex-look :is(
+    .wc-block-components-text-input input,
+    .wc-block-components-textarea,
+    .wc-blocks-components-select .wc-blocks-components-select__select,
+    .wc-block-components-combobox .components-combobox-control__input,
+    .woocommerce form .input-text,
+    .woocommerce form select,
+    .select2-container .select2-selection
+  ) {
+  border: 1px solid var(--nx-field);
+  border-radius: 14px;
+  background-color: rgba(255, 255, 255, 0.72);
+  color: var(--nx-ink);
+  box-shadow: none;
+}
+
+body.nutrex-look :is(
+    .wc-block-components-text-input input,
+    .wc-block-components-textarea,
+    .wc-blocks-components-select .wc-blocks-components-select__select,
+    .wc-block-components-combobox .components-combobox-control__input,
+    .woocommerce form .input-text,
+    .woocommerce form select
+  ):focus {
+  border-color: var(--nx-berry);
+  box-shadow: 0 0 0 1px var(--nx-berry);
+  outline: none;
+}
+
+body.nutrex-look :is(.wc-block-components-text-input, .wc-blocks-components-select, .wc-block-components-combobox) label {
+  color: var(--nx-soft);
+}
+
+body.nutrex-look :is(input[type='radio'], input[type='checkbox']) {
+  accent-color: var(--nx-berry);
+}
+
+body.nutrex-look .wc-block-components-radio-control__input:checked {
+  border-color: var(--nx-berry);
+}
+
+body.nutrex-look .wc-block-components-radio-control__input:checked::before {
+  background: var(--nx-berry);
+}
+
+body.nutrex-look .wc-block-components-checkbox .wc-block-components-checkbox__input:checked {
+  border-color: var(--nx-berry);
+  background: var(--nx-berry);
+}
+
+body.nutrex-look .wc-block-components-checkbox .wc-block-components-checkbox__mark {
+  fill: #fff;
+}
+
+/* ---------------------------------------------------------------- riquadri */
+body.nutrex-look :is(.wc-block-components-radio-control-accordion-option, .wc-block-components-radio-control__option) {
+  border-color: var(--nx-line);
+}
+
+body.nutrex-look .wc-block-components-radio-control--highlight-checked :is(.wc-block-components-radio-control-accordion-option--checked-option-highlighted, .wc-block-components-radio-control__option--checked-option-highlighted) {
+  box-shadow: inset 0 0 0 1.5px var(--nx-berry);
+}
+
+body.nutrex-look .woocommerce-checkout-review-order,
+body.nutrex-look .woocommerce-order-details {
+  border: 1px solid var(--nx-line);
+  border-radius: 22px;
+  background: var(--nx-card);
+}
+
+/* riepilogo del checkout a blocchi: riquadro solo con la colonna laterale (sul telefono e' una tendina) */
+@media (min-width: 700px) {
+  body.nutrex-look .wc-block-components-sidebar .wp-block-woocommerce-checkout-order-summary-block {
+    border: 1px solid var(--nx-line);
+    border-radius: 22px;
+    background: var(--nx-card);
+  }
+}
+
+body.nutrex-look .woocommerce-checkout-review-order,
+body.nutrex-look .woocommerce-order-details {
+  padding: 8px 20px 20px;
+}
+
+body.nutrex-look #payment {
+  border-radius: 18px;
+  background: rgba(14, 12, 17, 0.05);
+}
+
+body.nutrex-look #payment div.payment_box {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+body.nutrex-look #payment div.payment_box::before {
+  border-bottom-color: rgba(255, 255, 255, 0.8);
+}
+
+body.nutrex-look .wc-block-components-totals-footer-item :is(.wc-block-components-totals-item__label, .wc-block-components-totals-item__value) {
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- pulsanti */
+body.nutrex-look :is(
+    .wc-block-components-checkout-place-order-button,
+    .wc-block-components-button:not(.is-link),
+    .woocommerce button.button,
+    .woocommerce a.button,
+    .woocommerce input.button,
+    .nutrex-headless-return .button
+  ),
+body.nutrex-look #payment #place_order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nx-ink);
+  color: var(--nx-paper);
+  font: 500 13px/1.2 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+body.nutrex-look :is(
+    .wc-block-components-checkout-place-order-button,
+    .wc-block-components-button:not(.is-link),
+    .woocommerce button.button,
+    .woocommerce a.button,
+    .woocommerce input.button,
+    .nutrex-headless-return .button
+  ):hover,
+body.nutrex-look #payment #place_order:hover {
+  background: var(--nx-berry);
+  color: var(--nx-paper);
+}
+
+body.nutrex-look :is(.wc-block-components-checkout-place-order-button, .wc-block-components-button):disabled {
+  opacity: 0.5;
+}
+
+body.nutrex-look #payment #place_order {
+  float: none;
+  width: 100%;
+}
+
+body.nutrex-look .wc-block-components-checkout-return-to-cart-button {
+  color: var(--nx-ink);
+  font: 500 12px/1.4 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+body.nutrex-look .nutrex-headless-return {
+  margin: 28px 0 0;
+}
+
+/* ---------------------------------------------------------------- avvisi */
+body.nutrex-look :is(.wc-block-components-notice-banner, .woocommerce-info, .woocommerce-message, .woocommerce-error) {
+  border-radius: 14px;
+}
+
+body.nutrex-look :is(.woocommerce-info, .woocommerce-message) {
+  border-top-color: var(--nx-berry);
+}
+
+body.nutrex-look :is(.woocommerce-info, .woocommerce-message)::before {
+  color: var(--nx-berry);
+}
+
+/* ---------------------------------------------------------------- telefono */
+@media (max-width: 640px) {
+  .nx-top__logo img {
+    width: 118px;
+  }
+
+  .nx-top__safe {
+    font-size: 11px;
+  }
+}

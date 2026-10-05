@@ -17,12 +17,15 @@ if ( ! function_exists( 'WC' ) ) {
 
 // ---------------------------------------------------------------------------- impostazioni
 $options = array(
-	'blogname'                               => 'Nutrex Lab (prova locale)',
+	// il WooCommerce di prova fa la parte del negozio dell'altro marchio: il checkout Nutrex non deve mostrarlo
+	'blogname'                               => 'Cuscini Prova',
 	'woocommerce_currency'                   => 'EUR',
 	'woocommerce_currency_pos'               => 'right_space',
 	'woocommerce_price_thousand_sep'         => '.',
 	'woocommerce_price_decimal_sep'          => ',',
 	'woocommerce_price_num_decimals'         => '2',
+	'woocommerce_weight_unit'                => 'kg',
+	'woocommerce_dimension_unit'             => 'cm',
 	'woocommerce_default_country'            => 'IT:MI',
 	'woocommerce_allowed_countries'          => 'specific',
 	'woocommerce_specific_allowed_countries' => array( 'IT' ),
