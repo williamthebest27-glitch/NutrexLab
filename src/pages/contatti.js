@@ -5,8 +5,8 @@ import { LOGO } from '../ui/logo-paths.js'
 
 /*
   Contatti: recapiti da src/shop/config.js (quelli non ancora inseriti non compaiono; senza
-  nessun recapito restano i tre principali con "Presto disponibile") e modulo che prepara
-  l'email nel programma di posta di chi scrive, gia' compilata.
+  nessun recapito restano i tre principali con "Presto disponibile"), pulsante WhatsApp, negozi
+  online ("Dove vendiamo") e modulo che prepara l'email nel programma di posta di chi scrive.
 */
 
 const { ready } = initPage()
@@ -39,7 +39,8 @@ const all = [
   { key: 'instagram', label: 'Instagram', value: C.instagram && handle(C.instagram), href: C.instagram },
   { key: 'facebook', label: 'Facebook', value: C.facebook && handle(C.facebook), href: C.facebook },
 ]
-const known = all.filter((c) => c.value)
+// WhatsApp ha il suo pulsante sotto i recapiti
+const known = all.filter((c) => c.value && c.key !== 'whatsapp')
 const list = known.length ? known : all.filter((c) => ['email', 'phone', 'address'].includes(c.key))
 
 document.querySelector('[data-channels]').innerHTML = list
@@ -53,6 +54,47 @@ document.querySelector('[data-channels]').innerHTML = list
     return `<a class="channel" href="${esc(c.href)}"${ext}>${inner}<span class="channel__arrow" aria-hidden="true">&rarr;</span></a>`
   })
   .join('')
+
+// pulsante WhatsApp (chat con il numero dei recapiti)
+if (C.whatsapp) {
+  document.querySelector('[data-wa]').innerHTML =
+    `<a class="btn btn--xl btn--block wa-btn" href="https://wa.me/${esc(C.whatsapp)}" target="_blank" rel="noopener" data-magnetic>` +
+    `<span class="wa-btn__icon" aria-hidden="true">${ICONS.whatsapp}</span>` +
+    `<span class="btn__label">Scrivici su WhatsApp</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>`
+}
+
+// Dove vendiamo: i negozi online con il loro marchio (link se c'e' l'indirizzo del negozio)
+const TIKTOK =
+  'M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.6 2.6 0 0 1-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48Z'
+const SHOPS = [
+  {
+    key: 'amazon',
+    label: 'Amazon',
+    logo:
+      '<span class="shop__amz"><span class="shop__wd">amazon</span><svg viewBox="0 0 66 11" fill="none">' +
+      '<path d="M1.6 3C13 9.9 31 11.3 47.5 6.9" stroke="#FF9900" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M59.8 1.9 48.6 8.6 46.4 4Z" fill="#FF9900"/></svg></span>',
+  },
+  {
+    key: 'tiktok',
+    label: 'TikTok Shop',
+    logo:
+      `<svg class="shop__tt" viewBox="0 0 24 24"><path d="${TIKTOK}" fill="#25F4EE" transform="translate(-1.15 -0.85)"/>` +
+      `<path d="${TIKTOK}" fill="#FE2C55" transform="translate(1.15 0.85)"/><path d="${TIKTOK}" fill="#111111"/></svg>` +
+      '<span class="shop__wd">TikTok Shop</span>',
+  },
+  { key: 'temu', label: 'Temu', logo: '<span class="shop__wd shop__wd--tm">Temu</span>' },
+]
+const urls = SHOP.marketplaces ?? {}
+const shop = ({ key, label, logo }) =>
+  urls[key]
+    ? `<a class="shop" href="${esc(urls[key])}" target="_blank" rel="noopener" aria-label="${label}"><span class="shop__in" aria-hidden="true">${logo}</span></a>`
+    : `<span class="shop" role="img" aria-label="${label}"><span class="shop__in" aria-hidden="true">${logo}</span></span>`
+document.querySelector('[data-shops]').innerHTML =
+  '<p class="mono shops-card__k"><span class="shops-card__ic" aria-hidden="true"><svg viewBox="0 0 24 24">' +
+  '<path d="M4.4 8h15.2l-1.1 11.4a1.6 1.6 0 0 1-1.6 1.4H7.1a1.6 1.6 0 0 1-1.6-1.4Z"/><path d="M8.7 8V6.3a3.3 3.3 0 0 1 6.6 0V8"/></svg></span>Dove vendiamo</p>' +
+  `<ul class="shops">${SHOPS.map((s) => `<li>${shop(s)}</li>`).join('')}</ul>` +
+  '<p class="shops-card__n">Spedizioni in tutta Italia</p>'
 
 // ---------------------------------------------------------------------------
 // Modulo
@@ -119,7 +161,7 @@ mark.appendChild(hex)
 document.querySelector('[data-seal]').appendChild(mark)
 
 // ingresso: recapiti, modulo e sigillo nascosti da subito, salgono con i titoli
-rise(document.querySelectorAll('.channel'), { y: 30, stagger: 0.07, after: ready })
+rise(document.querySelectorAll('.channel, .wa-btn, .shops-card'), { y: 30, stagger: 0.07, after: ready })
 rise(document.querySelectorAll('.contact__aside'), { y: 24, after: ready })
 rise([form], { y: 50, after: ready })
 rise([document.querySelector('[data-seal]')], { y: 0, after: ready })
