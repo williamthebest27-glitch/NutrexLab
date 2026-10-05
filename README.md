@@ -1,9 +1,13 @@
 # Nutrex Lab | Collagene Marino (sito)
 
 Landing page con storytelling guidato dallo scroll attorno al barattolo 3D, con il menu dei
-prodotti nella hero (cambia barattolo, colori e testi di tutto il sito), piu' le pagine del negozio:
-Acquista (i 12 prodotti), Carrello, Pagamenti e Contatti.
+prodotti nella hero (cambia barattolo, colori e testi di tutto il sito), piu' il negozio: Acquista,
+pagina di ogni prodotto, Carrello, Pagamenti, Grazie e Contatti.
 Three.js + GSAP/ScrollTrigger/SplitText + Lenis, costruita con Vite.
+
+Il negozio e' collegato al WooCommerce di thedoubletwenty: prodotti, prezzi, varianti, magazzino,
+carrello e ordini arrivano da li' e si paga nel checkout di WooCommerce (Amazon MCF compreso).
+Collegamento, variabili e plugin: [HEADLESS_COMMERCE_SETUP.md](HEADLESS_COMMERCE_SETUP.md).
 
 Ogni prodotto ha anche un suo link: `?prodotto=<id>` (es. `/?prodotto=vitamina-c`) apre il sito
 direttamente su quel prodotto; scegliendo un prodotto dal menu l'indirizzo si aggiorna.
@@ -16,6 +20,12 @@ npm run dev
 ```
 
 Apri http://127.0.0.1:5173
+
+Le pagine del negozio mostrano i prodotti solo con l'indirizzo di un WooCommerce nelle variabili
+`WOOCOMMERCE_URL` e `WOOCOMMERCE_CATEGORY` (senza: "Il negozio non e' ancora attivo"). Per provarle
+in locale c'e' un WooCommerce di prova: vedi "Sviluppo in locale" in
+[HEADLESS_COMMERCE_SETUP.md](HEADLESS_COMMERCE_SETUP.md). `npm test` esegue le prove del codice del
+server del negozio.
 
 ## Pubblicazione
 
@@ -36,8 +46,10 @@ Vercel esegue da solo `npm run build` (impostazioni in `vercel.json`); i modelli
 `public/models`, quindi sul server non servono le cartelle di Blender (dopo averli rigenerati,
 `npm run dev` o `npm run build` in locale li copia in `public/models`: vanno poi committati).
 
-In alternativa `npm run build` produce in `dist/` un sito statico adatto a qualsiasi hosting.
-`npm run preview` mostra la build in locale.
+Il negozio usa le funzioni di Vercel (`api/`) con le variabili `WOOCOMMERCE_URL`,
+`WOOCOMMERCE_CATEGORY` e `SITE_URL` (Settings > Environment Variables del progetto). `npm run build`
+produce in `dist/` le pagine; su un hosting solo statico il sito si vede ma il negozio no.
+`npm run preview` mostra la build in locale, con le stesse funzioni.
 
 ## Dove modificare
 
@@ -46,9 +58,12 @@ In alternativa `npm run build` produce in `dist/` un sito statico adatto a quals
 | Testi di ogni prodotto (hero, sipario, ingredienti, scienza, uso, shop, titolo della pagina) | `src/content.js` |
 | Struttura delle sezioni della homepage | `index.html` |
 | Navbar, menu mobile, piè di pagina (uguali in tutte le pagine) | `src/partials/` (`nav.html`, `mnav.html`, `footer.html`, `head.html`) |
-| Prezzi, spedizione, pagamento online, recapiti | `src/shop/config.js` (un solo file; `null` = "in arrivo") |
-| Foto dei prodotti nel negozio | `public/images/prodotti/<id>.webp`: si rifanno da `/tools/foto-prodotti.html` (con `npm run dev`) |
-| Pagine del negozio | `acquista.html`, `carrello.html`, `pagamenti.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
+| Prodotti, prezzi, offerte, varianti, magazzino, foto, descrizioni, coupon, spedizioni, IVA | nel pannello di WooCommerce (vedi [HEADLESS_COMMERCE_SETUP.md](HEADLESS_COMMERCE_SETUP.md)) |
+| Recapiti della pagina Contatti | `src/shop/config.js` (`null` = non mostrato) |
+| Foto dei barattoli da caricare in WooCommerce | `public/images/prodotti/<id>.webp`: si rifanno da `/tools/foto-prodotti.html` (con `npm run dev`) |
+| Pagine del negozio | `acquista.html`, `prodotto.html`, `carrello.html`, `pagamenti.html`, `ordine.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
+| Collegamento a WooCommerce (catalogo, carrello, checkout, pagina prodotto per Google) | `api/` + `server/` |
+| Plugin da installare su WooCommerce | `wordpress/nutrex-headless/` |
 | Movimenti del barattolo, camera e luci per ogni scena | `src/choreography.js` (keyframe per desktop e mobile) |
 | Prodotti del menu (nome, modello 3D, colori, misura nella hero, punti dell'etichetta) | `src/products.js` |
 | Impaginazione della hero e delle scene | `src/styles/sections.css` |
@@ -111,8 +126,13 @@ uguale per tutti i prodotti).
 - `src/components/ProductExperience/` sezione 3D del bicchiere: componente riutilizzabile (anche
   in React), con il suo README
 - `src/ui/navMenu.js` pagina corrente nel menu e sottomenu di Acquista (Carrello, Pagamenti)
-- `src/shop/` negozio: `config.js` (prezzi, spedizione, pagamento, recapiti), `catalog.js` (i 12
-  prodotti con i dati gia' nel sito), `cart.js` (carrello nel browser, uguale in tutte le pagine)
+- `src/shop/` negozio nel browser: `api.js` (chiamate alle funzioni del negozio), `cart.js` (carrello
+  di WooCommerce, uguale in tutte le pagine e le schede), `money.js` (prezzi), `themes.js` (colori del
+  sito per ogni prodotto, dallo slug), `config.js` (recapiti)
+- `api/` + `server/` funzioni Vercel del negozio: catalogo, carrello e passaggio al checkout con la
+  Store API di WooCommerce, pagina prodotto preparata per Google, sitemap
+- `wordpress/` plugin Nutrex Headless (va installato su WooCommerce) e WooCommerce di prova per lo sviluppo
+- `tests/` prove del codice del server con un WooCommerce finto (`npm test`)
 - `src/pages/` script delle pagine del negozio; `common.js` e' la struttura comune (navbar, menu
   mobile, footer, scroll morbido, testi che salgono come nella homepage)
 - `src/partials/` parti HTML comuni, inserite da `vite.config.js` al posto di `<!-- @nome -->`
@@ -130,23 +150,20 @@ Pagamenti, Contatti) con il numero dei prodotti accanto a Carrello.
 
 | Pagina | Indirizzo | Cosa fa |
 | --- | --- | --- |
-| Homepage | `/` | il racconto 3D; il pulsante finale ("Acquista il collagene") mette il prodotto mostrato nel carrello e apre il carrello |
-| Acquista | `/acquista` | i 12 prodotti (stesso ordine del menu prodotti), filtri Polvere / Compresse / Capsule, "Aggiungi" e "Scopri" (porta al prodotto nella homepage) |
-| Carrello | `/carrello` | quantita', rimozione, riepilogo; vuoto: invito al negozio |
-| Pagamenti | `/pagamenti` | contatti, spedizione, metodo di pagamento e riepilogo |
+| Homepage | `/` | il racconto 3D; il pulsante finale ("Acquista il collagene") apre la pagina del prodotto mostrato |
+| Acquista | `/acquista` | i prodotti Nutrex di WooCommerce (nell'ordinamento del pannello), 4 per riga su desktop, senza prezzo; filtri dalle sottocategorie; "Scopri" apre la pagina del prodotto |
+| Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita', varianti, quantita', "Aggiungi al carrello", descrizione e caratteristiche; titolo e dati strutturati per Google preparati sul server |
+| Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento"; vuoto: invito al negozio |
+| Pagamenti | `/pagamenti` | come funziona il pagamento, riepilogo, coupon, "Vai al pagamento sicuro" (checkout di WooCommerce) |
+| Grazie | `/ordine?numero=N` | dopo il pagamento: numero dell'ordine WooCommerce; svuota il carrello del sito |
 | Contatti | `/contatti` | recapiti e modulo che prepara l'email nel programma di posta |
 
 Gli indirizzi sono senza `.html` (`cleanUrls` in `vercel.json`; in locale li gestisce Vite).
-Il carrello resta nel browser di chi visita (localStorage), anche tra le schede aperte.
+Il carrello e' quello di WooCommerce (sessione nel cookie `nx_cart`): lo stesso in tutte le pagine e
+le schede aperte, con prezzi e disponibilita' sempre aggiornati.
 
-Cosa manca per vendere davvero (tutto in `src/shop/config.js`, senza toccare le pagine):
-- **prezzi** (`prices`): finche' sono `null` le schede mostrano "Prezzo in arrivo" e i totali "In arrivo";
-- **spedizione** (`shipping`): costo, soglia per la spedizione gratuita, tempi;
-- **recapiti** (`contacts`): email (serve anche al modulo dei contatti), telefono, WhatsApp, sede,
-  orari, social. Quelli `null` non compaiono;
-- **pagamento online** (`payments.active`): va collegato a un circuito (es. Stripe o PayPal, con un
-  conto del negozio). Finche' e' `false` la pagina Pagamenti lo dice chiaramente, il pulsante resta
-  "Pagamento in arrivo" e nessun dato viene inviato.
+I recapiti della pagina Contatti stanno in `src/shop/config.js` (email, telefono, WhatsApp, sede,
+orari, social; quelli `null` non compaiono). Tutto il resto del negozio si gestisce in WooCommerce.
 
 Pagina nuova: un file HTML accanto a `index.html` con `<!-- @head -->`, `<!-- @nav -->`,
 `<!-- @mnav -->` e `<!-- @footer -->`, uno script in `src/pages/` che chiama `initPage()` e la voce

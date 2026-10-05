@@ -26,7 +26,7 @@ import { createProductMenu } from './ui/productMenu.js'
 import { createMenuMorph } from './ui/menuMorph.js'
 import { createMobileMenu } from './ui/mobileMenu.js'
 import { makeGrain } from './ui/grain.js'
-import { cart, bindCartCount } from './shop/cart.js'
+import { bindCartCount } from './shop/cart.js'
 import { applyCopy, fitIngredients, fitScience } from './ui/copy.js'
 import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
@@ -502,9 +502,14 @@ function intro() {
   tl.add(() => ritual?.preload(), at(3.8))
 }
 
-/** Pulsante finale ("Acquista il collagene"): mette nel carrello il prodotto mostrato e apre il carrello. */
+/** Pulsante finale ("Acquista il collagene"): la pagina del prodotto mostrato (prezzo, varianti, carrello). */
 function initBuy() {
-  document.querySelectorAll('[data-buy]').forEach((a) => a.addEventListener('click', () => cart.add(product.id)))
+  document.querySelectorAll('[data-buy]').forEach((a) =>
+    a.addEventListener('click', (e) => {
+      e.preventDefault()
+      window.location.assign(`/prodotto/${encodeURIComponent(product.id)}`)
+    }),
+  )
 }
 
 /** Nel footer il logo si ricompone quando entra in scena. */

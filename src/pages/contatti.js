@@ -1,5 +1,5 @@
 import { initPage, rise, esc } from './common.js'
-import { CATALOG } from '../shop/catalog.js'
+import { api } from '../shop/api.js'
 import { SHOP } from '../shop/config.js'
 import { LOGO } from '../ui/logo-paths.js'
 
@@ -59,10 +59,13 @@ document.querySelector('[data-channels]').innerHTML = list
 const form = document.querySelector('[data-cform]')
 const status = form.querySelector('[data-status]')
 const consentErr = form.querySelector('[data-consent-err]')
-form.querySelector('[data-products]').insertAdjacentHTML(
-  'beforeend',
-  CATALOG.map((p) => `<option>${esc(p.name)} (${esc(p.note)})</option>`).join(''),
-)
+// prodotti del negozio (da WooCommerce) per la scelta nel modulo
+api
+  .products({ per_page: 48 })
+  .then(({ products }) =>
+    form.querySelector('[data-products]').insertAdjacentHTML('beforeend', products.map((p) => `<option>${esc(p.name)}</option>`).join('')),
+  )
+  .catch(() => {})
 
 const RULES = {
   nome: (v) => v.trim().length > 1,

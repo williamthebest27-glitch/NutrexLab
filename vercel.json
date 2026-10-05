@@ -4,6 +4,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
+  "rewrites": [
+    { "source": "/prodotto/:slug", "destination": "/api/product-page?slug=:slug" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+  ],
+  "functions": {
+    "api/product-page.js": { "includeFiles": "dist/prodotto.html" }
+  },
   "headers": [
     {
       "source": "/assets/(.*)",

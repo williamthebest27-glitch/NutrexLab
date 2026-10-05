@@ -3,22 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Acquista | Nutrex Lab</title>
-    <meta
-      name="description"
-      content="La linea Nutrex Lab: collagene marino e bovino, bromelina, ashwagandha, coenzima Q10, D-mannosio, diosmina, magnesio e vitamine. Integratori prodotti in Italia."
-    />
+    <title>Prodotto | Nutrex Lab</title>
     <!-- @head -->
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="it_IT" />
-    <meta property="og:title" content="Acquista | Nutrex Lab" />
-    <meta property="og:description" content="Integratori prodotti in Italia. Scegli il tuo prodotto." />
-    <meta property="og:image" content="/og.jpg" />
+    <!-- titolo, descrizione, canonical, Open Graph e dati strutturati li aggiunge il server (api/product-page.js) -->
     <noscript>
       <style>
         [data-reveal],
         [data-split],
-        [data-rise] { visibility: visible !important; }
+        [data-rise],
+        .pseo { visibility: visible !important; }
       </style>
     </noscript>
   </head>
@@ -32,37 +25,9 @@
 
     <main class="pmain">
       <div class="wrap">
-        <header class="phead">
-          <p class="mono eyebrow" data-reveal>
-            <svg viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
-            Acquista &middot; La linea Nutrex Lab
-          </p>
-          <h1 class="display phead__title" aria-label="Scegli il tuo prodotto.">
-            <span><span data-split="chars" aria-hidden="true">Scegli il tuo</span></span>
-            <span>
-              <span data-split="chars" data-delay="0.12" aria-hidden="true">prodotto</span>
-              <svg class="hexdot" viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
-            </span>
-          </h1>
-          <div class="phead__row">
-            <p class="phead__lead" data-reveal data-delay="0.3">
-              <strong>Integratori prodotti in Italia.</strong> Polvere, compresse e capsule: ognuno con la sua formula,
-              per il tuo benessere di ogni giorno.
-            </p>
-            <!-- i 12 prodotti come esagoni nei loro colori: portano alla scheda -->
-            <nav class="swatches" aria-label="Vai al prodotto" data-swatches data-reveal data-delay="0.45"></nav>
-          </div>
-        </header>
-
-        <div class="rule" data-rule></div>
-
-        <div class="toolbar">
-          <div class="filters" role="group" aria-label="Filtra per formato" data-filters></div>
-          <p class="mono toolbar__count" aria-live="polite" data-count></p>
+        <div class="pp" data-pp>
+          <!-- ssr:prodotto -->
         </div>
-
-        <ul class="pgrid" data-grid aria-label="Prodotti" aria-busy="true"></ul>
-        <noscript><p class="phead__lead">Per vedere i prodotti e usare il carrello attiva JavaScript.</p></noscript>
       </div>
     </main>
 
@@ -99,7 +64,7 @@
 
     <!-- @footer -->
 
-    <!-- carrello sempre a portata: compare appena c'e' un prodotto -->
+    <!-- carrello sempre a portata: compare dopo un'aggiunta -->
     <div class="dock" data-dock inert>
       <div class="dock__in">
         <div class="dock__thumbs" data-dock-thumbs></div>
@@ -113,6 +78,6 @@
       </div>
     </div>
 
-    <script type="module" src="/src/pages/acquista.js"></script>
+    <script type="module" src="/src/pages/prodotto.js"></script>
   </body>
 </html>

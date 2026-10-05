@@ -393,10 +393,11 @@
   color: var(--fg-soft);
 }
 
+/* quattro schede per riga sul desktop (tre sugli schermi medi, due su tablet e telefono) */
 .pgrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(44px, 5vw, 84px) clamp(18px, 2.2vw, 36px);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(36px, 4vw, 64px) clamp(14px, 1.7vw, 28px);
   padding-bottom: clamp(80px, 14vh, 160px);
 }
 
@@ -418,7 +419,7 @@
   position: relative;
   display: block;
   aspect-ratio: 4 / 5;
-  border-radius: clamp(18px, 1.7vw, 28px);
+  border-radius: clamp(16px, 1.5vw, 24px);
   overflow: hidden;
   isolation: isolate;
   background:
@@ -459,11 +460,6 @@
     opacity 0.9s var(--ease-out);
 }
 
-.pcard[data-form='powder'] .pcard__floor {
-  left: 8%;
-  right: 8%;
-}
-
 .pcard__img {
   position: absolute;
   inset: 0;
@@ -473,25 +469,61 @@
   transition: transform 0.9s var(--ease-out);
 }
 
-.pcard__idx,
-.pcard__form {
+/* senza foto in WooCommerce: l'esagono del marchio */
+.pcard__noimg {
   position: absolute;
-  top: clamp(12px, 1.2vw, 18px);
-  font-size: 10.5px;
+  left: 50%;
+  top: 50%;
+  width: 30%;
+  translate: -50% -50%;
+  fill: color-mix(in srgb, var(--c-a) 30%, transparent);
 }
 
 .pcard__idx {
-  left: clamp(14px, 1.3vw, 20px);
+  position: absolute;
+  top: clamp(10px, 1vw, 16px);
+  left: clamp(12px, 1.1vw, 18px);
+  font-size: 10px;
   color: color-mix(in srgb, var(--c-ink) 55%, transparent);
 }
 
-.pcard__form {
-  right: clamp(12px, 1.2vw, 18px);
-  padding: 6px 10px;
+/* bollini: categoria, offerta, esaurito, ultimi pezzi */
+.badges {
+  position: absolute;
+  top: clamp(8px, 0.9vw, 14px);
+  right: clamp(8px, 0.9vw, 14px);
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+
+.badge {
+  padding: 5px 9px;
   border-radius: 999px;
-  background: color-mix(in srgb, #fff 72%, transparent);
+  background: color-mix(in srgb, #fff 74%, transparent);
   color: var(--c-a);
+  font-size: 9.5px;
   line-height: 1;
+}
+
+.badge--sale {
+  background: var(--c-a);
+  color: #fff;
+}
+
+.badge--out {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.badge--low {
+  background: #fff;
+  color: #b3541e;
+}
+
+.pcard.is-soldout .pcard__img {
+  opacity: 0.55;
+  filter: grayscale(0.35);
 }
 
 @media (hover: hover) {
@@ -513,22 +545,18 @@
   }
 }
 
+/* il fondo della scheda (disponibilita' e pulsante) allineato nella riga anche con nomi su due righe */
 .pcard__body {
-  display: grid;
-  gap: 10px;
-  padding: clamp(16px, 1.6vw, 22px) 2px 0;
-}
-
-.pcard__top {
+  flex: 1;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
+  padding: clamp(14px, 1.3vw, 18px) 2px 0;
 }
 
 .pcard__name {
-  font-size: clamp(23px, 2.05vw, 36px);
-  line-height: 0.9;
+  font-size: clamp(19px, 1.55vw, 27px);
+  line-height: 0.92;
 }
 
 .pcard__name a {
@@ -540,63 +568,63 @@
   background-size: 100% 1px;
 }
 
-.pcard__note {
-  flex: none;
-  font-size: 10.5px;
-  color: var(--c-a);
-  text-align: right;
-}
-
 .pcard__line {
-  max-width: 36ch;
-  font-size: 15px;
-  line-height: 1.5;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.45;
   color: var(--fg-soft);
-}
-
-.pcard__dose {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
-}
-
-.pcard__dose b {
-  font-family: var(--font-display);
-  font-size: clamp(22px, 1.7vw, 28px);
-  font-weight: 600;
-  font-stretch: 112%;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--c-a);
-}
-
-.pcard__dose b small {
-  margin-left: 3px;
-  font-size: 0.56em;
-  letter-spacing: 0;
-}
-
-.pcard__dose span {
-  font-size: 13px;
-  color: var(--fg-soft);
-}
-
-.pcard__pack {
-  font-size: 10.5px;
-  color: var(--fg-soft);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .pcard__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 4px;
-  padding-top: 14px;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 12px;
   border-top: 1px solid var(--line);
 }
 
+/* disponibilita': pallino colorato e testo */
+.stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--fg-soft);
+}
+
+.stock::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2f9e5b;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #2f9e5b 18%, transparent);
+}
+
+.stock--low::before {
+  background: #d27a21;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #d27a21 20%, transparent);
+}
+
+.stock--out::before {
+  background: #b3261e;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #b3261e 16%, transparent);
+}
+
+.stock--back::before {
+  background: #3d6fb6;
+}
+
+.pcard__cta {
+  flex: none;
+}
+
+/* prezzo (pagina prodotto, carrello): con l'offerta il prezzo pieno barrato */
 .price b {
   display: block;
   font-family: var(--font-display);
@@ -607,28 +635,100 @@
   line-height: 1;
 }
 
-.price--soon {
-  font-size: 10.5px;
+.amount {
+  font-variant-numeric: tabular-nums;
+}
+
+del.amount--old {
+  color: var(--fg-faint);
+  text-decoration-thickness: 1px;
+}
+
+ins.amount--sale {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   Caricamento: schede grigie che "respirano" finche' arrivano i dati di WooCommerce
+   -------------------------------------------------------------------------- */
+.skel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+}
+
+.skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, #fff 55%, transparent), transparent);
+  animation: skel 1.4s ease-in-out infinite;
+}
+
+@keyframes skel {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.pcard--skel .pcard__media {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.skel-line {
+  height: 14px;
+  margin-top: 4px;
+}
+
+.skel-line--title {
+  width: 70%;
+  height: 22px;
+}
+
+.skel-line--short {
+  width: 45%;
+}
+
+/* avviso (errore o informazione) nello stile delle schede */
+.alert {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: clamp(28px, 5vh, 56px) 20px;
+  text-align: center;
+}
+
+.alert__title {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.4vw, 36px);
+  font-weight: 600;
+  font-stretch: 112%;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+.alert__text {
+  max-width: 46ch;
   color: var(--fg-soft);
 }
 
-.pcard__actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* pulsante in attesa: puntini che pulsano al posto della freccia */
+.btn.is-busy {
+  pointer-events: none;
 }
 
-.pcard__more {
-  font-size: 10.5px;
+.btn.is-busy .btn__icon {
+  animation: busy 0.9s ease-in-out infinite alternate;
 }
 
-.pcard__add .btn__icon {
-  font-size: 16px;
-}
-
-/* appena aggiunto: la pillola si colora e mostra la spunta */
-.pcard__add.is-added {
-  --btn-bg: var(--c-a);
+@keyframes busy {
+  to {
+    opacity: 0.25;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1624,143 +1724,6 @@
     var(--accent);
 }
 
-/* metodi di pagamento: schede selezionabili */
-.methods {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.method {
-  position: relative;
-  display: grid;
-  align-content: start;
-  gap: 12px;
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  background: color-mix(in srgb, #fff 50%, transparent);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    border-color 0.35s var(--ease-out),
-    box-shadow 0.4s var(--ease-out),
-    background-color 0.35s var(--ease-out);
-}
-
-.method:hover {
-  border-color: color-mix(in srgb, var(--fg) 30%, transparent);
-}
-
-.method input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.method:has(input:checked) {
-  border-color: var(--accent);
-  background: #fff;
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.method:has(input:focus-visible) {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-.method__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.method__icon {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-}
-
-.method__icon svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.method__radio {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
-  transition:
-    border-color 0.3s var(--ease-out),
-    box-shadow 0.3s var(--ease-out);
-}
-
-.method:has(input:checked) .method__radio {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 5px var(--accent);
-}
-
-.method__name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-stretch: 100%;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  line-height: 1.2;
-}
-
-.method__note {
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--fg-soft);
-}
-
-.method__tag {
-  justify-self: start;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--fg) 7%, transparent);
-  color: var(--fg-soft);
-  font-size: 9.5px;
-  line-height: 1;
-}
-
-.pay {
-  display: grid;
-  gap: 14px;
-}
-
-.pay__note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 10.5px;
-  color: var(--fg-soft);
-  text-align: center;
-}
-
-.pay__note svg {
-  width: 14px;
-  height: 14px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 /* --------------------------------------------------------------------------
    CONTATTI: recapiti, modulo, sigillo
    -------------------------------------------------------------------------- */
@@ -1954,7 +1917,13 @@ a.channel:hover .channel__arrow {
 /* --------------------------------------------------------------------------
    Schermi medi
    -------------------------------------------------------------------------- */
-@media (max-width: 1180px) {
+@media (max-width: 1240px) {
+  .pgrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
   .pgrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1970,35 +1939,6 @@ a.channel:hover .channel__arrow {
   .summary {
     position: relative;
     top: 0;
-  }
-
-  .methods {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .method {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 4px 14px;
-  }
-
-  .method__top {
-    display: contents;
-  }
-
-  .method__icon {
-    grid-row: span 3;
-  }
-
-  .method__radio {
-    grid-column: 3;
-    grid-row: 1 / span 3;
-  }
-
-  .method__name,
-  .method__note,
-  .method__tag {
-    grid-column: 2;
   }
 }
 
@@ -2061,86 +2001,60 @@ a.channel:hover .channel__arrow {
     display: none;
   }
 
-  /* due colonne: foto, nome, prezzo e pulsante rotondo */
+  /* due colonne: foto, nome, disponibilita' e pulsante */
   .pgrid {
-    gap: 30px 12px;
+    gap: 28px 12px;
   }
 
   .pcard__media {
-    border-radius: 18px;
-  }
-
-  .pcard__idx,
-  .pcard__form {
-    top: 10px;
-    font-size: 9px;
+    border-radius: 16px;
   }
 
   .pcard__idx {
-    left: 12px;
+    top: 9px;
+    left: 11px;
+    font-size: 9px;
   }
 
-  .pcard__form {
+  .badges {
+    top: 8px;
     right: 8px;
-    padding: 5px 8px;
+  }
+
+  .badge {
+    padding: 4px 7px;
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
   }
 
   .pcard__body {
-    gap: 7px;
-    padding-top: 12px;
-  }
-
-  .pcard__top {
-    display: grid;
     gap: 6px;
+    padding-top: 11px;
   }
 
   .pcard__name {
-    font-size: clamp(16px, 4.6vw, 22px);
+    font-size: clamp(15px, 4.4vw, 21px);
     letter-spacing: -0.02em;
   }
 
-  .pcard__note {
-    text-align: left;
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-  }
-
-  .pcard__line,
-  .pcard__dose,
-  .pcard__pack,
-  .pcard__more {
-    display: none;
+  .pcard__line {
+    font-size: 12.5px;
   }
 
   .pcard__foot {
-    padding-top: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 9px;
   }
 
-  .price b {
-    font-size: 19px;
-  }
-
-  .price--soon {
-    max-width: 13ch;
+  .stock {
     font-size: 9px;
-    letter-spacing: 0.1em;
-    line-height: 1.35;
+    letter-spacing: 0.08em;
   }
 
-  .pcard__add {
-    width: 42px;
-    height: 42px;
-    padding: 0;
+  .pcard__cta {
+    width: 100%;
     justify-content: center;
-  }
-
-  .pcard__add .btn__label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
   }
 
   .dock {
@@ -2282,6 +2196,550 @@ a.channel:hover .channel__arrow {
 
   .seal {
     width: min(58vw, 240px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   PAGINA PRODOTTO (/prodotto/<slug>): dati da WooCommerce, colori del prodotto
+   -------------------------------------------------------------------------- */
+.pp {
+  --accent: var(--c-a);
+  padding: calc(78px + clamp(28px, 6vh, 72px)) 0 clamp(60px, 10vh, 120px);
+}
+
+/* testo per i motori di ricerca (preparato dal server): lo sostituisce la pagina, che lo mostra salendo */
+.pseo {
+  max-width: 70ch;
+  visibility: hidden;
+}
+
+.pseo img {
+  width: min(320px, 60vw);
+  height: auto;
+}
+
+.pp__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(32px, 5vw, 96px);
+}
+
+.pp__gallery {
+  position: sticky;
+  top: 90px;
+  display: grid;
+  gap: 12px;
+}
+
+.pp__media {
+  aspect-ratio: 4 / 5;
+  border-radius: clamp(20px, 2vw, 32px);
+}
+
+.pp__media .pcard__img {
+  transition:
+    transform 0.9s var(--ease-out),
+    opacity 0.35s var(--ease-out);
+}
+
+.pp__media.is-swapping .pcard__img {
+  opacity: 0;
+}
+
+.pp__thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pp__thumb {
+  width: 72px;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--c-paper) 60%, #fff), var(--c-mist));
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease-out);
+}
+
+.pp__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pp__thumb[aria-pressed='true'] {
+  border-color: var(--c-a);
+  box-shadow: inset 0 0 0 1px var(--c-a);
+}
+
+.pp__info {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.pp__crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--fg-soft);
+}
+
+.pp__crumbs a:hover {
+  color: var(--fg);
+}
+
+.pp__name {
+  font-size: clamp(40px, 5vw, 88px);
+}
+
+.pp__summary {
+  max-width: 46ch;
+  font-size: clamp(16px, 1.25vw, 19px);
+  line-height: 1.55;
+  color: var(--fg-soft);
+}
+
+.pp__summary p + p {
+  margin-top: 0.6em;
+}
+
+.pp__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 2.8vw, 44px);
+  font-weight: 600;
+  font-stretch: 112%;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.pp__price del.amount--old {
+  font-size: 0.55em;
+}
+
+.pp__price .pp__off {
+  align-self: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--c-a);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+.pp__vat {
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--fg-soft);
+}
+
+/* variazioni: pillole per ogni attributo */
+.pp__variants {
+  display: grid;
+  gap: 16px;
+}
+
+.pp__attr {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pp__attr legend {
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 10.5px;
+  color: var(--fg-soft);
+}
+
+.pp__attr legend b {
+  margin-left: 6px;
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.pp__opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 50%, transparent);
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 0.3s var(--ease-out),
+    background-color 0.3s var(--ease-out),
+    color 0.3s var(--ease-out);
+}
+
+.opt small {
+  color: var(--fg-soft);
+  font-size: 12px;
+}
+
+.opt:hover {
+  border-color: color-mix(in srgb, var(--fg) 40%, transparent);
+}
+
+.opt[aria-pressed='true'] {
+  border-color: var(--c-a);
+  background: var(--c-a);
+  color: #fff;
+}
+
+.opt[aria-pressed='true'] small {
+  color: color-mix(in srgb, #fff 80%, transparent);
+}
+
+.opt.is-unavailable {
+  color: var(--fg-faint);
+  text-decoration: line-through;
+}
+
+.pp__buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.pp__buy .qty {
+  height: 60px;
+}
+
+.pp__buy .qty .icon-btn {
+  width: 50px;
+  height: 50px;
+}
+
+.pp__add {
+  flex: 1;
+  min-width: 220px;
+  justify-content: center;
+}
+
+.pp__add.is-added {
+  --btn-bg: var(--c-a);
+}
+
+.pp__msg {
+  min-height: 1.4em;
+  font-size: 14px;
+  color: var(--fg-soft);
+}
+
+.pp__msg.is-error {
+  color: #b3261e;
+}
+
+.pp__msg a {
+  color: var(--c-a);
+  font-weight: 500;
+}
+
+.pp__story {
+  justify-self: start;
+  font-size: 10.5px;
+}
+
+.pp__meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 10.5px;
+}
+
+.pp__meta dt {
+  color: var(--fg-soft);
+}
+
+.pp__details {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 96px);
+  margin-top: clamp(56px, 10vh, 120px);
+  padding-top: clamp(32px, 5vh, 56px);
+  border-top: 1px solid var(--line);
+}
+
+.pp__h {
+  margin-bottom: 18px;
+  font-size: clamp(26px, 2.4vw, 40px);
+}
+
+.pp__desc {
+  max-width: 68ch;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--fg-soft);
+}
+
+.pp__desc :is(p, ul, ol, table, blockquote) + :is(p, ul, ol, table, blockquote, h2, h3, h4) {
+  margin-top: 1em;
+}
+
+.pp__desc ul {
+  padding-left: 1.2em;
+  list-style: disc;
+}
+
+.pp__desc ol {
+  padding-left: 1.2em;
+  list-style: decimal;
+}
+
+.pp__desc :is(h2, h3, h4) {
+  color: var(--fg);
+  font-size: 18px;
+}
+
+.pp__desc a {
+  color: var(--c-a);
+  text-decoration: underline;
+}
+
+.pp__specs {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.pp__specs th,
+.pp__specs td {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.pp__specs th {
+  width: 40%;
+  padding-right: 16px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+
+/* --------------------------------------------------------------------------
+   PAGAMENTI: riepilogo prima del checkout di WooCommerce
+   -------------------------------------------------------------------------- */
+.howto {
+  display: grid;
+  gap: 18px;
+  counter-reset: howto;
+}
+
+.howto li {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.howto li::before {
+  counter-increment: howto;
+  content: counter(howto, decimal-leading-zero);
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.howto b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 1.5vw, 22px);
+  font-weight: 700;
+  font-stretch: 105%;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.howto span {
+  display: block;
+  margin-top: 6px;
+  color: var(--fg-soft);
+}
+
+/* codice sconto (carrello e pagamenti) */
+.coupon {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.coupon input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid color-mix(in srgb, var(--fg) 15%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 60%, transparent);
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  text-transform: uppercase;
+}
+
+.coupon input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.coupon .btn {
+  height: 46px;
+}
+
+.coupon__msg {
+  min-height: 1.3em;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #b3261e;
+}
+
+.coupons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.coupon-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 10.5px;
+}
+
+.coupon-tag button {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   GRAZIE: dopo il pagamento sul checkout di WooCommerce
+   -------------------------------------------------------------------------- */
+.thanks {
+  display: grid;
+  justify-items: start;
+  gap: 22px;
+  padding-bottom: clamp(80px, 14vh, 160px);
+}
+
+.thanks__number {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.thanks__text {
+  max-width: 52ch;
+  font-size: clamp(17px, 1.35vw, 21px);
+  line-height: 1.55;
+  color: var(--fg-soft);
+}
+
+.thanks__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 1080px) {
+  .pp__grid,
+  .pp__details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pp__gallery {
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  .pp {
+    padding-top: calc(64px + 20px);
+  }
+
+  .pp__name {
+    font-size: clamp(34px, 10.5vw, 64px);
+  }
+
+  .pp__thumb {
+    width: 60px;
+  }
+
+  .pp__buy .qty {
+    height: 54px;
+  }
+
+  /* sul telefono il pulsante sta sotto la quantita', a tutta larghezza */
+  .pp__add {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .opt {
+    min-height: 42px;
+    padding: 0 14px;
+    font-size: 14px;
   }
 }
 

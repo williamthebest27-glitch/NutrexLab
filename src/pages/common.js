@@ -49,7 +49,8 @@ export function initPage() {
   navState()
   footerLogo()
   // l'esagono finale dei titoli e' nascosto da subito: compare con il suo titolo
-  if (!reduced) gsap.set('.hexdot', { scale: 0, transformOrigin: '50% 50%' })
+  const dots = document.querySelectorAll('.hexdot')
+  if (!reduced && dots.length) gsap.set(dots, { scale: 0, transformOrigin: '50% 50%' })
 
   const ready = fontsReady().then(() => {
     prepareText(reduced)

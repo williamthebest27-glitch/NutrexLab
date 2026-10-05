@@ -18,3 +18,12 @@
     }
   }
 </style>
+<script>
+  // se il browser interrompe la dissolvenza (finestra ridimensionata, navigazione veloce) non e' un errore
+  ;['pageswap', 'pagereveal'].forEach(function (type) {
+    addEventListener(type, function (e) {
+      var v = e.viewTransition
+      if (v) [v.ready, v.finished, v.updateCallbackDone].forEach(function (p) { if (p) p.catch(function () {}) })
+    })
+  })
+</script>

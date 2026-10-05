@@ -1,26 +1,34 @@
 import gsap from 'gsap'
-import { initPage, rise, reduced, esc } from './common.js'
-import { CATALOG, itemById, colorVars, money, pieces, totals } from '../shop/catalog.js'
-import { cart, MAX_QTY } from '../shop/cart.js'
-import { SHOP } from '../shop/config.js'
+import { initPage, rise, reduced } from './common.js'
+import { api } from '../shop/api.js'
+import { cart } from '../shop/cart.js'
+import { money } from '../shop/money.js'
+import { colorVars, productUrl, pieces, esc } from '../shop/themes.js'
 
 /*
-  Carrello: righe con foto nei colori del prodotto, quantita' (- numero +), rimozione animata e
-  riepilogo sempre visibile. Si aggiorna anche se il carrello cambia in un'altra scheda.
-  Vuoto: invito al negozio e un prodotto per ogni formato da aggiungere subito.
+  Carrello: e' il carrello di WooCommerce (prezzi, sconti, coupon, limiti di stock calcolati da
+  WooCommerce). Righe con le foto nei colori del prodotto, quantita' (- numero +), rimozione animata,
+  codice sconto e riepilogo. "Procedi al pagamento" porta al checkout di WooCommerce con gli stessi
+  prodotti. Si aggiorna anche se il carrello cambia in un'altra scheda.
 */
 
 const { ready } = initPage()
 
+const loadingEl = document.querySelector('[data-loading]')
+const errorEl = document.querySelector('[data-error]')
 const cartEl = document.querySelector('[data-cart]')
 const emptyEl = document.querySelector('[data-empty]')
 const linesEl = document.querySelector('[data-lines]')
 const totalsEl = document.querySelector('[data-totals]')
-const noteEl = document.querySelector('[data-summary-note]')
 const piecesEl = document.querySelector('[data-cart-pieces]')
 const picksEl = document.querySelector('[data-picks]')
+const couponForm = document.querySelector('[data-coupon]')
+const couponMsg = document.querySelector('[data-coupon-msg]')
+const couponsEl = document.querySelector('[data-coupons]')
+const checkoutBtn = document.querySelector('[data-checkout]')
+const checkoutMsg = document.querySelector('[data-checkout-msg]')
 const rows = new Map()
-let entered = false // dopo l'ingresso le righe nuove entrano con la loro animazione
+let entered = false
 let pending = null // ultimo - o + premuto: direzione dell'animazione del numero
 
 const ICON = {
@@ -31,30 +39,30 @@ const ICON = {
 
 // ---------------------------------------------------------------------------
 // Righe
-function createRow(id) {
-  const item = itemById(id)
+function createRow(item) {
   const name = esc(item.name)
   const row = document.createElement('article')
   row.className = 'cline'
-  row.dataset.id = id
-  row.style.cssText = colorVars(item)
+  row.dataset.key = item.key
+  row.style.cssText = colorVars(item.slug)
+  const details = [...item.variation.map((v) => v.value), item.sku ? `Cod. ${item.sku}` : ''].filter(Boolean)
   row.innerHTML = `
-    <a class="thumb cline__media" href="${item.href}" aria-label="Scopri ${name}">
-      <img src="${item.image}" alt="Barattolo di ${name} Nutrex Lab" width="800" height="1000" decoding="async" />
+    <a class="thumb cline__media" href="${productUrl(item.slug)}" aria-label="${name}">
+      ${item.image ? `<img src="${esc(item.image.src)}" alt="${esc(item.image.alt || item.name)}" width="800" height="1000" decoding="async" />` : ''}
     </a>
     <div class="cline__info">
-      <p class="mono cline__form">${esc(item.formLabel)}${item.detail ? ` &middot; ${esc(item.detail)}` : ''}</p>
-      <h3 class="display cline__name">${name}</h3>
-      <p class="cline__meta">${item.pack.map(esc).join(' &middot; ')}</p>
+      ${details.length ? `<p class="mono cline__form">${details.map(esc).join(' &middot; ')}</p>` : ''}
+      <h3 class="display cline__name"><a href="${productUrl(item.slug)}">${name}</a></h3>
+      <p class="cline__meta" data-unit></p>
       <button class="mono cline__remove" type="button" data-remove aria-label="Rimuovi ${name} dal carrello">${ICON.x} Rimuovi</button>
     </div>
-    <div class="cline__qty qty" role="group" aria-label="Quantit&agrave; di ${name}">
+    <div class="cline__qty qty" role="group" aria-label="Quantit&agrave; di ${name}"${item.limits.editable ? '' : ' hidden'}>
       <button class="icon-btn" type="button" data-step="-1" aria-label="Una confezione in meno">${ICON.minus}</button>
       <span class="qty__n" aria-live="polite"><span></span></span>
       <button class="icon-btn" type="button" data-step="1" aria-label="Una confezione in piu'">${ICON.plus}</button>
     </div>
     <div class="cline__price" data-line-price></div>`
-  rows.set(id, row)
+  rows.set(item.key, row)
   return row
 }
 
@@ -74,136 +82,184 @@ function setQty(row, qty, dir) {
   gsap.to(cur, { yPercent: -100 * dir, duration: 0.5, ease: 'expo.out', onComplete: () => cur.remove() })
 }
 
-function updateRow(row, line, dir = 0) {
-  const item = itemById(line.id)
-  setQty(row, line.qty, dir)
-  row.querySelector('[data-step="-1"]').disabled = line.qty <= 1
-  row.querySelector('[data-step="1"]').disabled = line.qty >= MAX_QTY
-  const price = row.querySelector('[data-line-price]')
-  price.innerHTML =
-    item.price != null
-      ? `<p class="price"><b>${money(item.price * line.qty)}</b></p>${line.qty > 1 ? `<small class="mono">${money(item.price)} cad.</small>` : ''}`
-      : '<p class="mono price price--soon">Prezzo in arrivo</p>'
+function updateRow(row, item, currency, dir = 0) {
+  setQty(row, item.quantity, dir)
+  row.querySelector('[data-step="-1"]').disabled = item.quantity <= item.limits.min
+  row.querySelector('[data-step="1"]').disabled = item.quantity >= item.limits.max
+  const sale = item.prices.price < item.prices.regular
+  row.querySelector('[data-unit]').innerHTML =
+    `${money(item.prices.price, currency)} cad.` +
+    (sale ? ` <del class="amount amount--old">${money(item.prices.regular, currency)}</del>` : '') +
+    (item.lowStock ? ` &middot; <span class="stock stock--low mono">Solo ${item.lowStock} disponibili</span>` : '')
+  const discounted = item.totals.total < item.totals.subtotal
+  row.querySelector('[data-line-price]').innerHTML =
+    `<p class="price"><b>${money(item.totals.total, currency)}</b></p>` +
+    (discounted ? `<small class="mono"><del>${money(item.totals.subtotal, currency)}</del></small>` : '')
 }
 
 function removeRow(row) {
-  rows.delete(row.dataset.id)
+  rows.delete(row.dataset.key)
   if (reduced) return row.remove()
   const h = row.offsetHeight
   gsap
     .timeline({ onComplete: () => row.remove() })
     .to(row, { autoAlpha: 0, x: -40, duration: 0.35, ease: 'power2.in' })
-    .fromTo(
-      row,
-      { height: h },
-      { height: 0, paddingTop: 0, paddingBottom: 0, borderBottomWidth: 0, duration: 0.5, ease: 'power3.inOut' },
-      0.18,
-    )
+    .fromTo(row, { height: h }, { height: 0, paddingTop: 0, paddingBottom: 0, borderBottomWidth: 0, duration: 0.5, ease: 'power3.inOut' }, 0.18)
 }
 
 // ---------------------------------------------------------------------------
 // Riepilogo
-const soon = (text) => `<span class="soon">${text}</span>`
-
-function renderTotals() {
-  const t = totals(cart.items)
-  const shipping = t.shipping == null ? soon('Da definire') : t.shipping === 0 ? 'Gratuita' : money(t.shipping)
-  totalsEl.innerHTML =
-    `<div><dt>Prodotti</dt><dd>${pieces(t.count)}</dd></div>` +
-    `<div><dt>Subtotale</dt><dd>${t.subtotal == null ? soon('Prezzi in arrivo') : money(t.subtotal)}</dd></div>` +
-    `<div><dt>Spedizione</dt><dd>${shipping}</dd></div>` +
-    `<div class="summary__total"><dt>Totale</dt><dd>${t.total == null ? soon('In arrivo') : money(t.total)}</dd></div>`
-  const free = SHOP.shipping.freeFrom
-  noteEl.textContent =
-    t.subtotal == null
-      ? 'I prezzi saranno pubblicati a breve: il totale si aggiornerà da solo.'
-      : free != null && t.subtotal < free
-        ? `Ti mancano ${money(free - t.subtotal)} per la spedizione gratuita.`
-        : ''
-  noteEl.hidden = !noteEl.textContent
-  piecesEl.textContent = pieces(t.count)
+function renderTotals(c) {
+  const cur = c.totals.currency
+  const products = c.totals.items
+  const out = [`<div><dt>Prodotti (${pieces(c.count)})</dt><dd>${money(products, cur)}</dd></div>`]
+  if (c.totals.discount > 0) out.push(`<div><dt>Sconto</dt><dd>${money(-c.totals.discount, cur)}</dd></div>`)
+  out.push('<div><dt>Spedizione</dt><dd><span class="soon">Al pagamento</span></dd></div>')
+  out.push(`<div class="summary__total"><dt>Totale</dt><dd>${money(products - c.totals.discount, cur)}</dd></div>`)
+  totalsEl.innerHTML = out.join('')
+  couponsEl.innerHTML = c.coupons
+    .map(
+      (co) =>
+        `<span class="mono coupon-tag">${esc(co.code)} &minus;${money(co.discount, cur)}<button type="button" data-remove-coupon="${esc(co.code)}" aria-label="Togli il codice ${esc(co.code)}">&times;</button></span>`,
+    )
+    .join('')
+  piecesEl.textContent = pieces(c.count)
 }
 
 // ---------------------------------------------------------------------------
 let wasEmpty = null
 
-function render(change = { type: 'init' }) {
-  const lines = cart.items
-  const empty = lines.length === 0
-
+function render() {
+  const c = cart.state
+  if (!c) return
+  loadingEl.hidden = true
+  errorEl.hidden = true
+  const empty = c.items.length === 0
   if (empty !== wasEmpty) {
     cartEl.hidden = empty
     emptyEl.hidden = !empty
     if (wasEmpty !== null && !reduced) {
-      // passaggio tra carrello pieno e vuoto: la parte nuova sale
       gsap.fromTo(empty ? emptyEl : cartEl, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'expo.out', clearProps: 'transform' })
     }
     wasEmpty = empty
+    if (empty) loadPicks()
   }
-
-  for (const row of [...rows.values()]) {
-    if (!lines.some((l) => l.id === row.dataset.id)) removeRow(row)
-  }
-  for (const line of lines) {
-    let row = rows.get(line.id)
+  for (const row of [...rows.values()]) if (!c.items.some((i) => i.key === row.dataset.key)) removeRow(row)
+  for (const item of c.items) {
+    let row = rows.get(item.key)
     if (!row) {
-      row = createRow(line.id)
+      row = createRow(item)
       linesEl.appendChild(row)
-      updateRow(row, line)
+      updateRow(row, item, c.totals.currency)
       if (entered && !reduced) gsap.fromTo(row, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'expo.out', clearProps: 'transform' })
     } else {
-      updateRow(row, line, change.id === line.id ? change.dir ?? 0 : 0)
+      updateRow(row, item, c.totals.currency, pending && pending.key === item.key ? pending.dir : 0)
     }
   }
-  renderTotals()
+  pending = null
+  renderTotals(c)
+  checkoutMsg.textContent = c.errors[0]?.message ?? ''
+  checkoutBtn.disabled = c.errors.length > 0
 }
 
-linesEl.addEventListener('click', (e) => {
+linesEl.addEventListener('click', async (e) => {
   const row = e.target.closest('.cline')
   if (!row) return
-  const id = row.dataset.id
+  const key = row.dataset.key
+  const item = cart.state?.items.find((i) => i.key === key)
+  if (!item) return
   const step = e.target.closest('[data-step]')
-  if (step) {
-    const dir = Number(step.dataset.step)
-    pending = { id, dir }
-    cart.set(id, cart.qty(id) + dir)
-  } else if (e.target.closest('[data-remove]')) {
-    cart.remove(id)
+  try {
+    if (step) {
+      const dir = Number(step.dataset.step)
+      pending = { key, dir }
+      await cart.update(key, item.quantity + dir * (item.limits.step || 1))
+    } else if (e.target.closest('[data-remove]')) {
+      await cart.remove(key)
+    }
+  } catch (err) {
+    checkoutMsg.textContent = err.message
   }
 })
 
-cart.subscribe((change) => {
-  const dir = pending && pending.id === change.id ? pending.dir : 0
-  pending = null
-  render({ ...change, dir })
+couponForm.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  const input = couponForm.elements.code
+  const code = input.value.trim()
+  if (!code) return
+  couponMsg.textContent = ''
+  try {
+    await cart.coupon(code)
+    input.value = ''
+  } catch (err) {
+    couponMsg.textContent = err.message
+  }
+})
+
+couponsEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove-coupon]')
+  if (btn) cart.removeCoupon(btn.dataset.removeCoupon).catch((err) => (couponMsg.textContent = err.message))
+})
+
+// al pagamento: il checkout di WooCommerce con gli stessi prodotti
+checkoutBtn.addEventListener('click', async () => {
+  const label = checkoutBtn.querySelector('.btn__label')
+  checkoutBtn.classList.add('is-busy')
+  label.textContent = 'Ti porto al pagamento…'
+  checkoutMsg.textContent = ''
+  try {
+    const { url } = await api.checkoutUrl()
+    window.location.assign(url)
+  } catch (err) {
+    checkoutBtn.classList.remove('is-busy')
+    label.textContent = 'Procedi al pagamento'
+    checkoutMsg.textContent = err.message
+  }
 })
 
 // ---------------------------------------------------------------------------
-// Carrello vuoto: un prodotto per ogni formato (polvere, compresse, capsule)
-const picks = ['powder', 'tablet', 'capsule'].map((f) => CATALOG.find((x) => x.form === f)).filter(Boolean)
-picksEl.innerHTML = picks
-  .map(
-    (item) => `<div class="pick" style="${colorVars(item)}">
-      <a class="thumb" href="/acquista#p-${item.id}" aria-label="${esc(item.name)} nel negozio">
-        <img src="${item.image}" alt="" width="800" height="1000" loading="lazy" decoding="async" />
-      </a>
-      <p class="pick__name">${esc(item.name)}<small class="mono">${esc(item.formLabel)}</small></p>
-      <button class="btn btn--sm" type="button" data-pick="${item.id}" aria-label="Aggiungi ${esc(item.name)} al carrello">
-        <span class="btn__label">Aggiungi</span><span class="btn__icon" aria-hidden="true">+</span>
-      </button>
-    </div>`,
-  )
-  .join('')
-picksEl.addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-pick]')
-  if (btn) cart.add(btn.dataset.pick)
-})
+// Carrello vuoto: i primi prodotti del negozio
+let picksLoaded = false
+async function loadPicks() {
+  if (picksLoaded) return
+  picksLoaded = true
+  try {
+    const { products } = await api.products({ per_page: 3 })
+    picksEl.innerHTML = products
+      .map(
+        (p) => `<a class="pick" href="${productUrl(p.slug)}" style="${colorVars(p.slug)}">
+          <span class="thumb">${p.images[0] ? `<img src="${esc(p.images[0].src)}" alt="" width="800" height="1000" loading="lazy" decoding="async" />` : ''}</span>
+          <span class="pick__name">${esc(p.name)}<small class="mono">Scopri &rarr;</small></span>
+        </a>`,
+      )
+      .join('')
+    if (!reduced) gsap.fromTo(picksEl.children, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: 0.08 })
+  } catch {
+    picksEl.hidden = true
+  }
+}
 
-render()
+function showError(err) {
+  loadingEl.hidden = true
+  errorEl.hidden = false
+  errorEl.innerHTML = `<p class="alert__title">Carrello non disponibile</p><p class="alert__text">${esc(err.message)}</p><button class="btn btn--sm" type="button" data-retry><span class="btn__label">Riprova</span><span class="btn__icon" aria-hidden="true">&#8635;</span></button>`
+  errorEl.querySelector('[data-retry]').addEventListener('click', () => {
+    errorEl.hidden = true
+    loadingEl.hidden = false
+    start()
+  })
+}
 
-// ingresso: righe e riepilogo, o il carrello vuoto, nascosti da subito e saliti con i titoli (si
-// preparano entrambi: il carrello puo' cambiare da un'altra scheda e mostrare l'altro)
-rise([...rows.values(), document.querySelector('.summary')], { y: 40, stagger: 0.08, after: ready })
-rise([...emptyEl.children].filter((el) => el !== picksEl), { y: 30, stagger: 0.07, after: ready })
-rise(picksEl.children, { y: 40, stagger: 0.08, after: ready })
-ready.then(() => (entered = true))
+cart.subscribe(render)
+
+function start() {
+  cart
+    .load()
+    .then(() => {
+      if (entered) return
+      rise([...rows.values(), document.querySelector('.summary')], { y: 40, stagger: 0.08, after: ready })
+      ready.then(() => (entered = true))
+    })
+    .catch(showError)
+}
+start()

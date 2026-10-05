@@ -1,0 +1,272 @@
+// Prove del codice del server del negozio, con un WooCommerce finto (tests/fake-woocommerce.js).
+// npm test
+import { test, describe, before, after, mock } from 'node:test'
+import assert from 'node:assert/strict'
+import { installFakeWoo, WOO_URL } from './fake-woocommerce.js'
+
+process.env.WOOCOMMERCE_URL = WOO_URL
+process.env.WOOCOMMERCE_CATEGORY = 'nutrex-lab'
+process.env.SITE_URL = 'https://negozio.test'
+
+const { decode, safeHtml, listProducts, listCategories, getProduct } = await import('../server/catalog.js')
+const { cartAction, getCart } = await import('../server/cart.js')
+const { checkoutUrl } = await import('../server/checkout.js')
+const { publicError } = await import('../server/errors.js')
+const { renderProductPage } = await import('../server/product-page.js')
+const { sessionCookies, readSession } = await import('../server/session.js')
+const productsApi = await import('../api/products.js')
+const cartApi = await import('../api/cart.js')
+const checkoutApi = await import('../api/checkout.js')
+
+let woo
+before(() => {
+  woo = installFakeWoo()
+  // gli errori previsti finiscono nei log delle funzioni: qui non servono
+  mock.method(console, 'warn', () => {})
+  mock.method(console, 'error', () => {})
+})
+after(() => woo.restore())
+
+/** Esegue fn con alcune variabili d'ambiente cambiate. */
+async function withEnv(vars, fn) {
+  const old = Object.fromEntries(Object.keys(vars).map((k) => [k, process.env[k]]))
+  for (const [k, v] of Object.entries(vars)) v === undefined ? delete process.env[k] : (process.env[k] = v)
+  try {
+    return await fn()
+  } finally {
+    for (const [k, v] of Object.entries(old)) v === undefined ? delete process.env[k] : (process.env[k] = v)
+  }
+}
+
+const rejectsWith = (promise, status, code) =>
+  assert.rejects(promise, (err) => {
+    const { status: s, body } = publicError(err)
+    assert.equal(s, status)
+    if (code) assert.equal(body.error.code, code)
+    return true
+  })
+
+describe('testi da WooCommerce', () => {
+  test('entita\' HTML decodificate', () => {
+    assert.equal(decode('Collagene &amp; vitamina C &#8211; 500 g &euro;'), 'Collagene & vitamina C – 500 g €')
+  })
+
+  test('descrizioni: niente script, iframe, eventi o link javascript:', () => {
+    const html = safeHtml('<p onclick="x()">Ciao <strong>tu</strong> <a href="javascript:alert(1)">a</a> <a href="https://ok.it">b</a></p><script>alert(1)</script><iframe src="x"></iframe><img src=x onerror=alert(1)>')
+    assert.equal(html, '<p>Ciao <strong>tu</strong> <a>a</a> <a href="https://ok.it" rel="noopener">b</a></p>')
+  })
+})
+
+describe('catalogo: solo la categoria Nutrex', () => {
+  test('elenco nell\'ordine del pannello, senza prodotti nascosti o di altri negozi', async () => {
+    const list = await listProducts({ perPage: 48 })
+    assert.deepEqual(list.products.map((p) => p.slug), ['collagene', 'magnesio'])
+    const [coll, magn] = list.products
+    assert.equal(coll.name, 'Collagene & vitamina C')
+    assert.equal(coll.variationCount, 2)
+    assert.equal(coll.description, undefined, 'nell\'elenco niente descrizione lunga')
+    assert.deepEqual(magn.prices.price, 1690)
+    assert.deepEqual(magn.prices.regular, 1990)
+    assert.equal(magn.stock.low, 3)
+  })
+
+  test('categorie per i filtri: le sottocategorie con prodotti (lette da piu\' pagine)', async () => {
+    const cats = await listCategories()
+    assert.deepEqual(cats.map((c) => c.slug), ['polvere', 'compresse'])
+  })
+
+  test('filtro per sottocategoria; una categoria di un altro negozio non mostra nulla', async () => {
+    assert.deepEqual((await listProducts({ category: 'polvere' })).products.map((p) => p.slug), ['collagene'])
+    assert.equal((await listProducts({ category: 'altro-negozio' })).products.length, 0)
+  })
+
+  test('prodotto variabile con le sue varianti (prezzo, SKU, disponibilita\')', async () => {
+    const p = await getProduct('collagene')
+    assert.equal(p.variations.length, 2)
+    assert.deepEqual(p.variations.map((v) => [v.sku, v.attributes['Quantità'], v.prices.price, v.stock.inStock]), [
+      ['COLL-1', '1 confezione', 4490, true],
+      ['COLL-2', '2 confezioni', 8990, false],
+    ])
+    assert.doesNotMatch(p.description, /script|iframe|onclick|javascript:/)
+  })
+
+  test('un prodotto nascosto dal catalogo resta raggiungibile dal suo link', async () => {
+    assert.equal((await getProduct('nascosto')).slug, 'nascosto')
+  })
+
+  test('prodotti di altri negozi e slug non validi: 404', async () => {
+    await rejectsWith(getProduct('altro-prodotto'), 404, 'not_found')
+    const before = woo.requests.length
+    await rejectsWith(getProduct('../wp-admin'), 404, 'not_found')
+    assert.equal(woo.requests.length, before, 'uno slug non valido non arriva a WooCommerce')
+  })
+})
+
+describe('carrello e passaggio al checkout', () => {
+  let token = null
+
+  test('nuovo cliente: sessione WooCommerce, variante nel carrello', async () => {
+    const res = await cartAction(null, 'add', { id: 101, quantity: 2 })
+    token = res.token
+    assert.ok(token)
+    assert.equal(res.cart.count, 2)
+    const [line] = res.cart.items
+    assert.equal(line.slug, 'collagene')
+    assert.equal(line.sku, 'COLL-1')
+    assert.deepEqual(line.variation, [{ name: 'Quantità', value: '1 confezione' }])
+    assert.equal(line.totals.total, 8980)
+  })
+
+  test('prodotti di un altro negozio non entrano nel carrello', async () => {
+    await rejectsWith(cartAction(token, 'add', { id: 200, quantity: 1 }), 404, 'not_found')
+    assert.equal((await getCart(token)).cart.count, 2)
+  })
+
+  test('quantita\' e azioni non valide', async () => {
+    await rejectsWith(cartAction(token, 'add', { id: 110, quantity: 0 }), 400, 'invalid_item')
+    await rejectsWith(cartAction(token, 'add', { id: 110, quantity: 100000 }), 400, 'invalid_item')
+    await rejectsWith(cartAction(token, 'svuota-tutto', {}), 400, 'invalid_action')
+  })
+
+  test('esaurito: il messaggio di WooCommerce arriva al cliente', async () => {
+    await assert.rejects(cartAction(token, 'add', { id: 102, quantity: 1 }), (err) => {
+      const { status, body } = publicError(err)
+      assert.equal(status, 400)
+      assert.match(body.error.message, /esaurito/)
+      assert.doesNotMatch(body.error.message, /&quot;/)
+      return true
+    })
+  })
+
+  test('coupon: valido applicato, sbagliato con il messaggio di WooCommerce', async () => {
+    await cartAction(token, 'add', { id: 110, quantity: 1 })
+    const { cart } = await cartAction(token, 'coupon', { code: 'PROVA10' })
+    assert.deepEqual(cart.coupons.map((c) => c.code), ['prova10'])
+    assert.equal(cart.totals.discount, Math.round((8980 + 1690) * 0.1))
+    assert.equal(cart.totals.total, cart.totals.items - cart.totals.discount)
+    await assert.rejects(cartAction(token, 'coupon', { code: 'SBAGLIATO' }), (err) => {
+      const { status, body } = publicError(err)
+      assert.equal(status, 400)
+      assert.equal(body.error.message, 'Il codice promozionale "SBAGLIATO" non esiste!')
+      return true
+    })
+  })
+
+  test('indirizzo del checkout WooCommerce con gli stessi prodotti e coupon, senza prezzi', async () => {
+    const { url } = await checkoutUrl(token)
+    const u = new URL(url)
+    assert.equal(u.origin, WOO_URL)
+    assert.equal(u.searchParams.get('nutrex-checkout'), '1')
+    assert.equal(u.searchParams.get('items'), '101:2,110:1')
+    assert.equal(u.searchParams.get('coupons'), 'prova10')
+    assert.doesNotMatch(url, /price|8980|1690/)
+  })
+
+  test('quantita\' a zero toglie il prodotto; svuota', async () => {
+    const { cart } = await cartAction(token, 'update', { key: 'k110', quantity: 0 })
+    assert.deepEqual(cart.items.map((i) => i.id), [101])
+    const cleared = await cartAction(token, 'clear')
+    assert.equal(cleared.cart.count, 0)
+    await rejectsWith(checkoutUrl(token), 409, 'empty_cart')
+  })
+})
+
+describe('funzioni Vercel', () => {
+  test('/api/products: in cache sul CDN', async () => {
+    const res = await productsApi.GET(new Request('https://negozio.test/api/products?per_page=12'))
+    assert.equal(res.status, 200)
+    assert.match(res.headers.get('cache-control'), /s-maxage=60/)
+    const body = await res.json()
+    assert.equal(body.products.length, 2)
+    assert.equal(body.categories.length, 2)
+  })
+
+  test('/api/cart: cookie della sessione httpOnly e Secure, mai in cache', async () => {
+    const add = await cartApi.POST(
+      new Request('https://negozio.test/api/cart', { method: 'POST', headers: { 'x-forwarded-proto': 'https' }, body: JSON.stringify({ action: 'add', id: 110, quantity: 3 }) }),
+    )
+    assert.equal(add.status, 200)
+    assert.equal(add.headers.get('cache-control'), 'private, no-store')
+    const cookies = add.headers.getSetCookie()
+    const session = cookies.find((c) => c.startsWith('nx_cart='))
+    const count = cookies.find((c) => c.startsWith('nx_count='))
+    assert.match(session, /HttpOnly/)
+    assert.match(session, /Secure/)
+    assert.match(session, /SameSite=Lax/)
+    assert.match(count, /^nx_count=3;/)
+    assert.doesNotMatch(count, /HttpOnly/)
+
+    // la richiesta dopo usa il cookie
+    const cookie = session.split(';')[0]
+    const res = await checkoutApi.POST(new Request('https://negozio.test/api/checkout', { method: 'POST', headers: { cookie } }))
+    assert.equal(res.status, 200)
+    assert.equal(new URL((await res.json()).url).searchParams.get('items'), '110:3')
+  })
+
+  test('senza categoria (o con una sbagliata) il negozio resta chiuso', async () => {
+    for (const category of [undefined, 'sbagliata']) {
+      const res = await withEnv({ WOOCOMMERCE_CATEGORY: category }, () => productsApi.GET(new Request('https://negozio.test/api/products')))
+      assert.equal(res.status, 503)
+      assert.equal((await res.json()).error.code, 'not_configured')
+    }
+  })
+
+  test('WooCommerce irraggiungibile: messaggio per il cliente, nessun dettaglio interno', async () => {
+    woo.down = true
+    try {
+      const res = await cartApi.GET(new Request('https://negozio.test/api/cart', { headers: { cookie: 'nx_cart=token-1' } }))
+      assert.equal(res.status, 503)
+      const text = await res.text()
+      assert.match(text, /non risponde/)
+      assert.doesNotMatch(text, /woo\.test|token-1|fetch failed/)
+    } finally {
+      woo.down = false
+    }
+  })
+})
+
+describe('pagina prodotto per Google e social', () => {
+  const template = '<html><head><title>Prodotto | Nutrex Lab</title></head><body><!-- ssr:prodotto --></body></html>'
+
+  test('titolo, canonical, dati strutturati con le varianti', async () => {
+    const product = await getProduct('collagene')
+    const html = renderProductPage(template, { product, site: 'https://negozio.test', slug: 'collagene' })
+    assert.match(html, /<title>Collagene &amp; vitamina C \| Nutrex Lab<\/title>/)
+    assert.match(html, /<link rel="canonical" href="https:\/\/negozio.test\/prodotto\/collagene" \/>/)
+    const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])
+    assert.equal(ld['@type'], 'Product')
+    assert.equal(ld.offers['@type'], 'AggregateOffer')
+    assert.equal(ld.offers.lowPrice, '44.90')
+    assert.equal(ld.offers.highPrice, '89.90')
+    assert.equal(ld.offers.availability, 'https://schema.org/InStock')
+  })
+
+  test('testi con "</script>" o "$&" non rompono la pagina', async () => {
+    const product = await getProduct('magnesio')
+    const tricky = { ...product, name: 'Magnesio $& $\' </script><script>alert(1)</script>', summary: 'Prezzo $` speciale' }
+    const html = renderProductPage(template, { product: tricky, site: 'https://negozio.test', slug: 'magnesio' })
+    assert.equal(html.match(/<\/script>/g).length, 2, 'solo le chiusure dei due script del server')
+    assert.equal(html.split('<html>').length, 2, 'il modello non viene duplicato')
+    assert.match(html, /<title>Magnesio \$&amp; \$&#39; &lt;\/script&gt;/)
+    const data = JSON.parse(/<script id="product-data" type="application\/json">(.*?)<\/script>/.exec(html)[1])
+    assert.equal(data.product.name, tricky.name)
+  })
+
+  test('prodotto non trovato: noindex', () => {
+    const html = renderProductPage(template, { product: null, site: 'https://negozio.test', slug: 'niente', status: 404 })
+    assert.match(html, /<meta name="robots" content="noindex" \/>/)
+    assert.match(html, /<title>Prodotto non trovato \| Nutrex Lab<\/title>/)
+  })
+})
+
+describe('sessione', () => {
+  test('cookie: Secure solo su https, cancellazione con Max-Age=0', () => {
+    const http = new Request('http://127.0.0.1:5173/api/cart')
+    const [c] = sessionCookies(http, { token: 'abc' })
+    assert.doesNotMatch(c, /Secure/)
+    const [gone, zero] = sessionCookies(http, { token: '', count: 0 })
+    assert.match(gone, /^nx_cart=; .*Max-Age=0/)
+    assert.match(zero, /^nx_count=; .*Max-Age=0/)
+    assert.deepEqual(readSession(new Request('http://x/', { headers: { cookie: 'a=1; nx_cart=tok%20en' } })), { token: 'tok en' })
+  })
+})

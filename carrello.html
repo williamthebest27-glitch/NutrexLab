@@ -39,6 +39,13 @@
           </h1>
         </header>
 
+        <!-- in caricamento -->
+        <div class="cart" data-loading aria-busy="true">
+          <div class="clist"><div class="skel" style="height: 150px; margin: 22px 0"></div><div class="skel" style="height: 150px"></div></div>
+          <div class="skel" style="height: 380px; border-radius: 26px"></div>
+        </div>
+        <div class="alert" data-error hidden></div>
+
         <!-- carrello con i prodotti -->
         <div class="cart" data-cart hidden>
           <section class="clist" aria-label="Prodotti nel carrello" data-lines></section>
@@ -50,10 +57,18 @@
               <span class="pill-count mono" data-cart-count="always">0</span>
             </h2>
             <dl class="summary__rows" data-totals></dl>
-            <p class="summary__note" data-summary-note></p>
-            <a class="btn btn--xl btn--block" href="/pagamenti" data-magnetic>
+            <form class="coupon" data-coupon>
+              <label class="sr-only" for="coupon">Codice sconto</label>
+              <input id="coupon" name="code" autocomplete="off" placeholder="Codice sconto" />
+              <button class="btn btn--sm btn--ghost" type="submit"><span class="btn__label">Applica</span></button>
+            </form>
+            <p class="coupon__msg" role="status" data-coupon-msg></p>
+            <div class="coupons" data-coupons></div>
+            <p class="summary__note">Spedizione e IVA definitive, indirizzo e pagamento nel prossimo passaggio: il checkout sicuro del negozio.</p>
+            <button class="btn btn--xl btn--block" type="button" data-checkout data-magnetic>
               <span class="btn__label">Procedi al pagamento</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
-            </a>
+            </button>
+            <p class="coupon__msg" role="alert" data-checkout-msg></p>
             <a class="link mono summary__back" href="/acquista">Continua gli acquisti</a>
             <ul class="ticks mono">
               <li>Prodotti in Italia</li>
@@ -70,7 +85,7 @@
             <svg viewBox="-24 -24 72 72"><path class="empty__bag" d="M5.6 8.6h12.8l-1.05 10.9a1.6 1.6 0 0 1-1.6 1.45H8.25a1.6 1.6 0 0 1-1.6-1.45z" /><path class="empty__bag" d="M9 8.6V7.2a3 3 0 0 1 6 0v1.4" /></svg>
           </div>
           <h2 class="display empty__title" id="vuoto">Ancora<br />vuoto.</h2>
-          <p class="body-copy empty__text">Scegli il tuo rituale tra i dodici integratori Nutrex Lab, prodotti in Italia.</p>
+          <p class="body-copy empty__text">Scegli il tuo prodotto tra gli integratori Nutrex Lab, prodotti in Italia.</p>
           <a class="btn btn--xl" href="/acquista" data-magnetic>
             <span class="btn__label">Scopri i prodotti</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
           </a>

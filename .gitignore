@@ -6,3 +6,6 @@ dist
 .vercel
 .env*
 .claude
+
+# WordPress locale di prova (credenziali e chiavi di test generate da wordpress/sviluppo)
+wordpress/sviluppo/out
