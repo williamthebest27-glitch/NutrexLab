@@ -1,5 +1,10 @@
 import gsap from 'gsap'
 import { SplitText } from 'gsap/SplitText'
+import { MEDIA } from '../config.js'
+
+// sul telefono le comparse non sfocano: un filtro blur animato va ridisegnato a ogni fotogramma
+const phone = matchMedia(MEDIA.mobile)
+const soft = (px) => (phone.matches ? 'none' : `blur(${px}px)`)
 
 const numberFormats = new Map()
 function format(value, decimals) {
@@ -76,8 +81,8 @@ export function show(el, { dir = 1, delay = 0, reduced = false } = {}) {
   } else {
     gsap.fromTo(
       el,
-      { autoAlpha: 0, y: 26 * dir, filter: 'blur(8px)' },
-      { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.95, ease: 'power3.out', delay, overwrite: true },
+      { autoAlpha: 0, y: 26 * dir, filter: soft(8) },
+      { autoAlpha: 1, y: 0, filter: soft(0), duration: 0.95, ease: 'power3.out', delay, overwrite: true },
     )
   }
   countUp(el, delay + 0.1)
@@ -101,7 +106,7 @@ export function hide(el, { dir = 1, reduced = false } = {}) {
       onComplete: () => gsap.set(t.list, { visibility: 'hidden' }),
     })
   } else {
-    gsap.to(el, { autoAlpha: 0, y: -20 * dir, filter: 'blur(8px)', duration: 0.45, ease: 'power2.in', overwrite: true })
+    gsap.to(el, { autoAlpha: 0, y: -20 * dir, filter: soft(8), duration: 0.45, ease: 'power2.in', overwrite: true })
   }
 }
 

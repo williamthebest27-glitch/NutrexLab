@@ -65,7 +65,32 @@
       <a class="btn btn--sm nav__cta" href="#shop" data-goto="shop" data-magnetic>
         <span class="btn__label">Acquista ora</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
       </a>
+      <!-- solo mobile: apre il menu con le pagine (src/ui/mobileMenu.js) -->
+      <button class="nav__burger" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="mnav" data-mnav-toggle>
+        <span class="nav__burger-box" aria-hidden="true"><i></i><i></i></span>
+      </button>
     </header>
+
+    <!-- solo mobile: menu a tutto schermo. Il pannello scende dall'alto con il bordo curvo del sipario,
+         le voci salgono una alla volta, in fondo il logo si compone -->
+    <div class="mnav" id="mnav" aria-hidden="true" data-mnav>
+      <div class="mnav__panel" aria-hidden="true">
+        <div class="mnav__bg"></div>
+        <svg class="mnav__curve" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0-0.6H100V0Q50 20 0 0z" /></svg>
+      </div>
+      <nav class="mnav__nav" aria-label="Menu">
+        <a class="mnav__link" href="/" data-goto="top">
+          <span class="mnav__n mono">01</span><span class="mnav__mask"><span class="mnav__t">Homepage</span></span><span class="mnav__rule" aria-hidden="true"></span>
+        </a>
+        <a class="mnav__link" href="#shop" data-goto="shop">
+          <span class="mnav__n mono">02</span><span class="mnav__mask"><span class="mnav__t">Acquista</span></span><span class="mnav__rule" aria-hidden="true"></span>
+        </a>
+        <a class="mnav__link" href="/contatti">
+          <span class="mnav__n mono">03</span><span class="mnav__mask"><span class="mnav__t">Contatti</span></span><span class="mnav__rule" aria-hidden="true"></span>
+        </a>
+      </nav>
+      <div class="mnav__logo" data-logo>NUTREX LAB</div>
+    </div>
 
     <!-- menu prodotti (voci da src/products.js): scheda nella hero, poi sempre visibile mentre si scorre
          (barra sottile a destra su desktop, pulsante in basso a destra su mobile) -->

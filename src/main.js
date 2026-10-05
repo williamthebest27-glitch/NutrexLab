@@ -23,7 +23,8 @@ import { mountLogos, composeLogo, LOGO_ORIGIN } from './ui/logo.js'
 import { initNavLinks } from './ui/navLinks.js'
 import { createProductMenu } from './ui/productMenu.js'
 import { createMenuMorph } from './ui/menuMorph.js'
-import { applyCopy, fitIngredients } from './ui/copy.js'
+import { createMobileMenu } from './ui/mobileMenu.js'
+import { applyCopy, fitIngredients, fitScience } from './ui/copy.js'
 import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
@@ -128,6 +129,7 @@ ritualWord?.addEventListener('split', (e) => {
 let track = null
 let master = null
 let ui = null
+let mobileMenu = null // menu hamburger (solo mobile)
 // animazioni infinite della hero (onda di RITUALE, freccia): in pausa quando la hero non si vede
 const heroLoops = []
 let heroLoopsOn = true
@@ -236,16 +238,17 @@ function tick(time, deltaMs) {
   if (track) track.sample(t, target)
   if (import.meta.env.DEV && debugPose) Object.assign(target, debugPose)
   master?.time(t)
-  // mentre la sezione del bicchiere copre tutto lo schermo il barattolo non si vede: niente rendering
-  const covered = ritual && t > T.ritual + 0.02 && t < T.ritual + ritualSteps - 0.02
+  // mentre la sezione del bicchiere (o il menu mobile aperto) copre tutto lo schermo il barattolo
+  // non si vede: niente rendering
+  const covered = (ritual && t > T.ritual + 0.02 && t < T.ritual + ritualSteps - 0.02) || !!mobileMenu?.covers
   if (stage?.model && track && !covered) {
     stage.update(dt, time, target)
     stage.render()
     stage.adapt(dt)
   }
   if (silk) {
-    // dopo la hero il raso e' coperto dal sipario: smette di disegnare
-    silk.active = t < T.story + CURTAIN.rise[1] + 0.05
+    // dopo la hero il raso e' coperto dal sipario (o dal menu mobile): smette di disegnare
+    silk.active = t < T.story + CURTAIN.rise[1] + 0.05 && !mobileMenu?.covers
     silk.render(reduced ? 6 : time)
   }
   ui?.update(t, scrollY())
@@ -300,6 +303,7 @@ async function boot() {
 
   prepareText(reduced)
   fitIngredients() // (con i font caricati)
+  fitScience()
   measureCta()
   rebuild()
   if (stage?.model) {
@@ -312,6 +316,8 @@ async function boot() {
   ui = createStageUI({ T, stage, getLayout: () => layout, getProduct: () => product })
   buildReveals(T, { reduced, getVh, hooks: ui.hooks })
   initPointer(stage, { reduced })
+  // (prima di initNav: toccando una voce il menu si chiude e lo scroll riparte prima del salto)
+  mobileMenu = createMobileMenu({ lenis, reduced, onOpen: () => menu?.close() })
   initNav()
   initFooterLogo()
   ritual = createRitual()
@@ -319,7 +325,7 @@ async function boot() {
   gsap.ticker.add(tick)
 
   if (import.meta.env.DEV) {
-    window.__site = { lenis, stage, T, jump, getVh, target, switchProduct, gsap, ritual, setPose: (p) => (debugPose = p) }
+    window.__site = { lenis, stage, T, jump, getVh, target, switchProduct, gsap, ritual, mobileMenu, setPose: (p) => (debugPose = p) }
   }
 
   // lo zoom parte solo a logo completamente composto (e con una brevissima pausa)
@@ -410,11 +416,13 @@ function intro() {
     heroLoop(gsap.fromTo(ritualWord, { '--wave': '0em' }, { '--wave': '-2.4em', duration: 6, ease: 'none', repeat: -1 }))
   }, at(1.0))
   // QUOTIDIANO: le lettere arrivano dal fuori fuoco, dal centro verso i lati
+  // (sul telefono senza sfocatura: il filtro animato va ridisegnato a ogni fotogramma)
+  const quotBlur = layout === 'mobile' ? ['none', 'none'] : ['blur(16px)', 'blur(0px)']
   tl.fromTo(
     chars('.hero-quot__word'),
-    { autoAlpha: 0, scale: 2.4, filter: 'blur(16px)' },
+    { autoAlpha: 0, scale: 2.4, filter: quotBlur[0] },
     {
-      autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 1.3, ease: 'expo.out',
+      autoAlpha: 1, scale: 1, filter: quotBlur[1], duration: 1.3, ease: 'expo.out',
       stagger: { each: 0.045, from: 'center' }, clearProps: 'filter',
     },
     at(1.3),
@@ -449,6 +457,8 @@ function intro() {
   tl.fromTo('.nav__logo', { xPercent: -120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.1))
   tl.fromTo('.nav-link', { yPercent: -180, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.1, ease: 'expo.out', stagger: 0.09, ...navClear }, at(2.25))
   tl.fromTo('.nav__cta', { xPercent: 120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.45))
+  // (mobile) l'hamburger arriva per ultimo, ruotando appena
+  tl.fromTo('.nav__burger', { scale: 0.5, rotation: -90, autoAlpha: 0 }, { scale: 1, rotation: 0, autoAlpha: 1, duration: 1.1, ease: 'back.out(2)', ...navClear }, at(2.6))
   // menu prodotti: la scheda entra da destra, poi titolo e voci una alla volta
   // (su mobile entra il pulsante PRODOTTI, sotto "Acquista ora", come quello da destra)
   if (menu) {
@@ -748,6 +758,7 @@ window.addEventListener('resize', () => {
     ScrollTrigger.refresh()
     ui?.resize()
     fitIngredients()
+    fitScience()
     measureCta()
   }, 160)
 })

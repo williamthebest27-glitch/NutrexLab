@@ -1313,16 +1313,37 @@ html.no-lines .ing__lines {
 .sci__text {
   right: var(--gutter);
   top: 15%;
-  width: min(36ch, 30vw);
+  width: min(40ch, 32vw);
   display: grid;
   gap: 22px;
 }
 
+/* i testi descrivono il prodotto: colore pieno (non attenuato), ben nitidi sopra l'elica luminosa.
+   Un alone scuro morbido dietro al blocco spegne le particelle che ci passano sotto */
+.sci__text::before {
+  content: '';
+  position: absolute;
+  inset: -22% -16% -20% -16%;
+  z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--abyss) 82%, transparent) 40%, transparent);
+  pointer-events: none;
+}
+
+.sci__text .body-copy {
+  font-size: clamp(19px, 1.5vw, 24px);
+  font-weight: 450;
+  color: var(--fg);
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--abyss) 90%, transparent);
+}
+
 .sci__claim {
-  font-size: clamp(13px, 1vw, 16px);
-  letter-spacing: 0.1em;
+  font-size: clamp(15px, 1.15vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0.08em;
   line-height: 1.6;
-  color: var(--accent);
+  /* l'accento del prodotto schiarito: acceso e leggibile sul fondo scuro */
+  color: color-mix(in srgb, var(--accent) 70%, #fff);
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--abyss) 90%, transparent);
   max-width: 40ch;
 }
 
@@ -1768,15 +1789,43 @@ html.no-lines .ing__lines {
     height: 4px;
   }
 
+  /* le caratteristiche del prodotto: pillole chiare e nitide sopra al barattolo, con la spunta nel
+     colore del prodotto (sopra il pulsante PRODOTTI) */
   .s3__tags {
     left: var(--gutter);
     right: var(--gutter);
-    bottom: calc(var(--gutter) + 56px);
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 6px 10px;
-    font-size: 11px;
-    letter-spacing: 0.08em;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+  }
+
+  .s3__tags span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px 9px 9px;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 26px -14px color-mix(in srgb, var(--ink) 70%, transparent);
+    white-space: nowrap;
+  }
+
+  .s3__tags span::before {
+    content: '';
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M5 9.3l2.6 2.5L13 6.4' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+        center / 100% no-repeat,
+      var(--accent);
   }
 
   .s4__title {
@@ -1946,26 +1995,34 @@ html.no-lines .ing__lines {
     top: 11%;
   }
 
+  /* ELICA. sta sempre sopra ai testi, qualunque sia la loro lunghezza (--sci-text-h da fitScience) */
   .sci__b {
-    bottom: 31%;
+    bottom: max(31%, calc(var(--gutter) + 64px + var(--sci-text-h, 230px) + 16px));
   }
 
   .sci__text {
     left: var(--gutter);
     right: var(--gutter);
     top: auto;
-    bottom: calc(var(--gutter) + 60px);
+    bottom: calc(var(--gutter) + 64px);
     width: auto;
-    gap: 10px;
+    gap: 14px;
+  }
+
+  .sci__text::before {
+    inset: -16% -8% -10% -8%;
   }
 
   .sci__text .body-copy {
-    font-size: 15px;
+    max-width: none;
+    font-size: 18.5px;
+    line-height: 1.5;
   }
 
   .sci__claim {
-    font-size: 12px;
-    letter-spacing: 0.06em;
+    font-size: 13.5px;
+    letter-spacing: 0.05em;
+    line-height: 1.55;
   }
 
   .sci__data {

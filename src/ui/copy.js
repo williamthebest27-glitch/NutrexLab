@@ -91,6 +91,15 @@ export function fitIngredients() {
   }
 }
 
+/**
+ * Sezione Scienza su mobile: ELICA. resta sopra ai testi del prodotto, che hanno lunghezze diverse
+ * (altezza del blocco in --sci-text-h). Da chiamare quando cambiano i testi o lo schermo.
+ */
+export function fitScience() {
+  const text = $('.sci__text')
+  if (text) text.closest('.science')?.style.setProperty('--sci-text-h', `${Math.ceil(text.offsetHeight)}px`)
+}
+
 function science(sci) {
   $('.sci__title')?.setAttribute('aria-label', `${sci.a} ${sci.b}`)
   setHTML($('.sci__a'), sci.a)
@@ -107,6 +116,7 @@ function science(sci) {
       )
       .join(''),
   )
+  fitScience()
 }
 
 function daily(dl) {

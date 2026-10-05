@@ -718,3 +718,220 @@ ul {
     transition: none;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Menu mobile (hamburger accanto ad "Acquista ora"): pannello a tutto schermo nei colori del
+   prodotto. Animazione in src/ui/mobileMenu.js: solo trasformazioni e opacita' (fluida anche sui
+   telefoni), il pannello scende con il bordo curvo del sipario che si distende all'arrivo.
+   -------------------------------------------------------------------------- */
+.nav__burger,
+.mnav {
+  display: none;
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  .nav {
+    grid-template-columns: 1fr auto auto;
+    column-gap: 8px;
+  }
+
+  .nav__burger {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+    color: var(--fg);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color 0.5s var(--ease-out),
+      border-color 0.5s var(--ease-out),
+      color 0.5s var(--ease-out);
+  }
+
+  .nav__burger-box {
+    position: relative;
+    width: 16px;
+    height: 9px;
+  }
+
+  /* due linee che diventano una X */
+  .nav__burger-box i {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.6px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.6s var(--ease-out);
+  }
+
+  .nav__burger-box i:first-child {
+    top: 0;
+  }
+
+  .nav__burger-box i:last-child {
+    bottom: 0;
+    width: 70%;
+    left: 30%;
+    transition:
+      transform 0.6s var(--ease-out),
+      width 0.6s var(--ease-out),
+      left 0.6s var(--ease-out);
+  }
+
+  html.mnav-open .nav__burger-box i:first-child {
+    transform: translateY(3.7px) rotate(45deg);
+  }
+
+  html.mnav-open .nav__burger-box i:last-child {
+    left: 0;
+    width: 100%;
+    transform: translateY(-3.7px) rotate(-45deg);
+  }
+
+  /* navbar sopra il pannello scuro (finche' il pannello e' sullo schermo): chiara, senza velo */
+  html.mnav-shown .nav {
+    --fg: var(--paper);
+    --bg: var(--ink);
+    --accent: var(--berry-hi);
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  html.mnav-shown .nav::after {
+    transform: scaleX(0);
+  }
+
+  /* il pulsante PRODOTTI si fa da parte mentre il menu e' aperto */
+  html.mnav-shown .pmenu {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-out);
+  }
+
+  .mnav {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 9; /* sotto la navbar (10): logo, "Acquista ora" e la X restano sopra */
+    visibility: hidden;
+    pointer-events: none;
+    color: var(--paper);
+  }
+
+  .mnav.is-open {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .mnav__panel {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+  }
+
+  .mnav__bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 90% 55% at 88% 0%, color-mix(in srgb, var(--berry) 42%, transparent), transparent 70%),
+      radial-gradient(ellipse 80% 50% at 0% 100%, color-mix(in srgb, var(--plum) 70%, transparent), transparent 75%),
+      var(--ink);
+  }
+
+  /* bordo curvo sotto il pannello (lo stesso del sipario): si distende quando il pannello arriva */
+  .mnav__curve {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    display: block;
+    width: 100%;
+    height: 14vw;
+    margin-top: -1px;
+    fill: var(--ink);
+    transform-origin: 50% 0;
+  }
+
+  .mnav__nav {
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: calc(64px + min(8vh, 64px));
+    display: grid;
+  }
+
+  .mnav__link {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 14px 0 12px;
+    color: var(--paper);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* filetto sotto ogni voce, si disegna da sinistra */
+  .mnav__rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: color-mix(in srgb, var(--paper) 16%, transparent);
+    transform-origin: 0 50%;
+    will-change: transform;
+  }
+
+  .mnav__n {
+    flex: none;
+    width: 22px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--berry-hi);
+  }
+
+  .mnav__mask {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.08em;
+    margin-block: -0.08em;
+  }
+
+  .mnav__t {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 100%;
+    font-size: min(12.5vw, 64px);
+    line-height: 1;
+    letter-spacing: -0.012em;
+    text-transform: uppercase;
+    will-change: transform; /* livello proprio: si muove senza essere ridisegnata */
+  }
+
+  .mnav__link:active .mnav__t {
+    color: var(--berry-hi);
+  }
+
+  .mnav__logo {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--gutter) + 18px + env(safe-area-inset-bottom, 0px));
+    width: min(58vw, 240px);
+    translate: -50% 0;
+    will-change: transform, opacity;
+    color: var(--paper);
+    --logo-mark: var(--berry-hi);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.14em;
+  }
+}

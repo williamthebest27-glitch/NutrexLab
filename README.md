@@ -93,6 +93,8 @@ uguale per tutti i prodotti).
 - `src/ui/productMenu.js` menu prodotti della hero (pannello su desktop, tendina su mobile)
 - `src/ui/menuMorph.js` desktop: la scheda dei prodotti si richiude nel pulsante PRODOTTI scorrendo
   (esagoni che volano nel pulsante, pannello che diventa pillola) e si riapre tornando in cima
+- `src/ui/mobileMenu.js` mobile: menu hamburger accanto ad "Acquista ora" (pannello a tutto schermo
+  con le pagine e il logo, apertura e chiusura animate)
 - `src/webgl/SwitchBurst.js` esplosione di particelle colorate attorno al nuovo barattolo quando si
   cambia prodotto nella hero (desktop e mobile; sul mobile con meno particelle)
 - `src/webgl/Stage.js` scena 3D, un barattolo per prodotto, luci da studio, ombra, dissolvenza
@@ -110,6 +112,8 @@ diventa una dissolvenza).
 ## Menu e pagine
 
 Menu in alto e piè di pagina: Homepage (in questa pagina riporta alla hero), Acquista, Contatti.
+Su mobile le stesse tre voci sono nel menu hamburger (`index.html`, blocco `.mnav`): una pagina
+nuova va aggiunta in entrambi i menu e nel piè di pagina.
 Contatti punta a `/contatti`: la pagina va ancora creata. Con Vite ogni pagina in piu' e' un file
 HTML (es. `contatti.html` accanto a `index.html`) da aggiungere in `vite.config.js`
 (`build.rollupOptions.input`), altrimenti `npm run build` la ignora.
