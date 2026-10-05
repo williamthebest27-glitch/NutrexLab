@@ -935,3 +935,361 @@ ul {
     letter-spacing: 0.14em;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Pagina corrente nel menu: un punto nel colore accento sotto la voce (Acquista resta segnata
+   anche in Carrello e Pagamenti). Lo imposta src/ui/navMenu.js (aria-current / .is-section)
+   -------------------------------------------------------------------------- */
+.nav-link[aria-current='page']::after,
+.nav-link.is-section::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   Sottomenu di "Acquista" (desktop): Carrello e Pagamenti. Si apre passando con il mouse, con il
+   fuoco da tastiera o toccando la freccia (src/ui/navMenu.js aggiunge .is-open alla voce).
+   I colori seguono la navbar (anche quella chiara sulle scene scure della homepage).
+   -------------------------------------------------------------------------- */
+.nav-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-item__more {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item__more svg {
+  width: 9px;
+  height: 6px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.55s var(--ease-out);
+}
+
+.nav-item.is-open .nav-item__more svg {
+  transform: rotate(180deg);
+}
+
+/* quanti prodotti ci sono nel carrello: piccolo numero accanto ad "Acquista" */
+.nav-badge {
+  align-self: flex-start;
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  margin: 1px 0 0 1px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 9.5px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+/* il numero "salta" quando cambia (src/shop/cart.js) */
+.is-bump {
+  animation: cart-bump 0.6s var(--ease-out);
+}
+
+@keyframes cart-bump {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.38);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.nav-sub {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 304px;
+  margin-left: -152px;
+  padding-top: 12px; /* ponte invisibile tra la voce e la scheda: passando con il mouse non si chiude */
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0s linear 0.32s;
+}
+
+.nav-item.is-open .nav-sub {
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.nav-sub__card {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--fg) 11%, transparent);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  box-shadow:
+    0 30px 60px -30px color-mix(in srgb, var(--ink) 55%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  backdrop-filter: blur(18px) saturate(1.35);
+  opacity: 0;
+  transform: translateY(-10px) scale(0.96);
+  transform-origin: 50% 0;
+  transition:
+    opacity 0.28s var(--ease-out),
+    transform 0.5s var(--ease-out);
+}
+
+.nav-item.is-open .nav-sub__card {
+  opacity: 1;
+  transform: none;
+}
+
+.nav-sub__link {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px 9px 9px;
+  border-radius: 14px;
+  color: var(--fg);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.5s var(--ease-out),
+    background-color 0.35s var(--ease-out);
+}
+
+.nav-item.is-open .nav-sub__link {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.06s, 0.06s, 0s;
+}
+
+.nav-item.is-open .nav-sub__link + .nav-sub__link {
+  transition-delay: 0.12s, 0.12s, 0s;
+}
+
+.nav-sub__link:hover,
+.nav-sub__link:focus-visible,
+.nav-sub__link[aria-current='page'] {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.nav-sub__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  color: var(--accent);
+  transition:
+    background-color 0.4s var(--ease-out),
+    color 0.4s var(--ease-out);
+}
+
+.nav-sub__link:hover .nav-sub__icon,
+.nav-sub__link:focus-visible .nav-sub__icon {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.nav-sub__icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-sub__text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nav-sub__t {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 100%;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+}
+
+.nav-sub__d {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-transform: none;
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+}
+
+.nav-sub__count {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.nav-sub__arrow {
+  font-size: 14px;
+  letter-spacing: 0;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.nav-sub__link:hover .nav-sub__arrow {
+  transform: translateX(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-sub__card,
+  .nav-sub__link {
+    transform: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Footer (tutte le pagine): il grande logo si compone quando entra in scena
+   -------------------------------------------------------------------------- */
+.footer {
+  position: relative;
+  z-index: 4;
+  height: var(--vh);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: calc(var(--gutter) + 70px) var(--gutter) var(--gutter);
+  background: var(--ink);
+  color: var(--paper);
+  overflow: hidden;
+}
+
+/* nelle pagine (negozio, carrello, contatti...) il footer non occupa tutto lo schermo */
+.is-page .footer {
+  height: auto;
+  padding-top: clamp(96px, 16vh, 180px);
+}
+
+.footer__brand {
+  align-self: end;
+  width: min(84vw, 1160px, 150vh);
+  color: var(--paper);
+  --logo-mark: var(--berry-hi);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10vw;
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 2fr) auto;
+  gap: 32px;
+  margin-top: clamp(28px, 5vh, 56px);
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in srgb, var(--paper) 16%, transparent);
+  font-size: 12px;
+  color: color-mix(in srgb, var(--paper) 62%, transparent);
+}
+
+.footer__nav {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  align-content: start;
+  gap: 2px 32px;
+  color: var(--paper);
+}
+
+.footer__nav .link {
+  padding: 4px 0;
+}
+
+.footer__legal {
+  max-width: 62ch;
+  line-height: 1.6;
+}
+
+.footer__copy {
+  justify-self: end;
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  .footer__brand {
+    width: 88vw;
+  }
+
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .footer__copy {
+    justify-self: start;
+  }
+
+  /* menu mobile con cinque voci: il carattere si adatta anche agli schermi bassi */
+  .mnav__link {
+    padding: 12px 0 10px;
+  }
+
+  .mnav__t {
+    font-size: min(11vw, 56px, 7.4vh);
+  }
+
+  .mnav__link[aria-current='page'] .mnav__t {
+    color: var(--berry-hi);
+  }
+
+  /* prodotti nel carrello, accanto alla voce Carrello */
+  .mnav__count {
+    align-self: center;
+    display: grid;
+    place-items: center;
+    min-width: 30px;
+    height: 26px;
+    margin-left: auto;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: var(--berry-hi);
+    color: var(--ink);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+}

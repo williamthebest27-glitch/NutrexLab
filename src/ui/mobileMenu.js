@@ -4,7 +4,7 @@ import { composeLogo } from './logo.js'
 
 /**
  * Menu mobile (hamburger accanto ad "Acquista ora"): pannello a tutto schermo con le pagine
- * (Homepage, Acquista, Contatti) e il logo in fondo.
+ * (Homepage, Acquista, Carrello, Pagamenti, Contatti) e il logo in fondo.
  *
  * Apertura: il pannello scende dall'alto con il bordo curvo del sipario, le voci salgono dalla
  * maschera una alla volta mentre i filetti si disegnano, poi il logo si compone.
@@ -29,7 +29,8 @@ export function createMobileMenu({ lenis = null, reduced = false, onOpen = null 
   const panel = root.querySelector('.mnav__panel')
   const curve = root.querySelector('.mnav__curve')
   const words = links.map((a) => a.querySelector('.mnav__t'))
-  const nums = links.map((a) => a.querySelector('.mnav__n'))
+  // numeri delle voci e quanti prodotti ci sono nel carrello (accanto a Carrello)
+  const nums = [...root.querySelectorAll('.mnav__n, .mnav__count')]
   const rules = links.map((a) => a.querySelector('.mnav__rule'))
   const logoWrap = root.querySelector('.mnav__logo')
   let openTl = null

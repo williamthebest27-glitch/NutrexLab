@@ -8,8 +8,7 @@
       name="description"
       content="Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 10.000 mg in ogni misurino. Prodotto in Italia."
     />
-    <meta name="theme-color" content="#f1f0f3" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- @head -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="it_IT" />
     <meta property="og:title" content="Collagene Marino | Nutrex Lab" />
@@ -51,46 +50,9 @@
     <canvas class="webgl" aria-hidden="true"></canvas>
     <img class="fallback" src="/og.jpg" alt="Barattolo di Collagene Marino Nutrex Lab" hidden />
 
-    <header class="nav" data-nav>
-      <a class="nav__logo" href="#top" data-goto="top" aria-label="Nutrex Lab, torna all'inizio">
-        <span data-logo>NUTREX LAB</span>
-      </a>
-      <nav class="nav__links" aria-label="Principale">
-        <!-- Homepage: in questa pagina riporta alla hero; dalle altre pagine torna alla home -->
-        <a class="nav-link" href="/" data-goto="top" data-nav-link>Homepage</a>
-        <a class="nav-link" href="#shop" data-goto="shop" data-nav-link>Acquista</a>
-        <!-- pagina da creare: contatti.html (con Vite va aggiunta anche in build.rollupOptions.input) -->
-        <a class="nav-link" href="/contatti" data-nav-link>Contatti</a>
-      </nav>
-      <a class="btn btn--sm nav__cta" href="#shop" data-goto="shop" data-magnetic>
-        <span class="btn__label">Acquista ora</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
-      </a>
-      <!-- solo mobile: apre il menu con le pagine (src/ui/mobileMenu.js) -->
-      <button class="nav__burger" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="mnav" data-mnav-toggle>
-        <span class="nav__burger-box" aria-hidden="true"><i></i><i></i></span>
-      </button>
-    </header>
+    <!-- @nav -->
 
-    <!-- solo mobile: menu a tutto schermo. Il pannello scende dall'alto con il bordo curvo del sipario,
-         le voci salgono una alla volta, in fondo il logo si compone -->
-    <div class="mnav" id="mnav" aria-hidden="true" data-mnav>
-      <div class="mnav__panel" aria-hidden="true">
-        <div class="mnav__bg"></div>
-        <svg class="mnav__curve" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0-0.6H100V0Q50 20 0 0z" /></svg>
-      </div>
-      <nav class="mnav__nav" aria-label="Menu">
-        <a class="mnav__link" href="/" data-goto="top">
-          <span class="mnav__n mono">01</span><span class="mnav__mask"><span class="mnav__t">Homepage</span></span><span class="mnav__rule" aria-hidden="true"></span>
-        </a>
-        <a class="mnav__link" href="#shop" data-goto="shop">
-          <span class="mnav__n mono">02</span><span class="mnav__mask"><span class="mnav__t">Acquista</span></span><span class="mnav__rule" aria-hidden="true"></span>
-        </a>
-        <a class="mnav__link" href="/contatti">
-          <span class="mnav__n mono">03</span><span class="mnav__mask"><span class="mnav__t">Contatti</span></span><span class="mnav__rule" aria-hidden="true"></span>
-        </a>
-      </nav>
-      <div class="mnav__logo" data-logo>NUTREX LAB</div>
-    </div>
+    <!-- @mnav -->
 
     <!-- menu prodotti (voci da src/products.js): scheda nella hero, poi sempre visibile mentre si scorre
          (barra sottile a destra su desktop, pulsante in basso a destra su mobile) -->
@@ -340,7 +302,7 @@
            sezione 3D pinnata (src/components/ProductExperience, avviata da src/main.js): misurino e
            polvere per i prodotti in polvere, capsula o compressa attorno al bicchiere per gli altri.
            Il contenuto lo crea il componente; data-steps = viewport di scroll durante il pin. -->
-      <section class="pe" id="rituale" data-section="ritual" data-steps="4" data-chapter="Preparazione" data-product-experience></section>
+      <section class="pe" id="rituale" data-section="ritual" data-steps="2.4" data-chapter="Preparazione" data-product-experience></section>
 
       <!-- ============ OGNI GIORNO ============ -->
       <section class="section daily" id="daily" data-section="daily" data-steps="3" data-chapter="Ogni giorno">
@@ -375,7 +337,7 @@
 
         <div class="stage stage--front">
           <div class="shop__cta" data-reveal="shop-cta">
-            <a class="btn btn--xl" href="#shop" data-magnetic>
+            <a class="btn btn--xl" href="/carrello" data-buy data-magnetic>
               <span class="btn__label">Acquista il collagene</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
             </a>
             <p class="mono">500 g. Gusto neutro. Prodotto in Italia.</p>
@@ -384,22 +346,7 @@
       </section>
     </main>
 
-    <footer class="footer" data-footer>
-      <div class="footer__brand" data-logo>NUTREX LAB</div>
-      <div class="footer__grid">
-        <nav class="footer__nav mono" aria-label="Piè di pagina">
-          <a class="link" href="/" data-goto="top">Homepage</a>
-          <a class="link" href="#shop" data-goto="shop">Acquista</a>
-          <a class="link" href="/contatti">Contatti</a>
-        </nav>
-        <p class="footer__legal">
-          Integratore alimentare. Non superare la dose giornaliera consigliata. Gli integratori alimentari non vanno
-          intesi come sostituti di una dieta variata, equilibrata e di un sano stile di vita. Tenere fuori dalla portata dei
-          bambini al di sotto dei tre anni di et&agrave;.
-        </p>
-        <p class="mono footer__copy">&copy; 2026 Nutrex Lab</p>
-      </div>
-    </footer>
+    <!-- @footer -->
 
     <script type="module" src="/src/main.js"></script>
   </body>

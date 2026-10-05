@@ -1497,57 +1497,6 @@ html.no-lines .ing__lines {
 }
 
 /* --------------------------------------------------------------------------
-   Footer
-   -------------------------------------------------------------------------- */
-.footer {
-  position: relative;
-  z-index: 4;
-  height: var(--vh);
-  display: grid;
-  grid-template-rows: 1fr auto;
-  padding: calc(var(--gutter) + 70px) var(--gutter) var(--gutter);
-  background: var(--ink);
-  color: var(--paper);
-  overflow: hidden;
-}
-
-.footer__brand {
-  align-self: end;
-  width: min(84vw, 1160px, 150vh);
-  color: var(--paper);
-  --logo-mark: var(--berry-hi);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 10vw;
-}
-
-.footer__grid {
-  display: grid;
-  grid-template-columns: 1fr minmax(0, 2fr) 1fr;
-  gap: 32px;
-  margin-top: clamp(28px, 5vh, 56px);
-  padding-top: 24px;
-  border-top: 1px solid color-mix(in srgb, var(--paper) 16%, transparent);
-  font-size: 12px;
-  color: color-mix(in srgb, var(--paper) 62%, transparent);
-}
-
-.footer__nav {
-  display: flex;
-  gap: 28px;
-  color: var(--paper);
-}
-
-.footer__legal {
-  max-width: 62ch;
-  line-height: 1.6;
-}
-
-.footer__copy {
-  justify-self: end;
-}
-
-/* --------------------------------------------------------------------------
    Tablet
    -------------------------------------------------------------------------- */
 @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
@@ -2074,18 +2023,5 @@ html.no-lines .ing__lines {
 
   .shop__cta {
     bottom: calc(6% + 46px);
-  }
-
-  .footer__brand {
-    width: 88vw;
-  }
-
-  .footer__grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .footer__copy {
-    justify-self: start;
   }
 }

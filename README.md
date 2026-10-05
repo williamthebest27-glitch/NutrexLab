@@ -1,7 +1,8 @@
 # Nutrex Lab | Collagene Marino (sito)
 
 Landing page con storytelling guidato dallo scroll attorno al barattolo 3D, con il menu dei
-prodotti nella hero (cambia barattolo, colori e testi di tutto il sito).
+prodotti nella hero (cambia barattolo, colori e testi di tutto il sito), piu' le pagine del negozio:
+Acquista (i 12 prodotti), Carrello, Pagamenti e Contatti.
 Three.js + GSAP/ScrollTrigger/SplitText + Lenis, costruita con Vite.
 
 Ogni prodotto ha anche un suo link: `?prodotto=<id>` (es. `/?prodotto=vitamina-c`) apre il sito
@@ -43,7 +44,11 @@ In alternativa `npm run build` produce in `dist/` un sito statico adatto a quals
 | Cosa | File |
 | --- | --- |
 | Testi di ogni prodotto (hero, sipario, ingredienti, scienza, uso, shop, titolo della pagina) | `src/content.js` |
-| Link (es. il vero URL dello shop al posto di `#shop`) e struttura delle sezioni | `index.html` |
+| Struttura delle sezioni della homepage | `index.html` |
+| Navbar, menu mobile, piè di pagina (uguali in tutte le pagine) | `src/partials/` (`nav.html`, `mnav.html`, `footer.html`, `head.html`) |
+| Prezzi, spedizione, pagamento online, recapiti | `src/shop/config.js` (un solo file; `null` = "in arrivo") |
+| Foto dei prodotti nel negozio | `public/images/prodotti/<id>.webp`: si rifanno da `/tools/foto-prodotti.html` (con `npm run dev`) |
+| Pagine del negozio | `acquista.html`, `carrello.html`, `pagamenti.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
 | Movimenti del barattolo, camera e luci per ogni scena | `src/choreography.js` (keyframe per desktop e mobile) |
 | Prodotti del menu (nome, modello 3D, colori, misura nella hero, punti dell'etichetta) | `src/products.js` |
 | Impaginazione della hero e delle scene | `src/styles/sections.css` |
@@ -105,22 +110,52 @@ uguale per tutti i prodotti).
 - `src/ui/logo.js` + `logo-paths.js` logo vettoriale (estratto dal PDF) e la sua animazione di composizione
 - `src/components/ProductExperience/` sezione 3D del bicchiere: componente riutilizzabile (anche
   in React), con il suo README
+- `src/ui/navMenu.js` pagina corrente nel menu e sottomenu di Acquista (Carrello, Pagamenti)
+- `src/shop/` negozio: `config.js` (prezzi, spedizione, pagamento, recapiti), `catalog.js` (i 12
+  prodotti con i dati gia' nel sito), `cart.js` (carrello nel browser, uguale in tutte le pagine)
+- `src/pages/` script delle pagine del negozio; `common.js` e' la struttura comune (navbar, menu
+  mobile, footer, scroll morbido, testi che salgono come nella homepage)
+- `src/partials/` parti HTML comuni, inserite da `vite.config.js` al posto di `<!-- @nome -->`
+- `tools/foto-prodotti.html` strumento di sviluppo (non pubblicato) per rifare le foto dei barattoli
 
 Rispetta `prefers-reduced-motion`: niente smooth scroll e animazioni ridotte (il cambio prodotto
 diventa una dissolvenza).
 
 ## Menu e pagine
 
-Menu in alto e piè di pagina: Homepage (in questa pagina riporta alla hero), Acquista, Contatti.
-Su mobile le stesse tre voci sono nel menu hamburger (`index.html`, blocco `.mnav`): una pagina
-nuova va aggiunta in entrambi i menu e nel piè di pagina.
-Contatti punta a `/contatti`: la pagina va ancora creata. Con Vite ogni pagina in piu' e' un file
-HTML (es. `contatti.html` accanto a `index.html`) da aggiungere in `vite.config.js`
-(`build.rollupOptions.input`), altrimenti `npm run build` la ignora.
+Navbar e piè di pagina sono gli stessi in tutte le pagine (`src/partials/`): Homepage, Acquista
+(con il sottomenu Carrello / Pagamenti e il numero dei prodotti nel carrello), Contatti; "Acquista
+ora" porta al negozio. Su mobile il menu hamburger ha le cinque pagine (Homepage, Acquista, Carrello,
+Pagamenti, Contatti) con il numero dei prodotti accanto a Carrello.
+
+| Pagina | Indirizzo | Cosa fa |
+| --- | --- | --- |
+| Homepage | `/` | il racconto 3D; il pulsante finale ("Acquista il collagene") mette il prodotto mostrato nel carrello e apre il carrello |
+| Acquista | `/acquista` | i 12 prodotti (stesso ordine del menu prodotti), filtri Polvere / Compresse / Capsule, "Aggiungi" e "Scopri" (porta al prodotto nella homepage) |
+| Carrello | `/carrello` | quantita', rimozione, riepilogo; vuoto: invito al negozio |
+| Pagamenti | `/pagamenti` | contatti, spedizione, metodo di pagamento e riepilogo |
+| Contatti | `/contatti` | recapiti e modulo che prepara l'email nel programma di posta |
+
+Gli indirizzi sono senza `.html` (`cleanUrls` in `vercel.json`; in locale li gestisce Vite).
+Il carrello resta nel browser di chi visita (localStorage), anche tra le schede aperte.
+
+Cosa manca per vendere davvero (tutto in `src/shop/config.js`, senza toccare le pagine):
+- **prezzi** (`prices`): finche' sono `null` le schede mostrano "Prezzo in arrivo" e i totali "In arrivo";
+- **spedizione** (`shipping`): costo, soglia per la spedizione gratuita, tempi;
+- **recapiti** (`contacts`): email (serve anche al modulo dei contatti), telefono, WhatsApp, sede,
+  orari, social. Quelli `null` non compaiono;
+- **pagamento online** (`payments.active`): va collegato a un circuito (es. Stripe o PayPal, con un
+  conto del negozio). Finche' e' `false` la pagina Pagamenti lo dice chiaramente, il pulsante resta
+  "Pagamento in arrivo" e nessun dato viene inviato.
+
+Pagina nuova: un file HTML accanto a `index.html` con `<!-- @head -->`, `<!-- @nav -->`,
+`<!-- @mnav -->` e `<!-- @footer -->`, uno script in `src/pages/` che chiama `initPage()` e la voce
+in `vite.config.js` (`build.rolldownOptions.input`), altrimenti `npm run build` la ignora.
 
 ## Fluidita' (cose da sapere prima di modificare)
 
-- Sezione del bicchiere: si prepara in anticipo dopo l'intro (`ritual.preload()` in `main.js`),
+- Sezione del bicchiere: dura 2.4 schermate di scroll (`data-steps` in `index.html`; prima 4).
+  Si prepara in anticipo dopo l'intro (`ritual.preload()` in `main.js`),
   a piccoli passi e solo quando nessuno sta scorrendo (`calmMoment`). Gli shader si compilano in
   parallelo con il render target giusto (`ProductScene.warmup`): compilarli "per lo schermo"
   faceva ricompilare tutto al primo fotogramma e fermava la pagina per 2-4 secondi.

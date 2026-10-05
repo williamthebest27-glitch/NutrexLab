@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Contatti | Nutrex Lab</title>
+    <meta name="description" content="Contatta Nutrex Lab: domande sui prodotti, sugli ordini e sulle spedizioni." />
+    <!-- @head -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:title" content="Contatti | Nutrex Lab" />
+    <meta property="og:description" content="Parliamo del tuo rituale. Domande sui prodotti, sugli ordini e sulle spedizioni." />
+    <meta property="og:image" content="/og.jpg" />
+    <noscript>
+      <style>
+        [data-reveal],
+        [data-split] { visibility: visible !important; }
+      </style>
+    </noscript>
+  </head>
+  <body>
+    <div class="page-sky" aria-hidden="true"></div>
+
+    <!-- @nav -->
+    <!-- @mnav -->
+
+    <div class="grain" aria-hidden="true"></div>
+
+    <main class="pmain">
+      <div class="wrap">
+        <header class="phead">
+          <p class="mono eyebrow" data-reveal>
+            <svg viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
+            Contatti
+          </p>
+          <h1 class="display phead__title" aria-label="Parliamo del tuo rituale.">
+            <span><span data-split="chars" aria-hidden="true">Parliamo del</span></span>
+            <span>
+              <span data-split="chars" data-delay="0.12" aria-hidden="true">tuo rituale</span>
+              <svg class="hexdot" viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
+            </span>
+          </h1>
+          <div class="phead__row">
+            <p class="phead__lead" data-reveal data-delay="0.3">
+              <strong>Domande sui prodotti, sugli ordini o sulle spedizioni?</strong> Scrivici dal modulo o usa i recapiti
+              qui sotto.
+            </p>
+          </div>
+        </header>
+
+        <div class="contact">
+          <section aria-labelledby="recapiti">
+            <h2 class="sr-only" id="recapiti">Recapiti</h2>
+            <div class="channels" data-channels></div>
+            <p class="contact__aside" data-rise>
+              Per le informazioni sugli ingredienti e sulle dosi consulta l'etichetta di ogni prodotto: le trovi anche nel
+              racconto di ciascun integratore, nella <a class="link" href="/">homepage</a>.
+            </p>
+          </section>
+
+          <form class="cform glass" novalidate data-cform aria-labelledby="scrivici">
+            <div class="cform__head">
+              <p class="mono eyebrow">
+                <svg viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
+                Modulo
+              </p>
+              <h2 class="display cform__title" id="scrivici">Scrivici</h2>
+              <p class="cform__sub">Ti rispondiamo all'indirizzo email che ci lasci.</p>
+            </div>
+            <div class="fgrid">
+              <div class="field field--3">
+                <input id="c-nome" name="nome" autocomplete="name" placeholder=" " required />
+                <label for="c-nome">Nome e cognome</label>
+                <p class="field__err">Inserisci il tuo nome.</p>
+              </div>
+              <div class="field field--3">
+                <input id="c-email" name="email" type="email" autocomplete="email" placeholder=" " required />
+                <label for="c-email">Email</label>
+                <p class="field__err">Inserisci un indirizzo email valido.</p>
+              </div>
+              <div class="field field--3">
+                <select id="c-tema" name="tema">
+                  <option>Informazioni sui prodotti</option>
+                  <option>Ordini e spedizioni</option>
+                  <option>Collaborazioni e rivenditori</option>
+                  <option>Altro</option>
+                </select>
+                <label for="c-tema">Argomento</label>
+              </div>
+              <div class="field field--3">
+                <select id="c-prodotto" name="prodotto" data-products>
+                  <option value="">Nessuno in particolare</option>
+                </select>
+                <label for="c-prodotto">Prodotto</label>
+              </div>
+              <div class="field">
+                <textarea id="c-msg" name="messaggio" rows="5" placeholder=" " required></textarea>
+                <label for="c-msg">Messaggio</label>
+                <p class="field__err">Scrivi il tuo messaggio.</p>
+              </div>
+            </div>
+            <label class="check">
+              <input type="checkbox" name="consenso" required />
+              <span>Acconsento all'uso dei miei dati solo per ricevere una risposta a questo messaggio.</span>
+            </label>
+            <p class="field__err" data-consent-err>Serve il consenso per poterti rispondere.</p>
+            <button class="btn btn--xl btn--block cform__send" type="submit" data-magnetic>
+              <span class="btn__label">Invia il messaggio</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+            </button>
+            <p class="cform__status" role="status" data-status></p>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- sipario scuro con il bordo curvo: sigillo che ruota attorno all'esagono del logo -->
+    <section class="band" data-nav-dark aria-labelledby="italia">
+      <svg class="band__cap" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0Q50 20 100 0V10.6H0z" /></svg>
+      <div class="band__body">
+        <div class="wrap seal-row">
+          <div class="seal" aria-hidden="true" data-seal>
+            <svg class="seal__ring" viewBox="0 0 200 200">
+              <defs><path id="seal-path" d="M100 100m-78 0a78 78 0 1 1 156 0a78 78 0 1 1-156 0" /></defs>
+              <circle cx="100" cy="100" r="96" />
+              <circle cx="100" cy="100" r="60" />
+              <text><textPath href="#seal-path" textLength="486" lengthAdjust="spacing">Prodotto in Italia &middot; Nutrex Lab &middot; Integratori alimentari &middot;</textPath></text>
+            </svg>
+          </div>
+          <div>
+            <h2 class="display band__title" id="italia" data-split="chars">Prodotto<br /><em>in Italia.</em></h2>
+            <p data-reveal>
+              Dodici integratori, un'unica cura: formule chiare, standard di qualit&agrave; GMP / ISO 9001 e il sigillo di garanzia
+              su ogni barattolo.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- @footer -->
+
+    <script type="module" src="/src/pages/contatti.js"></script>
+  </body>
+</html>

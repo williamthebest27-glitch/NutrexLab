@@ -21,9 +21,12 @@ import { initPointer } from './ui/pointer.js'
 import { createStageUI } from './ui/stageUI.js'
 import { mountLogos, composeLogo, LOGO_ORIGIN } from './ui/logo.js'
 import { initNavLinks } from './ui/navLinks.js'
+import { initNavMenu } from './ui/navMenu.js'
 import { createProductMenu } from './ui/productMenu.js'
 import { createMenuMorph } from './ui/menuMorph.js'
 import { createMobileMenu } from './ui/mobileMenu.js'
+import { makeGrain } from './ui/grain.js'
+import { cart, bindCartCount } from './shop/cart.js'
 import { applyCopy, fitIngredients, fitScience } from './ui/copy.js'
 import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
@@ -43,6 +46,8 @@ window.scrollTo(0, 0)
 // Il preload parte subito: il logo vettoriale si compone mentre il resto carica
 mountLogos()
 initNavLinks()
+initNavMenu() // pagina corrente e sottomenu di Acquista (Carrello, Pagamenti)
+bindCartCount()
 const loaderLogo = document.querySelector('.loader .logo')
 const logoIn = composeLogo(loaderLogo, { reduced, speed: devFast ? 20 : 1 }).play()
 
@@ -319,6 +324,7 @@ async function boot() {
   // (prima di initNav: toccando una voce il menu si chiude e lo scroll riparte prima del salto)
   mobileMenu = createMobileMenu({ lenis, reduced, onOpen: () => menu?.close() })
   initNav()
+  initBuy()
   initFooterLogo()
   ritual = createRitual()
   ScrollTrigger.refresh()
@@ -455,7 +461,7 @@ function intro() {
   )
   // menu: logo da sinistra, voci dall'alto una alla volta, pulsante da destra
   tl.fromTo('.nav__logo', { xPercent: -120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.1))
-  tl.fromTo('.nav-link', { yPercent: -180, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.1, ease: 'expo.out', stagger: 0.09, ...navClear }, at(2.25))
+  tl.fromTo('.nav__links > *', { yPercent: -180, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.1, ease: 'expo.out', stagger: 0.09, ...navClear }, at(2.25))
   tl.fromTo('.nav__cta', { xPercent: 120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.45))
   // (mobile) l'hamburger arriva per ultimo, ruotando appena
   tl.fromTo('.nav__burger', { scale: 0.5, rotation: -90, autoAlpha: 0 }, { scale: 1, rotation: 0, autoAlpha: 1, duration: 1.1, ease: 'back.out(2)', ...navClear }, at(2.6))
@@ -494,6 +500,11 @@ function intro() {
   tl.add(() => lenis?.start(), at(1.7))
   // a intro finita la sezione del bicchiere si prepara in anticipo, nei momenti in cui non si scorre
   tl.add(() => ritual?.preload(), at(3.8))
+}
+
+/** Pulsante finale ("Acquista il collagene"): mette nel carrello il prodotto mostrato e apre il carrello. */
+function initBuy() {
+  document.querySelectorAll('[data-buy]').forEach((a) => a.addEventListener('click', () => cart.add(product.id)))
 }
 
 /** Nel footer il logo si ricompone quando entra in scena. */
@@ -769,21 +780,6 @@ function useFallback() {
   if (img) img.hidden = false
   document.querySelector('[data-pmenu]')?.setAttribute('hidden', '') // senza 3D il menu non ha effetto
   stage = null
-}
-
-function makeGrain() {
-  const size = 180
-  const c = document.createElement('canvas')
-  c.width = c.height = size
-  const g = c.getContext('2d')
-  const img = g.createImageData(size, size)
-  for (let i = 0; i < img.data.length; i += 4) {
-    const v = Math.random() * 255
-    img.data[i] = img.data[i + 1] = img.data[i + 2] = v
-    img.data[i + 3] = 255
-  }
-  g.putImageData(img, 0, 0)
-  document.querySelector('.grain').style.backgroundImage = `url(${c.toDataURL()})`
 }
 
 boot()

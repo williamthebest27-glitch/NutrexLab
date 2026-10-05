@@ -1,0 +1,20 @@
+<!-- intestazione comune a tutte le pagine (src/partials/head.html) -->
+<meta name="theme-color" content="#f1f0f3" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<style>
+  /* passaggio tra le pagine: dissolvenza incrociata (nei browser che la supportano). Qui e non nel CSS
+     del sito: la pagina nuova deve aderire gia' dal primo disegno */
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.42s;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    @view-transition {
+      navigation: none;
+    }
+  }
+</style>

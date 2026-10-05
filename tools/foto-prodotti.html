@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Foto dei prodotti (strumento)</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px;
+        background: #e9e7ec;
+        color: #0e0c11;
+        font: 15px/1.5 system-ui, sans-serif;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 22px;
+      }
+      p {
+        margin: 0 0 18px;
+        max-width: 70ch;
+        color: #555;
+      }
+      button {
+        height: 44px;
+        padding: 0 22px;
+        border: 0;
+        border-radius: 999px;
+        background: #0e0c11;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+      figure {
+        margin: 0;
+        padding: 10px;
+        border-radius: 16px;
+        background: #f6f5f8;
+      }
+      figure img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        object-fit: contain;
+      }
+      figcaption {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Foto dei prodotti per il negozio</h1>
+    <p>
+      Ogni barattolo viene reso dal suo modello 3D (public/models) con le luci dello studio del sito, di fronte e con lo
+      sfondo trasparente. Scarica i file e mettili in <code>public/images/prodotti/</code> (stesso nome). Strumento solo per
+      lo sviluppo: non fa parte del sito pubblicato.
+    </p>
+    <button type="button" data-all disabled>Preparazione...</button>
+    <div class="grid" data-grid></div>
+    <script type="module" src="./foto-prodotti.js"></script>
+  </body>
+</html>
