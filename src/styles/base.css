@@ -1097,6 +1097,10 @@ ul {
   transition-delay: 0.12s, 0.12s, 0s;
 }
 
+.nav-item.is-open .nav-sub__link + .nav-sub__link + .nav-sub__link {
+  transition-delay: 0.18s, 0.18s, 0s;
+}
+
 .nav-sub__link:hover,
 .nav-sub__link:focus-visible,
 .nav-sub__link[aria-current='page'] {

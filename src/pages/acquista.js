@@ -18,7 +18,6 @@ const { ready } = initPage()
 
 const HEX = 'M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z'
 const grid = document.querySelector('[data-grid]')
-const swatches = document.querySelector('[data-swatches]')
 const filters = document.querySelector('[data-filters]')
 const countEl = document.querySelector('[data-count]')
 let cards = []
@@ -137,14 +136,6 @@ async function load() {
     }
     renderFilters(categories, data.products.length)
     setCount()
-    swatches.innerHTML = data.products
-      .map(
-        (p) =>
-          `<a class="swatch" href="#p-${esc(p.slug)}" style="${colorVars(p.slug)}" aria-label="${esc(p.name)}">` +
-          `<svg viewBox="0 0 26 24" aria-hidden="true"><path d="${HEX}"/></svg>` +
-          `<span class="mono swatch__tip" aria-hidden="true">${esc(p.name)}</span></a>`,
-      )
-      .join('')
     rise(cards, { stagger: 0.07, after: ready })
   } catch (err) {
     showError(err)

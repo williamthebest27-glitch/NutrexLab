@@ -49,7 +49,19 @@ initNavLinks()
 initNavMenu() // pagina corrente e sottomenu di Acquista (Carrello, Pagamenti)
 bindCartCount()
 const loaderLogo = document.querySelector('.loader .logo')
-const logoIn = composeLogo(loaderLogo, { reduced, speed: devFast ? 20 : 1 }).play()
+// il preload (il logo si compone, poi la camera ci entra) solo alla prima apertura della homepage in
+// questa scheda: tornando alla homepage dalle altre pagine, o ricaricandola, si entra subito
+const firstIntro = (() => {
+  try {
+    if (sessionStorage.getItem('nx_intro')) return false
+    sessionStorage.setItem('nx_intro', '1')
+  } catch {
+    // archiviazione non disponibile: il preload si vede ogni volta
+  }
+  return true
+})()
+if (!firstIntro) gsap.set(loaderLogo, { autoAlpha: 0 })
+const logoIn = firstIntro ? composeLogo(loaderLogo, { reduced, speed: devFast ? 20 : 1 }).play() : Promise.resolve()
 
 // ---------------------------------------------------------------------------
 // Misure: ogni sezione e' alta (passi + 1) viewport. L'altezza di riferimento
@@ -335,8 +347,10 @@ async function boot() {
   }
 
   // lo zoom parte solo a logo completamente composto (e con una brevissima pausa)
-  await logoIn
-  if (!reduced && !devFast) await new Promise((r) => setTimeout(r, 280))
+  if (firstIntro) {
+    await logoIn
+    if (!reduced && !devFast) await new Promise((r) => setTimeout(r, 280))
+  }
   html.classList.add('is-ready')
   intro()
 }
@@ -344,20 +358,24 @@ async function boot() {
 function intro() {
   const tl = gsap.timeline()
   if (devFast) tl.timeScale(40)
+  else if (!firstIntro && !reduced) tl.timeScale(1.4) // senza preload anche l'ingresso e' piu' rapido
   const loader = document.querySelector('.loader')
 
   // 1) la camera "entra" nel monogramma: piccola anticipazione, poi zoom rapidissimo
   //    dentro la diagonale bianca della N, che diventa lo sfondo del sito
+  //    (senza preload il fondo del caricamento si dissolve e basta)
   if (reduced) {
     tl.to(loader, { autoAlpha: 0, duration: 0.6 }, 0)
+  } else if (!firstIntro) {
+    tl.to(loader, { autoAlpha: 0, duration: 0.4, ease: 'power1.out' }, 0)
   } else {
     gsap.set(loaderLogo, { transformOrigin: LOGO_ORIGIN })
     tl.to(loaderLogo, { scale: 0.94, duration: 0.34, ease: 'power2.inOut' }, 0)
     tl.to(loaderLogo, { scale: 170, duration: 1.0, ease: 'expo.in' }, 0.3)
     tl.to(loader, { autoAlpha: 0, duration: 0.35, ease: 'power1.out' }, 1.08)
   }
-  tl.add(() => html.classList.remove('is-loading'), 0.4)
-  tl.set(loader, { display: 'none' }, reduced ? 0.7 : 1.5)
+  tl.add(() => html.classList.remove('is-loading'), firstIntro ? 0.4 : 0.05)
+  tl.set(loader, { display: 'none' }, reduced ? 0.7 : firstIntro ? 1.5 : 0.45)
 
   const $ = (s) => document.querySelector(s)
   const chars = (s) => $(s)?._split?.chars ?? []
@@ -382,7 +400,8 @@ function intro() {
   }
 
   // 2) sequenza d'ingresso: ogni elemento entra dopo il precedente, con un movimento diverso
-  const at = (offset) => 1.0 + offset
+  //    (senza preload parte subito)
+  const at = (offset) => (firstIntro ? 1.0 : 0.1) + offset
   const navClear = { clearProps: 'transform,opacity,visibility' }
 
   // il raso si posa (leggero zoom indietro)
@@ -460,11 +479,14 @@ function intro() {
     at(2.2),
   )
   // menu: logo da sinistra, voci dall'alto una alla volta, pulsante da destra
-  tl.fromTo('.nav__logo', { xPercent: -120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.1))
-  tl.fromTo('.nav__links > *', { yPercent: -180, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.1, ease: 'expo.out', stagger: 0.09, ...navClear }, at(2.25))
-  tl.fromTo('.nav__cta', { xPercent: 120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.45))
-  // (mobile) l'hamburger arriva per ultimo, ruotando appena
-  tl.fromTo('.nav__burger', { scale: 0.5, rotation: -90, autoAlpha: 0 }, { scale: 1, rotation: 0, autoAlpha: 1, duration: 1.1, ease: 'back.out(2)', ...navClear }, at(2.6))
+  // (tornando alla homepage dalle altre pagine il menu resta fermo al suo posto)
+  if (firstIntro) {
+    tl.fromTo('.nav__logo', { xPercent: -120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.1))
+    tl.fromTo('.nav__links > *', { yPercent: -180, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.1, ease: 'expo.out', stagger: 0.09, ...navClear }, at(2.25))
+    tl.fromTo('.nav__cta', { xPercent: 120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.45))
+    // (mobile) l'hamburger arriva per ultimo, ruotando appena
+    tl.fromTo('.nav__burger', { scale: 0.5, rotation: -90, autoAlpha: 0 }, { scale: 1, rotation: 0, autoAlpha: 1, duration: 1.1, ease: 'back.out(2)', ...navClear }, at(2.6))
+  }
   // menu prodotti: la scheda entra da destra, poi titolo e voci una alla volta
   // (su mobile entra il pulsante PRODOTTI, sotto "Acquista ora", come quello da destra)
   if (menu) {

@@ -86,7 +86,7 @@
    -------------------------------------------------------------------------- */
 .phead {
   position: relative;
-  padding: calc(78px + clamp(48px, 10vh, 120px)) 0 clamp(36px, 6vh, 72px);
+  padding: calc(78px + clamp(36px, 7vh, 88px)) 0 clamp(32px, 5vh, 64px);
 }
 
 .eyebrow {
@@ -104,8 +104,8 @@
 
 /* due righe: la piu' lunga (PARLIAMO DEL) e' larga 8 volte il carattere */
 .phead__title {
-  margin-top: clamp(16px, 2.4vh, 26px);
-  font-size: clamp(58px, 11.2vw, 212px);
+  margin-top: clamp(14px, 2vh, 22px);
+  font-size: clamp(42px, 6vw, 108px);
 }
 
 .phead__title > span {
@@ -266,80 +266,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   ACQUISTA: esagoni della linea, filtri, schede dei prodotti
+   ACQUISTA: filtri, schede dei prodotti
    -------------------------------------------------------------------------- */
-
-/* i 12 prodotti come esagoni nei loro colori (gli stessi del menu prodotti della homepage) */
-.swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.swatch {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 32px;
-  border-radius: 8px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.swatch svg {
-  width: 26px;
-  height: 24px;
-  fill: var(--c-sw);
-  transition: transform 0.6s var(--ease-out);
-}
-
-.swatch:hover svg,
-.swatch:focus-visible svg {
-  transform: scale(1.22) rotate(30deg);
-}
-
-.swatch__tip {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 6px);
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--fg);
-  color: var(--bg);
-  font-size: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translate(-50%, 6px);
-  pointer-events: none;
-  transition:
-    opacity 0.25s var(--ease-out),
-    transform 0.45s var(--ease-out);
-}
-
-.swatch:hover .swatch__tip,
-.swatch:focus-visible .swatch__tip {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-/* le etichette degli ultimi esagoni si allineano a destra: non escono dallo schermo */
-.swatch:nth-last-child(-n + 3) .swatch__tip {
-  left: auto;
-  right: 0;
-  transform: translate(0, 6px);
-}
-
-.swatch:nth-last-child(-n + 3):hover .swatch__tip,
-.swatch:nth-last-child(-n + 3):focus-visible .swatch__tip {
-  transform: none;
-}
-
-/* sui touch screen niente etichette al passaggio (e nessun elemento invisibile che sporge) */
-@media (hover: none) {
-  .swatch__tip {
-    display: none;
-  }
-}
 
 .toolbar {
   display: flex;
@@ -1330,8 +1258,9 @@ ins.amount--sale {
   stroke-linejoin: round;
 }
 
+/* un gradino sotto il titolo della pagina */
 .empty__title {
-  font-size: clamp(40px, 6.4vw, 104px);
+  font-size: clamp(28px, 4.2vw, 72px);
 }
 
 .empty__text {
@@ -1952,26 +1881,11 @@ a.channel:hover .channel__arrow {
 
   /* due righe anche sul telefono: la riga piu' lunga (PARLIAMO DEL) e' larga 8 volte il carattere */
   .phead__title {
-    font-size: clamp(34px, 10.9vw, 110px);
+    font-size: clamp(30px, 8.4vw, 64px);
   }
 
   .phead__lead {
     font-size: 16.5px;
-  }
-
-  /* i 12 esagoni in una riga */
-  .swatches {
-    gap: 0;
-  }
-
-  .swatch {
-    width: calc((100vw - var(--gutter) * 2) / 12);
-    max-width: 34px;
-  }
-
-  .swatch svg {
-    width: 22px;
-    height: 20px;
   }
 
   .toolbar {
