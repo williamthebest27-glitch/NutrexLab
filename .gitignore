@@ -1,0 +1,8 @@
+# dipendenze e build (Vercel esegue npm install e npm run build da solo)
+node_modules
+dist
+
+# configurazione locale e segreti: mai nel repository
+.vercel
+.env*
+.claude

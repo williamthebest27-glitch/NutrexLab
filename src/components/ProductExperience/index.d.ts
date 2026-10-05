@@ -1,0 +1,165 @@
+/*
+  Tipi del motore della sezione 3D (index.js), per l'uso da TypeScript e da ProductExperience.tsx.
+  Il sito NutrexLab e' in JavaScript e non li usa.
+*/
+
+/** Sceglie l'animazione: polvere nel bicchiere, oppure capsula / compressa accanto al bicchiere. */
+export type ProductType = 'powder' | 'capsule' | 'tablet'
+
+/** Impaginazione attuale (stessi limiti del CSS della sezione). */
+export type Layout = 'desktop' | 'tablet' | 'mobile'
+
+/** Colori dello studio e del prodotto (esadecimali sRGB, es. '#d45c95'); quelli assenti restano di default. */
+export interface ProductExperienceTheme {
+  /** fondo quasi nero */
+  bgLow?: string
+  /** alone dietro al bicchiere */
+  bgGlow?: string
+  /** luce sul piano */
+  pool?: string
+  /** nuvola della polvere nell'acqua */
+  cloud?: string
+  /** controluce sui bordi */
+  rim?: string
+  /** accenti dell'interfaccia: ultima riga dei titoli, etichette, sequenza */
+  accent?: string
+  /** polvere nel misurino */
+  powder?: string
+  /** capsula: testa colorata, corpo, contenuto */
+  capsule?: string
+  capsuleBody?: string
+  fill?: string
+  /** compressa e puntini */
+  tablet?: string
+  speckle?: string
+}
+
+/** [testo grande, testo piccolo] di un'etichetta agganciata al 3D. */
+export type PinCopy = [title: string, text: string]
+
+/** Testi della sezione; quelli assenti restano quelli di default del tipo (copy.js). */
+export interface ProductExperienceCopy {
+  eyebrow?: string
+  /** righe del titolo d'apertura (una voce per riga, l'ultima nel colore d'accento) */
+  titleA?: string[]
+  /** righe del titolo finale */
+  titleB?: string[]
+  /** dose: sul prodotto; water: sul bicchiere */
+  pins?: { dose?: PinCopy; water?: PinCopy }
+}
+
+export interface ProductExperienceQuality {
+  tier: 'low' | 'mid' | 'high'
+  /** risoluzione massima (rapporto pixel) */
+  dpr: number
+  /** risoluzione minima se i 60 fps non tengono */
+  minDpr: number
+  /** campioni MSAA (0 = spento) */
+  msaa: number
+  insideScale: number
+  /** quantita' di particelle della polvere (0..1) */
+  particles: number
+  /** dispersione cromatica del vetro (0 = spenta) */
+  dispersion: number
+  floorReflect: number
+}
+
+/** Logo vettoriale da incidere sul vetro (formato di src/ui/logo-paths.js del sito). */
+export interface EtchLogo {
+  viewBox: string
+  /** tracciato con fill-rule evenodd (fori) */
+  hex?: string
+  letters?: string[]
+  lab?: string[]
+  paths?: string[]
+}
+
+export interface EtchOptions {
+  /** larghezza del logo sul vetro in metri (default 0.042) */
+  width?: number
+  /** altezza dal piano in metri (default 0.038) */
+  y?: number
+  /** intensita' 0..1 (default 0.85) */
+  strength?: number
+}
+
+export interface ProductExperienceOptions {
+  type?: ProductType
+  /** durata del pin in schermate di scroll (default 4) */
+  steps?: number
+  productName?: string
+  productNote?: string
+  /** numero del capitolo davanti al sopratitolo (es. '05') */
+  chapter?: string
+  /** modello del prodotto al posto di quello del tipo (scoop.glb, capsule.glb o tablet.glb) */
+  model?: string | null
+  /** indirizzo di ogni modello, per esempio con la versione del file (glass.glb, scoop.glb...) */
+  resolveModel?: ((file: string) => string) | null
+  /** cartella dei modelli (default '/models/nutrexlab/') */
+  modelsPath?: string
+  /** cartella delle immagini statiche (default '/images/nutrexlab/') */
+  postersPath?: string
+  /** immagine statica del prodotto (senza WebGL e mentre la scena si carica); senza, quella del tipo */
+  poster?: string | ((layout: Layout) => string) | null
+  /** cartella del decoder Draco (default '/draco/') */
+  dracoPath?: string
+  theme?: ProductExperienceTheme
+  copy?: ProductExperienceCopy
+  etch?: EtchLogo | null
+  etchOptions?: EtchOptions
+  /** altezza dello schermo usata per lo scroll, in px (default window.innerHeight) */
+  getVh?: () => number
+  /** scrub di ScrollTrigger: true o secondi di inerzia (default true) */
+  scrub?: boolean | number
+  /** anticipo del caricamento della parte 3D (rootMargin, default '150%') */
+  lazyMargin?: string
+  /** momento tranquillo per la preparazione anticipata (preload); default: browser inattivo */
+  calm?: () => Promise<unknown>
+  quality?: Partial<ProductExperienceQuality>
+}
+
+/** Cambio prodotto: solo i campi passati cambiano. */
+export interface ProductUpdate {
+  type?: ProductType
+  theme?: ProductExperienceTheme
+  copy?: ProductExperienceCopy
+  productName?: string
+  productNote?: string
+  model?: string | null
+  poster?: string | ((layout: Layout) => string) | null
+}
+
+export declare class ProductExperience {
+  constructor(section: HTMLElement, options?: ProductExperienceOptions)
+  readonly section: HTMLElement
+  readonly type: ProductType
+  /** la scena 3D e' pronta */
+  readonly ready: boolean
+  /** avvia subito la parte 3D (di solito parte da sola quando la sezione si avvicina) */
+  init3D(): Promise<void> | void
+  /** prepara la parte 3D in anticipo, a piccoli passi e solo nei momenti tranquilli (options.calm) */
+  preload(): Promise<void> | void
+  /** testi e colori nuovi; se cambia il tipo scarica solo il modello che serve */
+  setProduct(update?: ProductUpdate): Promise<void>
+  /** toglie scroll, scena e contenuto della sezione */
+  destroy(): void
+}
+
+export declare const STEPS: string[]
+export declare const DEFAULT_COPY: Record<ProductType, Required<ProductExperienceCopy>>
+
+export declare function createProductExperience(section: HTMLElement, options?: ProductExperienceOptions): ProductExperience
+
+/** Monta tutte le sezioni [data-product-experience] (data-type, data-model, data-product-name, data-steps). */
+export declare function mountProductExperiences(root?: ParentNode, defaults?: ProductExperienceOptions): ProductExperience[]
+
+/** Tema di un prodotto del sito NutrexLab (src/products.js). */
+export interface SiteTheme {
+  palette: { night: string; wine: string; plum: string; berryHi: string; [name: string]: string }
+  rim: string
+  swatch: string
+  powder?: string[]
+  dust?: string
+}
+
+export declare function themeFromSite(theme: SiteTheme): Required<ProductExperienceTheme>

@@ -1,0 +1,53 @@
+/*
+  Testi di default della sezione (italiano, come il resto del sito). Ogni prodotto puo' sostituirli
+  passando `copy` (vedi index.js): i dati (dosi, numero di capsule...) vanno presi dall'etichetta,
+  niente indicazioni sulla salute che non siano autorizzate.
+*/
+
+/** Sequenza narrativa della polvere: PRODOTTO -> PRECISIONE -> PREPARAZIONE -> ATTIVAZIONE -> RISULTATO. */
+export const STEPS = ['Prodotto', 'Precisione', 'Preparazione', 'Attivazione', 'Risultato']
+
+/** Capsule e compresse (il prodotto gira attorno al bicchiere, poi la macro). */
+export const SHOWCASE_STEPS = ['Prodotto', 'Forma', 'Dettaglio', 'Precisione', 'Risultato']
+
+export const stepsFor = (type) => (type === 'powder' ? STEPS : SHOWCASE_STEPS)
+
+export const DEFAULT_COPY = {
+  powder: {
+    eyebrow: 'Il rituale, in un bicchiere',
+    titleA: ['Precisione', 'in ogni', 'misurino.'],
+    titleB: ['La scienza', 'in un', 'bicchiere.'],
+    pins: {
+      dose: ['10 g', 'Un misurino raso'],
+      water: ['1 bicchiere', "D'acqua, una volta al giorno"],
+    },
+  },
+  capsule: {
+    eyebrow: 'Il rituale, con un bicchiere d’acqua',
+    titleA: ['Scienza.', 'Semplificata.'],
+    titleB: ['Formulata', 'con', 'precisione.'],
+    pins: {
+      dose: ['Capsula vegetale', 'In due parti'],
+      water: ['1 bicchiere', "D'acqua"],
+    },
+  },
+  tablet: {
+    eyebrow: 'Il rituale, con un bicchiere d’acqua',
+    titleA: ['Scienza.', 'Semplificata.'],
+    titleB: ['Formulata', 'con', 'precisione.'],
+    pins: {
+      dose: ['1 compressa', 'Ogni giorno'],
+      water: ['1 bicchiere', "D'acqua"],
+    },
+  },
+}
+
+/** Unisce i testi del prodotto a quelli di default del tipo. */
+export function resolveCopy(type, copy = {}) {
+  const base = DEFAULT_COPY[type] ?? DEFAULT_COPY.powder
+  return {
+    ...base,
+    ...copy,
+    pins: { ...base.pins, ...(copy.pins ?? {}) },
+  }
+}

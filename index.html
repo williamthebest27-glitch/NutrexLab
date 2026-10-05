@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="it" class="is-loading">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Collagene Marino | Nutrex Lab</title>
+    <meta
+      name="description"
+      content="Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 10.000 mg in ogni misurino. Prodotto in Italia."
+    />
+    <meta name="theme-color" content="#f1f0f3" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:title" content="Collagene Marino | Nutrex Lab" />
+    <meta property="og:description" content="Il tuo rituale quotidiano. 10.000 mg di collagene marino in ogni misurino." />
+    <meta property="og:image" content="/og.jpg" />
+    <script>
+      // scarica subito il barattolo del prodotto aperto (?prodotto=id, i file in /models hanno il nome
+      // dell'id e la versione nell'indirizzo: le versioni le inserisce vite.config.js)
+      ;(function () {
+        var v = __MODEL_VERSIONS__
+        var id = new URLSearchParams(location.search).get('prodotto')
+        if (!v[id]) id = 'collagene'
+        var link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'fetch'
+        link.type = 'model/gltf-binary'
+        link.crossOrigin = 'anonymous'
+        link.href = '/models/' + id + '.glb?v=' + v[id]
+        document.head.appendChild(link)
+      })()
+    </script>
+    <noscript>
+      <style>
+        [data-reveal],
+        [data-split] { visibility: visible !important; }
+        .loader { display: none; }
+        .fallback { display: block !important; }
+      </style>
+    </noscript>
+  </head>
+  <body>
+    <div class="loader" aria-hidden="true">
+      <div class="loader__logo" data-logo></div>
+    </div>
+
+    <div class="silk" aria-hidden="true"><canvas class="silk__c"></canvas></div>
+    <div class="aura" aria-hidden="true"></div>
+    <div class="spot" aria-hidden="true"></div>
+    <canvas class="webgl" aria-hidden="true"></canvas>
+    <img class="fallback" src="/og.jpg" alt="Barattolo di Collagene Marino Nutrex Lab" hidden />
+
+    <header class="nav" data-nav>
+      <a class="nav__logo" href="#top" data-goto="top" aria-label="Nutrex Lab, torna all'inizio">
+        <span data-logo>NUTREX LAB</span>
+      </a>
+      <nav class="nav__links" aria-label="Principale">
+        <!-- Homepage: in questa pagina riporta alla hero; dalle altre pagine torna alla home -->
+        <a class="nav-link" href="/" data-goto="top" data-nav-link>Homepage</a>
+        <a class="nav-link" href="#shop" data-goto="shop" data-nav-link>Acquista</a>
+        <!-- pagina da creare: contatti.html (con Vite va aggiunta anche in build.rollupOptions.input) -->
+        <a class="nav-link" href="/contatti" data-nav-link>Contatti</a>
+      </nav>
+      <a class="btn btn--sm nav__cta" href="#shop" data-goto="shop" data-magnetic>
+        <span class="btn__label">Acquista ora</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+      </a>
+    </header>
+
+    <!-- menu prodotti (voci da src/products.js): scheda nella hero, poi sempre visibile mentre si scorre
+         (barra sottile a destra su desktop, pulsante in basso a destra su mobile) -->
+    <nav class="pmenu" aria-label="Prodotti Nutrex Lab" data-pmenu></nav>
+
+    <div class="veil" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <main>
+      <!-- ============ STORIA: hero + scene 1-5 ============ -->
+      <section class="section story" id="top" data-section="story" data-steps="6" data-chapter="Il rituale">
+        <div class="stage stage--front">
+          <h1 class="hero-title" aria-label="Il tuo rituale quotidiano.">
+            <span class="hero-il hero-x" data-split="chars" aria-hidden="true">Il tuo</span>
+            <span class="hero-ritual" aria-hidden="true">
+              <span class="hero-ritual__word" data-split="chars" data-mask="none">Rituale</span>
+            </span>
+            <span class="hero-quot" aria-hidden="true">
+              <span class="hero-quot__word hero-x" data-split="chars" data-mask="none">Quotidiano</span>
+              <svg class="hero-quot__dot" viewBox="0 0 26 24" aria-hidden="true">
+                <path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" />
+              </svg>
+            </span>
+          </h1>
+
+          <div class="hero-lead" data-hero-ui>
+            <p class="hero-lead__sub" data-split="lines">
+              <strong>Collagene marino.</strong>Pensato per il tuo benessere di ogni giorno.
+            </p>
+            <a class="btn hero-lead__cta" href="#about" data-goto="about" data-magnetic>
+              <span class="btn__label">Scopri il collagene</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+
+          <div class="hero-cue" data-hero-ui aria-hidden="true">
+            <span class="hero-cue__dot"></span><span class="hero-cue__line"></span>
+            <span class="mono hero-cue__text">Scroll<br />per scoprire</span>
+          </div>
+
+          <a class="hero-down" href="#about" data-goto="about" data-hero-ui aria-label="Scopri il collagene marino">
+            <span class="hero-down__in">
+              <svg class="hero-down__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" /></svg>
+            </span>
+          </a>
+
+
+          <!-- certificazione Made in Italy (uguale per tutti i prodotti): sigillo con la bandiera -->
+          <div class="s3__cert" data-reveal="s3cert">
+            <svg class="cert__seal" viewBox="0 0 120 120" aria-hidden="true">
+              <defs>
+                <path id="cert-arc" d="M60 60m-47.5 0a47.5 47.5 0 1 1 95 0a47.5 47.5 0 1 1-95 0" />
+                <clipPath id="cert-disc"><circle cx="60" cy="60" r="29" /></clipPath>
+              </defs>
+              <circle class="cert__ring" cx="60" cy="60" r="58" />
+              <circle class="cert__rule" cx="60" cy="60" r="37" />
+              <g class="cert__spin">
+                <text class="cert__arc"><textPath href="#cert-arc" textLength="292" lengthAdjust="spacing">MADE IN ITALY &#8226; PRODOTTO IN ITALIA &#8226;</textPath></text>
+              </g>
+              <g clip-path="url(#cert-disc)">
+                <rect x="31" y="31" width="19.4" height="58" fill="#009246" />
+                <rect x="50.3" y="31" width="19.4" height="58" fill="#f4f5f0" />
+                <rect x="69.6" y="31" width="19.4" height="58" fill="#ce2b37" />
+              </g>
+              <circle class="cert__edge" cx="60" cy="60" r="29" />
+            </svg>
+            <p class="cert__text">
+              <span class="cert__flag" aria-hidden="true"><i></i><i></i><i></i></span>
+              <b>Made in Italy</b>
+              <span class="mono">Prodotto in Italia</span>
+            </p>
+          </div>
+
+          <p class="mono s3__tags" data-reveal="s3tags">
+            <span>Gusto neutro</span><span>Senza glutine</span><span>Senza lattosio</span>
+          </p>
+
+          <p class="body-copy s4__claim" data-split="lines" data-reveal="s4claim">
+            Zinco e biotina contribuiscono al mantenimento di una pelle normale.
+          </p>
+
+          <div class="pins">
+            <div class="pin" data-pin="cap" data-reveal="pins-a" data-reveal-fade>
+              <div class="pin__body">
+                <span class="pin__dot"></span><span class="pin__line"></span>
+                <span class="pin__text mono"><b>Tappo zigrinato</b><span>HDPE, presa sicura</span></span>
+              </div>
+            </div>
+            <div class="pin" data-pin="band" data-reveal="pins-a" data-reveal-fade>
+              <div class="pin__body">
+                <span class="pin__dot"></span><span class="pin__line"></span>
+                <span class="pin__text mono"><b>Sigillo di garanzia</b><span>Integro fino all'apertura</span></span>
+              </div>
+            </div>
+            <div class="pin pin--left" data-pin="dose" data-reveal="pins-b" data-reveal-fade>
+              <div class="pin__body">
+                <span class="pin__dot"></span><span class="pin__line"></span>
+                <span class="pin__text mono"><b>10.000 mg</b><span>Collagene per dose</span></span>
+              </div>
+            </div>
+            <div class="pin pin--left" data-pin="gmp" data-reveal="pins-b" data-reveal-fade>
+              <div class="pin__body">
+                <span class="pin__dot"></span><span class="pin__line"></span>
+                <span class="pin__text mono"><b>GMP / ISO 9001</b><span>Standard di qualit&agrave;</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stage stage--back">
+          <p class="display s3__w s3__w--1" data-split="chars" data-reveal="s3a">Puro.</p>
+          <p class="display s3__w s3__w--2" data-split="chars" data-reveal="s3b">Semplice.</p>
+          <p class="display s3__w s3__w--3" data-split="chars" data-reveal="s3c">Efficace.</p>
+
+          <h2 class="display s4__title" data-split="chars" data-reveal="s4">La bellezza<br />nasce<br />da dentro.</h2>
+
+          <!-- scena 2: sipario scuro con bordo curvo, spunta gia' in fondo alla hero -->
+          <div class="curtain" data-curtain>
+            <div class="curtain__slide">
+              <div class="curtain__cap" aria-hidden="true">
+                <svg viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 0Q50 20 100 0V10.6H0z" /></svg>
+              </div>
+              <div class="curtain__body">
+                <div class="curtain__content" data-curtain-content>
+                  <h2 class="curtain__title" id="about">Collagene<br />marino</h2>
+                  <p class="body-copy curtain__copy" data-split="lines" data-reveal="s2copy">
+                    Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico,
+                    coenzima Q10 e biotina.
+                  </p>
+                </div>
+              </div>
+              <div class="curtain__foot" aria-hidden="true">
+                <svg viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0-0.6H100V0Q50 20 0 0z" /></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ INGREDIENTI ============ -->
+      <section class="section ingredients" id="ingredients" data-section="ingredients" data-steps="3" data-chapter="Formula">
+        <div class="stage stage--back">
+          <h2 class="display ing__title" data-split="chars" data-reveal="ing-title">Cosa c'&egrave;<br />dentro?</h2>
+        </div>
+
+        <div class="stage stage--front">
+          <svg class="ing__lines" aria-hidden="true" data-ing-lines></svg>
+
+          <!-- colonna destra: ogni voce e' collegata alla sua riga nella tabella dell'etichetta -->
+          <div class="ing__col">
+            <!-- mobile: scheda chiara dietro la lista, perche' gli ingredienti si leggano benissimo -->
+            <div class="ing__card" data-reveal="ing-card" aria-hidden="true"></div>
+            <p class="body-copy ing__intro" data-reveal="ing-intro">Otto attivi in ogni misurino da 10&nbsp;g.</p>
+
+            <div class="ing__hero" data-reveal="ing-hero">
+              <span class="ing__num mono">01</span>
+              <span class="ing__name">Collagene marino</span>
+              <span class="ing__sub mono">Idrolizzato, tipo I</span>
+              <span class="ing__big"><b data-count="10000">10.000</b><small>mg</small></span>
+            </div>
+
+            <ol class="ing__list" aria-label="Ingredienti per dose da 10 g">
+              <li class="ing" data-reveal="ing-item">
+                <span class="ing__num mono">02</span><span class="ing__name">Vitamina C</span>
+                <span class="ing__val"><span data-count="232">232</span><small>mg</small></span>
+                <span class="ing__nrv mono"><b data-count="290">290</b>% VNR</span>
+              </li>
+              <li class="ing" data-reveal="ing-item">
+                <span class="ing__num mono">03</span><span class="ing__name">Acido ialuronico</span>
+                <span class="ing__val"><span data-count="145">145</span><small>mg</small></span>
+                <span class="ing__nrv mono">Sodio ialuronato</span>
+              </li>
+              <li class="ing" data-reveal="ing-item">
+                <span class="ing__num mono">04</span><span class="ing__name">Coenzima Q10</span>
+                <span class="ing__val"><span data-count="29">29</span><small>mg</small></span>
+                <span class="ing__nrv mono">Ubichinone</span>
+              </li>
+              <li class="ing" data-reveal="ing-item">
+                <span class="ing__num mono">05</span><span class="ing__name">Zinco</span>
+                <span class="ing__val"><span data-count="29">29</span><small>mg</small></span>
+                <span class="ing__nrv mono"><b data-count="290">290</b>% VNR</span>
+              </li>
+              <li class="ing" data-reveal="ing-item">
+                <span class="ing__num mono">06</span><span class="ing__name">Vitamina E</span>
+                <span class="ing__val"><span data-count="35">35</span><small>mg</small></span>
+                <span class="ing__nrv mono"><b data-count="290">290</b>% VNR</span>
+              </li>
+              <li class="ing" data-reveal="ing-item">
+                <span class="ing__num mono">07</span><span class="ing__name">Riboflavina (B2)</span>
+                <span class="ing__val"><span data-count="4.1" data-decimals="1">4,1</span><small>mg</small></span>
+                <span class="ing__nrv mono"><b data-count="293">293</b>% VNR</span>
+              </li>
+              <li class="ing" data-reveal="ing-item">
+                <span class="ing__num mono">08</span><span class="ing__name">Biotina</span>
+                <span class="ing__val"><span data-count="145">145</span><small>&micro;g</small></span>
+                <span class="ing__nrv mono"><b data-count="290">290</b>% VNR</span>
+              </li>
+              <!-- posti liberi per i prodotti con piu' ingredienti (riempiti da src/ui/copy.js) -->
+              <li class="ing" data-reveal="ing-item" hidden></li>
+              <li class="ing" data-reveal="ing-item" hidden></li>
+            </ol>
+
+            <p class="mono ing__note" data-reveal="ing-note">
+              VNR: valori nutritivi di riferimento giornalieri per adulti, Reg. (UE) 1169/2011.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCIENZA ============ -->
+      <section class="section science" id="science" data-section="science" data-steps="3" data-chapter="Scienza">
+        <div class="stage stage--back">
+          <h2 class="display sci__title" aria-label="La tripla elica.">
+            <span class="sci__a" data-split="chars" data-reveal="sci-a" aria-hidden="true">La tripla</span>
+            <span class="sci__b" data-split="chars" data-reveal="sci-b" aria-hidden="true">elica.</span>
+          </h2>
+        </div>
+
+        <div class="stage stage--front">
+          <div class="sci__text">
+            <p class="body-copy" data-split="lines" data-reveal="sci-copy">
+              Il collagene &egrave; formato da tre catene proteiche avvolte in un'unica elica. L'idrolisi lo scompone in
+              piccoli peptidi.
+            </p>
+            <p class="mono sci__claim" data-reveal="sci-claim">
+              La vitamina C contribuisce alla normale formazione del collagene per la normale funzione della pelle.
+            </p>
+          </div>
+
+          <dl class="sci__data" data-reveal="sci-data">
+            <div>
+              <dt class="mono">Collagene per dose</dt>
+              <dd><span data-count="10000">10.000</span><small>mg</small></dd>
+            </div>
+            <div>
+              <dt class="mono">Vitamina C</dt>
+              <dd><span data-count="290">290</span><small>% VNR</small></dd>
+            </div>
+            <div>
+              <dt class="mono">Origine</dt>
+              <dd>Tipo I<small>Marino</small></dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- ============ RITUALE IN UN BICCHIERE ============
+           sezione 3D pinnata (src/components/ProductExperience, avviata da src/main.js): misurino e
+           polvere per i prodotti in polvere, capsula o compressa attorno al bicchiere per gli altri.
+           Il contenuto lo crea il componente; data-steps = viewport di scroll durante il pin. -->
+      <section class="pe" id="rituale" data-section="ritual" data-steps="4" data-chapter="Preparazione" data-product-experience></section>
+
+      <!-- ============ OGNI GIORNO ============ -->
+      <section class="section daily" id="daily" data-section="daily" data-steps="3" data-chapter="Ogni giorno">
+        <div class="stage stage--back">
+          <div class="marquee" aria-hidden="true" data-marquee>
+            <div class="marquee__track display">
+              <span>Un misurino.</span><span>Ogni giorno.</span><span>Un misurino.</span><span>Ogni giorno.</span>
+              <span>Un misurino.</span><span>Ogni giorno.</span>
+            </div>
+          </div>
+          <h2 class="display daily__title" data-split="chars" data-reveal="daily-title">Il tuo<br />rituale.<br />Evoluto.</h2>
+        </div>
+
+        <div class="stage stage--front">
+          <p class="sr-only">Un misurino. Ogni giorno.</p>
+          <ul class="daily__facts" data-reveal="daily-facts">
+            <li><b data-count="10">10</b><span>g</span><em>Un misurino raso</em></li>
+            <li><b data-count="1">1</b><span>bicchiere</span><em>D'acqua, una volta al giorno</em></li>
+            <li><b data-count="50">50</b><span>giorni</span><em>In ogni barattolo da 500 g</em></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============ ACQUISTA ============ -->
+      <section class="section shop" id="shop" data-section="shop" data-steps="1.2" data-chapter="Acquista">
+        <div class="stage stage--back">
+          <h2 class="display shop__title" aria-label="Fai del benessere un rituale.">
+            <span class="shop__a" data-split="chars" data-reveal="shop-a" aria-hidden="true">Fai del benessere</span>
+            <span class="shop__b" data-split="chars" data-reveal="shop-b" aria-hidden="true">un rituale.</span>
+          </h2>
+        </div>
+
+        <div class="stage stage--front">
+          <div class="shop__cta" data-reveal="shop-cta">
+            <a class="btn btn--xl" href="#shop" data-magnetic>
+              <span class="btn__label">Acquista il collagene</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+            </a>
+            <p class="mono">500 g. Gusto neutro. Prodotto in Italia.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" data-footer>
+      <div class="footer__brand" data-logo>NUTREX LAB</div>
+      <div class="footer__grid">
+        <nav class="footer__nav mono" aria-label="Piè di pagina">
+          <a class="link" href="/" data-goto="top">Homepage</a>
+          <a class="link" href="#shop" data-goto="shop">Acquista</a>
+          <a class="link" href="/contatti">Contatti</a>
+        </nav>
+        <p class="footer__legal">
+          Integratore alimentare. Non superare la dose giornaliera consigliata. Gli integratori alimentari non vanno
+          intesi come sostituti di una dieta variata, equilibrata e di un sano stile di vita. Tenere fuori dalla portata dei
+          bambini al di sotto dei tre anni di et&agrave;.
+        </p>
+        <p class="mono footer__copy">&copy; 2026 Nutrex Lab</p>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

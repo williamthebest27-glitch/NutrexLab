@@ -1,0 +1,2034 @@
+/* ==========================================================================
+   Sezioni e scene.
+   Ogni sezione e' alta (passi + 1) viewport: dentro, due "stage" sticky
+   sovrapposti (dietro e davanti al canvas 3D) restano fermi mentre lo scroll
+   guida camera, barattolo e testi.
+   ========================================================================== */
+
+.section {
+  position: relative;
+  display: grid;
+  grid-template-rows: 100%;
+  height: calc(var(--vh) * (var(--steps, 1) + 1));
+}
+
+.stage {
+  grid-area: 1 / 1;
+  align-self: start;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: var(--vh);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.stage--back {
+  z-index: 1;
+}
+
+.stage--front {
+  z-index: 3;
+}
+
+.stage a,
+.stage button {
+  pointer-events: auto;
+}
+
+.stage > * {
+  position: absolute;
+}
+
+/* --------------------------------------------------------------------------
+   HERO: raso perlato, barattolo sospeso, IL TUO / RITUALE / QUOTIDIANO.
+   Ogni misura e' min(vw, vh): la composizione resta la stessa su schermi piu' larghi o piu' alti.
+   La hero occupa tutto lo schermo: la scena successiva entra solo con lo scroll.
+   Desktop: a sinistra la colonna IL TUO / RITUALE / QUOTIDIANO / testo / pulsante,
+   al centro il barattolo, a destra (al centro) il menu prodotti.
+   -------------------------------------------------------------------------- */
+.story {
+  --hero-x: clamp(20px, 6vw, 100px);
+  /* titoli il piu' grandi possibile: la colonna riempie l'altezza tra menu e fondo */
+  --fs-il: min(11.1vw, 17vh);
+  --fs-rit: min(8.75vw, 13.3vh);
+  --fs-quot: min(7.8vw, 11.8vh);
+  /* colonna di sinistra: ogni riga parte sotto la precedente. RITUALE e' centrato sul suo top:
+     in prospettiva le lettere salgono di ~1.5em (lato destro) e scendono di ~0.75em */
+  --y-il: max(11.5%, 90px);
+  --y-rit: calc(var(--y-il) + var(--fs-il) * 0.86 + var(--fs-rit) * 1.5 + 12px);
+  --y-quot: calc(var(--y-rit) + var(--fs-rit) * 0.75 + 22px);
+  --y-lead: calc(var(--y-quot) + var(--fs-quot) * 0.86 + min(2.6vh, 26px));
+}
+
+.body-copy {
+  text-wrap: balance;
+}
+
+.hero-title {
+  inset: 0;
+  margin: 0;
+}
+
+.hero-title > * {
+  position: absolute;
+  display: block;
+  white-space: nowrap;
+  will-change: transform, opacity, filter;
+}
+
+/* grottesco pesante e geometrico */
+.hero-x {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 100%;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.86;
+  color: var(--fg);
+}
+
+.hero-il {
+  left: var(--hero-x);
+  top: var(--y-il);
+  font-size: var(--fs-il);
+}
+
+.hero-quot {
+  left: var(--hero-x);
+  top: var(--y-quot);
+  display: flex;
+  align-items: baseline;
+  font-size: var(--fs-quot);
+}
+
+/* un filo piu' stretto di IL TUO */
+.hero-quot__word {
+  font-stretch: 88%;
+}
+
+/* il punto finale e' l'esagono del logo, appoggiato un po' sotto la linea di base */
+.hero-quot__dot {
+  position: relative;
+  top: 0.075em;
+  flex: none;
+  width: 0.15em;
+  height: 0.15em;
+  margin-left: 0.035em;
+  overflow: visible;
+  fill: var(--quot-dot);
+  stroke: var(--quot-dot);
+  stroke-width: 3.4;
+  stroke-linejoin: round;
+}
+
+/* RITUALE: condensato, in prospettiva (lato destro piu' vicino), "riempito" di liquido.
+   Sotto IL TUO, allineato alla colonna di sinistra. */
+.hero-ritual {
+  left: var(--hero-x);
+  top: var(--y-rit);
+  font-size: var(--fs-rit);
+  /* in em: la prospettiva resta la stessa a ogni dimensione */
+  perspective: 4.7em;
+  perspective-origin: 0% 50%;
+}
+
+.hero-ritual__word {
+  --level: 0.5em;
+  --wave: 0em;
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 62%;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  transform-origin: 0% 50%;
+  transform: translateY(-50%) rotateY(-40deg) scaleY(1.92);
+}
+
+/* ogni lettera e' un "bicchiere": vetro del colore del prodotto in alto, liquido con superficie
+   a onda (--rit-liquid, generato da src/theme.js). --bx allinea l'onda tra lettere vicine
+   (calcolato dopo la divisione in lettere) */
+.hero-ritual__word .char {
+  color: transparent;
+  background-image:
+    var(--rit-liquid),
+    linear-gradient(180deg, var(--rit-glass-a), var(--rit-glass-b));
+  background-size: 2.4em 3em, 100% 100%;
+  background-repeat: repeat-x, no-repeat;
+  background-position: calc(var(--bx, 0px) + var(--wave)) var(--level), 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.hero-lead {
+  left: var(--hero-x);
+  top: var(--y-lead);
+}
+
+.hero-lead__sub {
+  max-width: 13.6em;
+  font-size: clamp(15px, 1.24vw, 19px);
+  line-height: 1.26;
+  text-wrap: pretty;
+  color: color-mix(in srgb, var(--fg) 58%, transparent);
+}
+
+.hero-lead__sub strong {
+  display: block;
+  margin-bottom: 0.18em;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+/* il pulsante scende: sotto al testo c'e' spazio */
+.hero-lead__cta {
+  margin-top: clamp(16px, 4.5vh, 52px);
+  height: 50px;
+  padding: 0 26px;
+  letter-spacing: 0.2em;
+}
+
+/* invito allo scroll: accanto al pulsante rotondo, in basso al centro
+   (la colonna di sinistra e' occupata dai titoli) */
+.hero-cue {
+  left: calc(50% + 36px);
+  top: calc(89% - 15px);
+  width: 170px;
+  height: 30px;
+}
+
+.hero-cue__dot,
+.hero-cue__line,
+.hero-cue__text {
+  position: absolute;
+}
+
+.hero-cue__dot {
+  left: -3px;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fg);
+}
+
+.hero-cue__line {
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: color-mix(in srgb, var(--fg) 70%, transparent);
+  transform-origin: 50% 0;
+}
+
+.hero-cue__dot,
+.hero-cue__line {
+  display: none;
+}
+
+.hero-cue__text {
+  left: 0;
+  top: 0;
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+  line-height: 1.45;
+  color: var(--fg);
+}
+
+.hero-down {
+  left: calc(50% - 21px);
+  top: calc(89% - 21px);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+}
+
+.hero-down__in {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
+  box-shadow: 0 8px 22px -10px var(--down-shadow);
+  transition: background-color 0.4s var(--ease-out);
+}
+
+.hero-down__icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.4s var(--ease-out);
+}
+
+.hero-down:hover .hero-down__in,
+.hero-down:focus-visible .hero-down__in {
+  background: var(--fg);
+}
+
+.hero-down:hover .hero-down__icon,
+.hero-down:focus-visible .hero-down__icon {
+  stroke: var(--bg);
+}
+
+/* Menu prodotti: pannello in vetro sul bordo destro, centrato in verticale.
+   .pmenu occupa tutta l'altezza (e' lui che sfuma con lo scroll), la scheda e' centrata dentro.
+   Ogni voce ha l'esagono nel colore del prodotto; la voce attiva e' piena. */
+.pmenu,
+.pmenu-ghost {
+  /* colori propri: la scheda e il pulsante restano chiari con testi scuri anche sopra le sezioni
+     scure (i colori della pagina cambiano con lo scroll) */
+  --fg: var(--ink);
+  --fg-soft: color-mix(in srgb, var(--ink) 62%, transparent);
+  --fg-faint: color-mix(in srgb, var(--ink) 40%, transparent);
+  --line: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.pmenu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: var(--gutter);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.pmenu__card,
+.pmenu__toggle {
+  pointer-events: auto;
+}
+
+/* pulsante PRODOTTI e tendina: solo su mobile (sul desktop la scheda e' sempre aperta) */
+.pmenu__toggle {
+  display: none;
+}
+
+.pmenu__panel {
+  display: contents;
+}
+
+.pmenu__card {
+  position: relative;
+  width: clamp(246px, 19vw, 290px);
+  max-height: min(84%, calc(var(--vh) - 150px));
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px 12px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  box-shadow:
+    0 30px 60px -34px color-mix(in srgb, var(--ink) 55%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  backdrop-filter: blur(18px) saturate(1.35);
+}
+
+.pmenu__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 6px 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pmenu__icon {
+  flex: none;
+  width: 18px;
+  height: 17px;
+  fill: var(--accent);
+}
+
+.pmenu__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 100%;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.pmenu__count {
+  margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+}
+
+/* tutti i 12 prodotti entrano nella scheda (da 720 px di altezza); su schermi piu' bassi la lista
+   scorre: le sfumature in alto e in basso indicano che ci sono altre voci */
+.pmenu__list {
+  display: grid;
+  gap: clamp(1px, 0.3vh, 4px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.pmenu__list.has-below {
+  -webkit-mask-image: linear-gradient(to top, transparent, #000 30px);
+  mask-image: linear-gradient(to top, transparent, #000 30px);
+}
+
+.pmenu__list.has-above {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 26px);
+  mask-image: linear-gradient(to bottom, transparent, #000 26px);
+}
+
+.pmenu__list.has-above.has-below {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 30px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 30px), transparent);
+}
+
+.pmenu__item {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: clamp(4px, 0.75vh, 11px) 12px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--fg-soft);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 0.4s var(--ease-out),
+    background-color 0.4s var(--ease-out),
+    box-shadow 0.4s var(--ease-out);
+}
+
+.pmenu__hex {
+  flex: none;
+  width: 20px;
+  height: 19px;
+  overflow: visible;
+  fill: transparent;
+  stroke: var(--swatch);
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  transition:
+    fill 0.45s var(--ease-out),
+    transform 0.8s var(--ease-out);
+}
+
+.pmenu__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-stretch: 100%;
+  font-size: clamp(13px, 1.05vw, 15px);
+  line-height: 1.15;
+  letter-spacing: 0.005em;
+  /* i nomi lunghi vanno a capo invece di essere tagliati */
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  transition: transform 0.6s var(--ease-out);
+}
+
+/* seconda riga: formato o variante (In polvere, Compresse, Cardio Premium...) */
+.pmenu__note {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+.pmenu__item[aria-pressed='true'] .pmenu__note {
+  color: var(--fg-soft);
+}
+
+.pmenu__num {
+  font-size: 10px;
+  color: var(--fg-faint);
+  transition: color 0.4s var(--ease-out);
+}
+
+.pmenu__item:hover,
+.pmenu__item:focus-visible {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.pmenu__item:hover .pmenu__name,
+.pmenu__item:focus-visible .pmenu__name {
+  transform: translateX(3px);
+}
+
+/* l'esagono ruota di un sesto di giro: torna identico, resta solo il movimento */
+.pmenu__item:hover .pmenu__hex,
+.pmenu__item:focus-visible .pmenu__hex {
+  transform: rotate(60deg);
+}
+
+.pmenu__item[aria-pressed='true'] {
+  color: var(--fg);
+  background: color-mix(in srgb, #fff 78%, transparent);
+  box-shadow: 0 10px 22px -14px color-mix(in srgb, var(--ink) 60%, transparent);
+}
+
+.pmenu__item[aria-pressed='true'] .pmenu__hex {
+  fill: var(--swatch);
+}
+
+.pmenu__item[aria-pressed='true'] .pmenu__num {
+  color: var(--accent);
+}
+
+@media (max-height: 800px) and (min-width: 768px) {
+  .pmenu__item {
+    padding-block: 4px;
+  }
+
+  .pmenu__note {
+    margin-top: 1px;
+  }
+}
+
+/* Pulsante PRODOTTI con tendina (classe .is-drop da main.js): su mobile sempre, su desktop appena si
+   inizia a scorrere (la scheda della hero si chiude nel pulsante, in alto a destra accanto ad
+   "Acquista ora"). La tendina contiene la stessa lista dei prodotti. */
+.pmenu.is-drop {
+  top: 12px;
+  bottom: auto;
+  right: calc(var(--gutter) + var(--cta-w, 156px) + 10px);
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.pmenu.is-drop .pmenu__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 15px 0 14px;
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  box-shadow:
+    0 16px 30px -18px color-mix(in srgb, var(--ink) 70%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 100%;
+  font-size: 11.5px;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.4s var(--ease-out);
+}
+
+.pmenu.is-drop .pmenu__toggle:hover,
+.pmenu.is-open .pmenu__toggle {
+  background: color-mix(in srgb, #fff 94%, transparent);
+}
+
+.pmenu__toggle-hex {
+  flex: none;
+  width: 15px;
+  height: 14px;
+  fill: var(--accent);
+  transition: transform 0.8s var(--ease-out);
+}
+
+.pmenu__chev {
+  flex: none;
+  width: 10px;
+  height: 7px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.45s var(--ease-out);
+}
+
+.pmenu.is-open .pmenu__toggle-hex {
+  transform: rotate(60deg);
+}
+
+.pmenu.is-open .pmenu__chev {
+  transform: rotate(180deg);
+}
+
+/* tendina chiusa: trasparente e non si tocca */
+.pmenu.is-drop .pmenu__panel {
+  display: block;
+  margin-top: 10px;
+  transform-origin: 100% 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.96);
+  transition:
+    opacity 0.25s var(--ease-out),
+    transform 0.35s var(--ease-out),
+    visibility 0s linear 0.35s;
+}
+
+.pmenu.is-drop.is-open .pmenu__panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.55s var(--ease-out),
+    visibility 0s;
+}
+
+.pmenu.is-drop .pmenu__card {
+  max-height: calc(var(--vh) - 90px);
+  padding: 8px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+
+.pmenu.is-drop .pmenu__head {
+  display: none;
+}
+
+.pmenu.is-drop .pmenu__list {
+  gap: 2px;
+}
+
+/* le voci scendono una dopo l'altra quando la tendina si apre */
+.pmenu.is-drop .pmenu__list li {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.2s var(--ease-out),
+    transform 0.3s var(--ease-out);
+}
+
+.pmenu.is-drop.is-open .pmenu__list li {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.4s var(--ease-out) calc(0.05s + var(--i) * 0.03s),
+    transform 0.6s var(--ease-out) calc(0.05s + var(--i) * 0.03s);
+}
+
+/* pulsante: la scritta sale dal basso quando atterra (menuMorph.js), riflesso di luce che lo attraversa */
+.pmenu.is-drop .pmenu__toggle {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.pmenu__toggle-label {
+  display: inline-block;
+}
+
+.pmenu__toggle::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.95) 50%, transparent 70%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.pmenu__toggle.is-shine::after {
+  animation: pmenu-shine 0.95s var(--ease-out) forwards;
+}
+
+@keyframes pmenu-shine {
+  to {
+    transform: translateX(130%);
+  }
+}
+
+/* copia della scheda che fa il viaggio tra scheda e pulsante (menuMorph.js), sopra la navbar */
+.pmenu-ghost {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.pmenu__card--ghost {
+  position: absolute;
+  margin: 0;
+  max-height: none;
+  overflow: hidden;
+  will-change: left, top, width, height;
+}
+
+.pmenu__card--ghost,
+.pmenu__card--ghost * {
+  transition: none !important;
+}
+
+/* la voce attiva si spegne e si riaccende con una dissolvenza */
+.pmenu__card--ghost .pmenu__item {
+  transition:
+    background-color 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out) !important;
+}
+
+.pmenu__card--ghost.is-quiet .pmenu__item {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.pmenu-ghost__hex {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  stroke: var(--swatch);
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--swatch) 60%, transparent));
+  transition: none;
+  will-change: transform;
+}
+
+.pmenu-ghost__ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+}
+
+/* linee dalla lista alla tabella dell'etichetta: solo per il prodotto su cui sono tarate */
+html.no-lines .ing__lines {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Scena 2: sipario scuro con bordo curvo, "Collagene marino" in serif
+   (sta sopra a tutti gli altri testi dello stage posteriore, sotto al barattolo).
+   A riposo e' appena sotto il bordo dello schermo: sale con lo scroll.
+   -------------------------------------------------------------------------- */
+.curtain {
+  --dip: min(4.1vw, 6.2vh);
+  left: 0;
+  right: 0;
+  top: 100%;
+  will-change: transform;
+}
+
+.curtain__slide {
+  will-change: transform;
+}
+
+.curtain__cap {
+  height: var(--dip);
+  transform-origin: 50% 100%;
+}
+
+.curtain__cap svg,
+.curtain__foot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: var(--curtain);
+}
+
+/* bordo inferiore curvo, visibile quando il sipario esce verso l'alto */
+.curtain__foot {
+  height: var(--dip);
+  margin-top: -1px;
+}
+
+.curtain__body {
+  position: relative;
+  height: var(--vh);
+  margin-top: -1px;
+  background:
+    radial-gradient(ellipse 55% 60% at 78% 42%, var(--curtain-glow), transparent 70%),
+    var(--curtain);
+}
+
+.curtain__content {
+  position: absolute;
+  left: calc(var(--hero-x) + 2.5vw);
+  top: clamp(24px, 3.6vh, 40px);
+  width: min(580px, 44vw);
+  color: var(--curtain-ink);
+}
+
+.curtain__title {
+  margin-top: 0;
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-weight: 300;
+  font-size: min(5.9vw, 8.8vh);
+  line-height: 0.98;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  font-variant-numeric: lining-nums; /* Q10, B12, KSM-66: cifre alte come le maiuscole */
+  background: linear-gradient(100deg, var(--curtain-title-a) 0%, var(--curtain-title-b) 46%, var(--curtain-title-c) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  will-change: transform;
+}
+
+/* nomi lunghi (ASHWAGANDHA, BISGLICINATO): un passo piu' piccolo, restano su una riga */
+.curtain__title--long {
+  font-size: min(4.7vw, 7vh);
+}
+
+.curtain__copy {
+  margin-top: clamp(22px, 3.4vh, 36px);
+  max-width: 34ch;
+  color: var(--curtain-copy);
+}
+
+/* --------------------------------------------------------------------------
+   Scena 3: Pure. Simple. Effective.
+   -------------------------------------------------------------------------- */
+.story {
+  --fs-s3: min(6.3vw, 11.5vh);
+}
+
+.s3__w {
+  right: var(--gutter);
+  font-size: var(--fs-s3);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.s3__w--1 {
+  top: 17%;
+}
+
+.s3__w--2 {
+  top: calc(17% + var(--fs-s3) * 1.02);
+}
+
+.s3__w--3 {
+  top: calc(17% + var(--fs-s3) * 2.04);
+  color: var(--accent);
+}
+
+.s3__tags {
+  right: var(--gutter);
+  bottom: calc(var(--gutter) + 4px);
+  display: flex;
+  gap: clamp(18px, 2.4vw, 40px);
+  font-size: clamp(13px, 1vw, 16px);
+  color: var(--fg-soft);
+}
+
+/* Certificazione Made in Italy sotto le tre parole: sigillo con la bandiera (la scritta circolare
+   gira piano) e testo grande, allineati a destra come le parole */
+.s3__cert {
+  right: var(--gutter);
+  top: calc(17% + var(--fs-s3) * 3.2);
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 1.4vw, 22px);
+  padding: clamp(10px, 1vw, 14px) clamp(18px, 1.8vw, 28px) clamp(10px, 1vw, 14px) clamp(10px, 1vw, 14px);
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 62%, transparent);
+  box-shadow: 0 24px 50px -30px color-mix(in srgb, var(--ink) 60%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.cert__seal {
+  flex: none;
+  width: clamp(84px, 7.4vw, 116px);
+  height: auto;
+  overflow: visible;
+}
+
+.cert__ring {
+  fill: #fff;
+  stroke: color-mix(in srgb, var(--fg) 85%, transparent);
+  stroke-width: 1.6;
+}
+
+.cert__rule {
+  fill: none;
+  stroke: color-mix(in srgb, var(--fg) 30%, transparent);
+  stroke-width: 1;
+}
+
+.cert__edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--fg) 22%, transparent);
+  stroke-width: 1;
+}
+
+.cert__arc {
+  font-family: var(--font-mono);
+  font-size: 10.4px;
+  font-weight: 500;
+  fill: var(--fg);
+}
+
+.cert__spin {
+  transform-origin: 60px 60px;
+  animation: cert-spin 28s linear infinite;
+}
+
+@keyframes cert-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cert__spin {
+    animation: none;
+  }
+}
+
+.cert__text {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.cert__text b {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 100%;
+  font-size: clamp(22px, 2.1vw, 34px);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.cert__text .mono {
+  color: var(--fg-soft);
+}
+
+/* tricolore sottile sopra la scritta */
+.cert__flag {
+  display: flex;
+  width: clamp(44px, 3.6vw, 58px);
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cert__flag i {
+  flex: 1;
+}
+
+.cert__flag i:nth-child(1) {
+  background: #009246;
+}
+
+.cert__flag i:nth-child(2) {
+  background: #f4f5f0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.cert__flag i:nth-child(3) {
+  background: #ce2b37;
+}
+
+/* --------------------------------------------------------------------------
+   Scena 4: Beauty starts within (fondo scuro)
+   -------------------------------------------------------------------------- */
+.story {
+  --fs-s4: min(6.3vw, 10.8vh);
+}
+
+/* niente `translate` CSS sugli elementi animati da GSAP: li assorbirebbe nelle sue trasformazioni */
+.s4__title {
+  left: var(--gutter);
+  top: calc(50% - var(--fs-s4) * 1.36);
+  font-size: var(--fs-s4);
+}
+
+.s4__claim {
+  left: var(--gutter);
+  top: calc(50% + var(--fs-s4) * 1.3 + clamp(22px, 3.4vh, 40px));
+  width: min(34ch, 32vw);
+}
+
+/* --------------------------------------------------------------------------
+   Scena 5: dettagli agganciati al modello 3D
+   -------------------------------------------------------------------------- */
+.pins {
+  inset: 0;
+}
+
+/* .pin viene posizionato a ogni frame (translate) sul punto 3D; il contenuto
+   e' spostato in modo che il pallino cada esattamente sul punto */
+.pin {
+  --face: 1;
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: translate, opacity;
+}
+
+.pin__body {
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+  opacity: var(--face);
+  transition: opacity 0.3s;
+}
+
+.pin--left .pin__body {
+  transform: translate(-100%, -50%);
+}
+
+.pin__dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.pin__line {
+  flex: none;
+  width: var(--line, 64px);
+  height: 1px;
+  margin-left: 4.5px;
+  background: var(--fg-soft);
+  transform-origin: left center;
+}
+
+.pin__text {
+  padding-left: 14px;
+  white-space: nowrap;
+}
+
+.pin__text b {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: clamp(18px, 1.55vw, 26px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.pin__text span {
+  font-size: clamp(12px, 0.95vw, 15px);
+  color: var(--fg-soft);
+}
+
+.pin--left .pin__body {
+  flex-direction: row-reverse;
+}
+
+.pin--left .pin__line {
+  margin-left: 0;
+  margin-right: 4.5px;
+  transform-origin: right center;
+}
+
+.pin--left .pin__text {
+  padding-left: 0;
+  padding-right: 14px;
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   Ingredienti
+   -------------------------------------------------------------------------- */
+/* il barattolo in primo piano occupa i due terzi a sinistra (tabella nutrizionale),
+   titolo e ingredienti stanno nella colonna destra sul fondo scuro */
+.ingredients {
+  --fs-ing: min(4.6vw, 8.2vh);
+  --col-w: min(27vw, 430px);
+  --col-x: calc(100% - var(--gutter) - var(--col-w));
+}
+
+.ing__title {
+  left: var(--col-x);
+  top: 11%;
+  font-size: var(--fs-ing);
+}
+
+.ing__col {
+  left: var(--col-x);
+  top: calc(11% + var(--fs-ing) * 1.72 + clamp(14px, 2.2vh, 24px));
+  bottom: var(--gutter);
+  width: var(--col-w);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 3.4vh, 38px);
+}
+
+.ing__intro {
+  max-width: none;
+}
+
+.ing__hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  row-gap: 6px;
+}
+
+.ing__hero .ing__num {
+  grid-row: 1 / span 2;
+  padding-top: 5px;
+  color: var(--accent);
+}
+
+.ing__hero .ing__name {
+  font-size: clamp(19px, 1.5vw, 25px);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.ing__hero .ing__sub {
+  color: var(--fg-soft);
+}
+
+.ing__big {
+  grid-column: 1 / -1;
+  margin-top: clamp(6px, 1.1vh, 12px);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.ing__big b {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-stretch: 108%;
+  font-size: min(4.3vw, 7.6vh);
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ing__big small {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+
+.ing__list {
+  display: grid;
+  gap: clamp(9px, 1.7vh, 18px);
+}
+
+/* liste lunghe (fino a nove attivi): righe piu' strette */
+.ing__list.is-long {
+  gap: clamp(5px, 1vh, 11px);
+}
+
+.ing__list.is-long .ing__name {
+  font-size: clamp(16px, 1.15vw, 19px);
+}
+
+.ing__list.is-long .ing__val {
+  font-size: clamp(17px, 1.32vw, 22px);
+}
+
+.ing {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: baseline;
+}
+
+.ing .ing__num {
+  grid-row: 1 / span 2;
+  color: var(--fg-faint);
+}
+
+.ing__name {
+  font-size: clamp(17px, 1.28vw, 21px);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.ing__val {
+  justify-self: end;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-stretch: 108%;
+  font-size: clamp(19px, 1.5vw, 25px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ing__val small {
+  margin-left: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+
+.ing__nrv {
+  grid-column: 2 / -1;
+  color: var(--fg-soft);
+  font-size: 12px;
+}
+
+.ing__nrv b {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.ing__note {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--fg-soft);
+}
+
+/* scheda dietro la lista: solo su mobile */
+.ing__card {
+  display: none;
+}
+
+/* colonna piu' alta dello schermo (fitIngredients in src/ui/copy.js): prima spaziature piu'
+   strette, poi senza la frase introduttiva, infine la nota (VNR, titolo...) passa sulla stessa
+   riga del nome invece che sotto */
+.ing__col.is-tight {
+  gap: clamp(10px, 1.7vh, 26px);
+}
+
+.ing__col.is-tight .ing__list {
+  gap: clamp(3px, 0.4vh, 8px);
+}
+
+.ing__col.is-tight .ing__big b {
+  font-size: min(3.6vw, 6vh);
+}
+
+.ing__col.is-short .ing__intro {
+  display: none;
+}
+
+.ing__col.is-tighter .ing {
+  grid-template-columns: 30px auto minmax(0, 1fr) auto;
+}
+
+.ing__col.is-tighter .ing__nrv {
+  grid-column: 3;
+  grid-row: 1;
+  min-width: 0;
+  padding-left: 10px;
+  line-height: 1.3;
+}
+
+.ing__col.is-tighter .ing__val {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+.ing__lines {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ing__lines line {
+  stroke: color-mix(in srgb, var(--fg) 34%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.ing__lines circle {
+  fill: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   Science
+   -------------------------------------------------------------------------- */
+.science {
+  --fs-sci: min(9.4vw, 16.5vh);
+}
+
+.sci__title {
+  inset: 0;
+  margin: 0;
+}
+
+.sci__a,
+.sci__b {
+  position: absolute;
+  display: block;
+  font-size: var(--fs-sci);
+  white-space: nowrap;
+}
+
+.sci__a {
+  left: var(--gutter);
+  top: 12%;
+}
+
+.sci__b {
+  right: var(--gutter);
+  bottom: 10%;
+  text-align: right;
+}
+
+.sci__text {
+  right: var(--gutter);
+  top: 15%;
+  width: min(36ch, 30vw);
+  display: grid;
+  gap: 22px;
+}
+
+.sci__claim {
+  font-size: clamp(13px, 1vw, 16px);
+  letter-spacing: 0.1em;
+  line-height: 1.6;
+  color: var(--accent);
+  max-width: 40ch;
+}
+
+.sci__data {
+  left: var(--gutter);
+  top: calc(12% + var(--fs-sci) * 0.86 + clamp(30px, 5vh, 56px));
+  display: flex;
+  gap: clamp(28px, 3.4vw, 60px);
+}
+
+.sci__data dt {
+  margin-bottom: 8px;
+  color: var(--fg-soft);
+}
+
+.sci__data dd {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-stretch: 108%;
+  font-size: min(3.3vw, 6vh);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sci__data dd small {
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Every day (prodotto + marquee)
+   -------------------------------------------------------------------------- */
+.daily {
+  --fs-daily: min(6.2vw, 11.2vh);
+}
+
+.marquee {
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.marquee__track {
+  display: inline-flex;
+  gap: 0.42em;
+  font-size: min(15vw, 26vh);
+  color: color-mix(in srgb, var(--fg) 92%, transparent);
+}
+
+.daily__title {
+  right: var(--gutter);
+  top: 17%;
+  font-size: var(--fs-daily);
+  text-align: right;
+}
+
+.daily__facts {
+  right: var(--gutter);
+  bottom: 14%;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: clamp(26px, 4vw, 70px);
+}
+
+.daily__facts li {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  column-gap: 8px;
+  row-gap: 10px;
+}
+
+.daily__facts b {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-stretch: 108%;
+  font-size: min(5vw, 9vh);
+  line-height: 0.82;
+  letter-spacing: -0.04em;
+}
+
+.daily__facts span {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+
+.daily__facts em {
+  grid-column: 1 / -1;
+  font-style: normal;
+  font-size: 15px;
+  color: var(--fg-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Shop / CTA finale
+   -------------------------------------------------------------------------- */
+.shop {
+  --fs-shop: min(6.2vw, 10.6vh);
+}
+
+.shop__title {
+  inset: 0;
+  margin: 0;
+}
+
+.shop__title > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: block;
+  text-align: center;
+  font-size: var(--fs-shop);
+  white-space: nowrap;
+}
+
+.shop__a {
+  top: 11%;
+}
+
+.shop__b {
+  top: calc(11% + var(--fs-shop) * 0.9);
+}
+
+.shop__cta {
+  left: 0;
+  right: 0;
+  bottom: 4.5%;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.shop__cta .btn {
+  pointer-events: auto;
+}
+
+.shop__cta p {
+  color: var(--fg-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.footer {
+  position: relative;
+  z-index: 4;
+  height: var(--vh);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: calc(var(--gutter) + 70px) var(--gutter) var(--gutter);
+  background: var(--ink);
+  color: var(--paper);
+  overflow: hidden;
+}
+
+.footer__brand {
+  align-self: end;
+  width: min(84vw, 1160px, 150vh);
+  color: var(--paper);
+  --logo-mark: var(--berry-hi);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10vw;
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 2fr) 1fr;
+  gap: 32px;
+  margin-top: clamp(28px, 5vh, 56px);
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in srgb, var(--paper) 16%, transparent);
+  font-size: 12px;
+  color: color-mix(in srgb, var(--paper) 62%, transparent);
+}
+
+.footer__nav {
+  display: flex;
+  gap: 28px;
+  color: var(--paper);
+}
+
+.footer__legal {
+  max-width: 62ch;
+  line-height: 1.6;
+}
+
+.footer__copy {
+  justify-self: end;
+}
+
+/* --------------------------------------------------------------------------
+   Tablet
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+  .story {
+    --fs-s3: min(8.6vw, 12vh);
+  }
+
+  .curtain__content {
+    width: 60vw;
+  }
+
+  .curtain__title {
+    font-size: 8.6vw;
+  }
+
+  .curtain__title--long {
+    font-size: 6.8vw;
+  }
+
+  .ingredients {
+    --col-w: 34vw;
+  }
+
+  .sci__text {
+    width: 40vw;
+  }
+
+  .daily__facts {
+    left: var(--gutter);
+    right: var(--gutter);
+    justify-content: end;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile: composizioni verticali dedicate, il barattolo resta protagonista
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  /* in verticale si legge in ordine: IL TUO / RITUALE / barattolo / QUOTIDIANO. */
+  .story {
+    --hero-x: var(--gutter);
+    --fs-il: min(15vw, 7.6vh);
+    --fs-quot: min(10.2vw, 5.2vh);
+    --fs-rit: min(12.5vw, 6.4vh);
+    --fs-s3: min(12.4vw, 7vh);
+    --fs-s4: min(12vw, 6.8vh);
+  }
+
+  .hero-il {
+    top: 15%;
+  }
+
+  .hero-ritual {
+    left: 41%;
+    top: 28%;
+  }
+
+  /* QUOTIDIANO sotto RITUALE: il barattolo resta libero, sotto le tre parole */
+  .hero-quot {
+    left: var(--hero-x);
+    top: calc(28% + var(--fs-rit) * 0.8);
+  }
+
+  .hero-lead {
+    top: 81.5%;
+    right: var(--gutter);
+  }
+
+  .hero-lead__sub {
+    max-width: none;
+    font-size: 14px;
+  }
+
+  .hero-lead__sub strong {
+    display: inline;
+    margin-right: 0.3em;
+  }
+
+  .hero-lead__cta {
+    margin-top: 16px;
+    height: 46px;
+    padding: 0 22px;
+  }
+
+  .hero-cue,
+  .hero-down {
+    display: none;
+  }
+
+  /* mobile: niente colonna laterale. Il pulsante PRODOTTI sta sotto "Acquista ora" (stesso
+     margine destro della navbar) e apre la scheda dei prodotti come tendina */
+  /* nella hero il pulsante PRODOTTI sta sotto "Acquista ora" */
+  .pmenu,
+  .pmenu.is-drop {
+    top: 59px;
+    bottom: auto;
+    right: clamp(18px, 6vw, 100px);
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .pmenu.is-drop .pmenu__card {
+    width: min(304px, calc(100vw - 2 * clamp(18px, 6vw, 100px)));
+    max-height: calc(var(--vh) - 150px);
+  }
+
+  /* dopo la hero (classe .is-dock da main.js) il pulsante scende in basso a destra e la tendina
+     si apre verso l'alto */
+  .pmenu.is-drop.is-dock {
+    top: auto;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    right: 14px;
+    flex-direction: column-reverse;
+  }
+
+  .pmenu.is-drop.is-dock .pmenu__toggle {
+    height: 42px;
+    padding: 0 16px 0 15px;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    box-shadow:
+      0 18px 34px -14px color-mix(in srgb, var(--ink) 75%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    animation: pmenu-dock 0.55s var(--ease-out);
+  }
+
+  .pmenu.was-dock .pmenu__toggle {
+    animation: pmenu-undock 0.55s var(--ease-out);
+  }
+
+  .pmenu.is-dock .pmenu__chev {
+    transform: rotate(180deg);
+  }
+
+  .pmenu.is-dock.is-open .pmenu__chev {
+    transform: none;
+  }
+
+  .pmenu.is-drop.is-dock .pmenu__panel {
+    margin-top: 0;
+    margin-bottom: 10px;
+    transform-origin: 100% 100%;
+    transform: translateY(10px) scale(0.96);
+  }
+
+  .pmenu.is-drop.is-dock.is-open .pmenu__panel {
+    transform: none;
+  }
+
+  .pmenu.is-drop.is-dock .pmenu__card {
+    max-height: calc(var(--vh) - 110px);
+  }
+
+  @keyframes pmenu-dock {
+    from {
+      opacity: 0;
+      translate: 0 16px;
+    }
+  }
+
+  @keyframes pmenu-undock {
+    from {
+      opacity: 0;
+      translate: 0 -10px;
+    }
+  }
+
+  .pmenu__item {
+    padding: 10px 12px;
+  }
+
+  .pmenu__name {
+    font-size: 15px;
+  }
+
+  .pmenu__note {
+    font-size: 10px;
+  }
+
+  .curtain {
+    --dip: 4.5vw;
+    top: 100%;
+  }
+
+  .curtain__content {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 16px;
+    width: auto;
+  }
+
+  .curtain__title {
+    font-size: 13vw;
+  }
+
+  .curtain__title--long {
+    font-size: 10.4vw;
+  }
+
+  .curtain__copy {
+    font-size: 15.5px;
+  }
+
+  .s3__w--1 {
+    top: 11%;
+  }
+
+  .s3__w--2 {
+    top: calc(11% + var(--fs-s3) * 1.02);
+  }
+
+  .s3__w--3 {
+    top: calc(11% + var(--fs-s3) * 2.04);
+  }
+
+  .s3__cert {
+    top: calc(11% + var(--fs-s3) * 3.18);
+    gap: 12px;
+    padding: 7px 18px 7px 7px;
+  }
+
+  .cert__seal {
+    width: 62px;
+  }
+
+  .cert__text {
+    gap: 4px;
+  }
+
+  .cert__text b {
+    font-size: 20px;
+  }
+
+  .cert__text .mono {
+    font-size: 10.5px;
+  }
+
+  .cert__flag {
+    width: 38px;
+    height: 4px;
+  }
+
+  .s3__tags {
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: calc(var(--gutter) + 56px);
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 10px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  .s4__title {
+    top: 12%;
+    translate: none;
+  }
+
+  .s4__claim {
+    top: calc(12% + var(--fs-s4) * 2.58 + 20px);
+    width: auto;
+    right: var(--gutter);
+  }
+
+  .pins {
+    display: none;
+  }
+
+  /* mobile: il primo piano dell'etichetta occupa la meta' alta, la lista sta sotto */
+  .ingredients {
+    --fs-ing: 12vw;
+  }
+
+  .ing__title {
+    left: var(--gutter);
+    top: 11%;
+  }
+
+  /* la lista sta in una scheda chiara con testi scuri e grandi: si legge benissimo sul fondo
+     scuro e anche dove copre il barattolo (colori fissi, non seguono quelli della scena) */
+  .ing__col {
+    --fg: var(--ink);
+    --fg-soft: color-mix(in srgb, var(--ink) 66%, transparent);
+    --fg-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+    --line: color-mix(in srgb, var(--ink) 12%, transparent);
+    --accent: var(--berry);
+    isolation: isolate;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 66px;
+    width: auto;
+    gap: 12px;
+    padding: 18px 16px 14px;
+    color: var(--fg);
+  }
+
+  .ing__card {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--paper) 96%, transparent);
+    box-shadow:
+      0 30px 60px -28px rgba(0, 0, 0, 0.75),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
+  }
+
+  .ing__intro {
+    display: none;
+  }
+
+  .ing__hero {
+    grid-template-columns: 22px 1fr auto;
+    column-gap: 0;
+    row-gap: 2px;
+    align-items: center;
+  }
+
+  .ing__hero .ing__num {
+    grid-column: 1;
+    grid-row: 1;
+    padding-top: 0;
+  }
+
+  .ing__hero .ing__name {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .ing__hero .ing__sub {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  .ing__big {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    margin-top: 0;
+    gap: 6px;
+  }
+
+  .ing__big b {
+    font-size: 9.4vw;
+    color: var(--accent);
+  }
+
+  /* una riga per ingrediente, come una tabella: nome e quantita' sulla stessa linea */
+  .ing__list,
+  .ing__list.is-long {
+    gap: 0;
+    padding-top: 2px;
+    border-top: 1px solid var(--line);
+  }
+
+  .ing {
+    grid-template-columns: 24px 1fr auto;
+    column-gap: 0;
+    padding: 8px 0;
+  }
+
+  .ing + .ing {
+    border-top: 1px solid var(--line);
+  }
+
+  .ing__list.is-long .ing {
+    padding: 6px 0;
+  }
+
+  .ing .ing__num {
+    grid-row: auto;
+    font-size: 11px;
+  }
+
+  .ing__name,
+  .ing__list.is-long .ing__name {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .ing__val,
+  .ing__list.is-long .ing__val {
+    grid-column: 3;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .ing__val small {
+    font-size: 11px;
+  }
+
+  .ing__nrv {
+    display: none;
+  }
+
+  .ing__note {
+    margin-top: 0;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .ing__lines {
+    display: none;
+  }
+
+  .science {
+    --fs-sci: 11.6vw;
+  }
+
+  .sci__a {
+    top: 11%;
+  }
+
+  .sci__b {
+    bottom: 31%;
+  }
+
+  .sci__text {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: auto;
+    bottom: calc(var(--gutter) + 60px);
+    width: auto;
+    gap: 10px;
+  }
+
+  .sci__text .body-copy {
+    font-size: 15px;
+  }
+
+  .sci__claim {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  .sci__data {
+    display: none;
+  }
+
+  .daily {
+    --fs-daily: 12.5vw;
+  }
+
+  .marquee__track {
+    font-size: 26vw;
+  }
+
+  .daily__title {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 49%;
+    text-align: left;
+  }
+
+  .daily__facts {
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: calc(var(--gutter) + 56px);
+    gap: 14px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .daily__facts b {
+    font-size: 11vw;
+  }
+
+  .daily__facts em {
+    font-size: 12.5px;
+  }
+
+  .shop {
+    --fs-shop: 7.4vw;
+  }
+
+  .shop__a {
+    top: 13%;
+  }
+
+  .shop__b {
+    top: calc(13% + var(--fs-shop) * 0.9);
+  }
+
+  .shop__cta {
+    bottom: calc(6% + 46px);
+  }
+
+  .footer__brand {
+    width: 88vw;
+  }
+
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .footer__copy {
+    justify-self: start;
+  }
+}

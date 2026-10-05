@@ -1,0 +1,144 @@
+# ProductExperience
+
+Sezione 3D pinnata, guidata dallo scroll, per i prodotti NutrexLab: un bicchiere d'acqua in uno
+studio fotografico scuro e il prodotto (polvere, capsula o compressa). Three.js + GSAP
+ScrollTrigger, nessun'altra dipendenza. Nel sito e' il capitolo "Preparazione", tra Scienza e
+Ogni giorno (`#rituale` in `index.html`).
+
+Il tipo sceglie l'animazione:
+
+- **powder** (polvere): il misurino pieno a raso si avvicina, ruota e si inclina, la polvere cade
+  in un filo sottile, entra nell'acqua, galleggia un istante e scende in una nuvola che si scioglie.
+- **capsule** e **tablet** (capsula, compressa): il prodotto non entra mai nel bicchiere e non gli
+  passa ne' davanti ne' dietro (sembrerebbe dentro all'acqua). Resta sospeso alla sua destra e ruota
+  su se stesso, il bicchiere gira sul piatto, la camera gli gira intorno; poi la macro sui
+  dettagli (incisione, grana, giunzione della capsula) e il prodotto si posa accanto al bicchiere.
+
+Tutto e' funzione della posizione di scroll: tornando indietro l'animazione torna indietro.
+
+## Uso
+
+JavaScript (come nel sito, `src/main.js`):
+
+```js
+import { createProductExperience, themeFromSite } from './components/ProductExperience/index.js'
+
+const exp = createProductExperience(document.querySelector('#rituale'), {
+  type: 'capsule',
+  productName: 'Coenzima Q10',
+  theme: themeFromSite(product.theme),
+  copy: { pins: { dose: ['Cardio Premium', 'Con acetil L-carnitina'] } },
+})
+exp.setProduct({ type: 'tablet', theme, copy })  // cambio prodotto: stessa scena
+exp.destroy()
+```
+
+HTML dichiarativo:
+
+```html
+<section data-product-experience data-type="tablet" data-product-name="Vitamina C"></section>
+<script type="module">
+  import { mountProductExperiences } from './components/ProductExperience/index.js'
+  mountProductExperiences()
+</script>
+```
+
+React (Next.js, Vite + React): `ProductExperience.tsx`, tipi in `index.d.ts`.
+
+```tsx
+import { ProductExperience } from './components/ProductExperience/ProductExperience'
+
+<ProductExperience type="capsule" productName="Coenzima Q10" theme={{ accent: '#e0a33a' }} />
+```
+
+Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images/nutrexlab` e
+`draco` del sito (oppure `modelsPath`, `postersPath`, `dracoPath`).
+
+## Opzioni
+
+| Opzione | Default | |
+| --- | --- | --- |
+| `type` | `'powder'` | `powder`, `capsule` o `tablet`: sceglie l'animazione |
+| `steps` | `4` | durata del pin in schermate di scroll (la sezione e' alta `steps + 1` schermate) |
+| `productName`, `productNote` | | nome in basso a destra (desktop) |
+| `chapter` | | numero davanti al sopratitolo (es. `'05'`) |
+| `theme` | tema di base | colori di studio e prodotto (`themeFromSite()` li ricava da un prodotto del sito) |
+| `copy` | testi del tipo (`copy.js`) | `eyebrow`, `titleA`, `titleB` (una voce per riga), `pins.dose`, `pins.water` (`[titolo, testo]`) |
+| `poster` | immagine del tipo | immagine statica del prodotto: URL o `(layout) => URL` |
+| `model` | modello del tipo | URL del modello del prodotto (misurino, capsula o compressa) |
+| `resolveModel` | | `(file) => URL` per ogni modello, per esempio con la versione nell'indirizzo |
+| `modelsPath`, `postersPath`, `dracoPath` | `/models/nutrexlab/`, `/images/nutrexlab/`, `/draco/` | cartelle |
+| `etch`, `etchOptions` | | logo vettoriale inciso sul vetro (formato di `src/ui/logo-paths.js`) |
+| `getVh` | `window.innerHeight` | altezza dello schermo per lo scroll (nel sito quella stabile di `main.js`) |
+| `scrub` | `true` | scrub di ScrollTrigger |
+| `lazyMargin` | `'150%'` | quanto prima dello schermo si carica la parte 3D |
+| `calm` | browser inattivo | `() => Promise`: momento tranquillo per la preparazione anticipata (nel sito: nessuno scroll da 0.4 s) |
+| `quality` | automatica | `{ tier, dpr, msaa, particles, dispersion, ... }` per forzare la qualita' |
+
+## Testi ed etichette
+
+- Titoli: il titolo d'apertura entra prima del pin ed esce all'inizio; quello finale entra alla
+  fine. L'ultima riga e' nel colore d'accento. Se una parola e' troppo lunga per il suo spazio
+  (es. SEMPLIFICATA.) il titolo si riduce quanto basta: non invade la scena, non tocca la sequenza
+  a destra e su mobile non esce dallo schermo.
+- Etichette agganciate al 3D (`pins.dose` sul prodotto, `pins.water` sul bicchiere), come quelle
+  del sito: la linea esce sempre dalla sagoma dell'oggetto e il testo non copre mai prodotto,
+  bicchiere o titoli e resta nello schermo. Ogni etichetta prova, in ordine: il suo lato su una
+  riga o su piu' righe, l'altro lato, sotto l'oggetto, sopra. Se non c'e' posto non compare.
+
+## Prestazioni e robustezza
+
+- La parte 3D si carica quando la sezione si avvicina (IntersectionObserver) oppure prima, con
+  `exp.preload()`: in anticipo lavora a piccoli passi solo nei momenti tranquilli (`calm`) e, se la
+  sezione intanto si avvicina, completa subito. Scarica soltanto il codice e il modello del tipo
+  attuale (bicchiere + misurino, capsula o compressa; GLB compressi Draco, 30-55 KB l'uno).
+  Disegna solo mentre la sezione e' sullo schermo.
+- Gli shader si compilano in parallelo (KHR_parallel_shader_compile) con il render target in cui
+  ogni scena viene davvero disegnata: nessuna compilazione sincrona al primo fotogramma.
+- Cambio prodotto con un tipo diverso mentre la sezione e' lontana: la nuova esperienza si prepara
+  al primo momento tranquillo, non durante l'animazione del cambio.
+- Qualita' per dispositivo (`quality.js`): desktop completo; tablet senza MSAA e con meno
+  particelle; mobile a risoluzione ridotta e senza dispersione cromatica. La risoluzione scende
+  da sola se i 60 fps non tengono.
+- Senza WebGL (o se il contesto si perde) resta l'immagine statica con gli stessi testi animati.
+- `prefers-reduced-motion`: niente movimenti automatici della camera.
+- `destroy()` libera tutto (ScrollTrigger, scena, contesto WebGL), anche se arriva mentre la
+  scena si sta ancora caricando: sicuro con React StrictMode e con i cambi di pagina.
+
+## File
+
+| File | |
+| --- | --- |
+| `index.js` | API pubblica: `createProductExperience`, `mountProductExperiences`, `themeFromSite` |
+| `ProductExperienceCore.js` | orchestratore: DOM, testi, timeline, scroll, caricamento, etichette |
+| `ProductExperience.tsx`, `index.d.ts` | involucro React e tipi TypeScript |
+| `ProductScene.js` | renderer e passate (strato posteriore, contenuto dell'acqua, vetro come lente) |
+| `ProductCamera.js`, `ProductLighting.js` | camera cinematografica, luci e ambiente dello studio |
+| `ScrollAnimation.js` | chiavi -> tween GSAP, righe mascherate, ScrollTrigger della sezione |
+| `PowderExperience.js` | misurino, polvere, acqua che si intorbida |
+| `ShowcaseExperience.js`, `CapsuleExperience.js`, `TabletExperience.js` | capsula e compressa |
+| `kit.js`, `assets.js`, `etching.js`, `quality.js`, `copy.js` | particelle, caricamento modelli, logo inciso, qualita', testi di default |
+| `shaders/` | vetro, acqua, fondale, particelle, composizione finale |
+
+## Modelli e immagini statiche
+
+- Modelli: `Website/sezione bicchiere/blender/esperienza_3d.py` (Blender 5.1, procedurale, misure
+  reali in mm) esporta `web/glass.glb`, `scoop.glb`, `capsule.glb`, `tablet.glb`;
+  `scripts/sync-model.mjs` li copia in `public/models/nutrexlab/` con la versione nell'indirizzo.
+  Da `Website/sezione bicchiere`: `npm run modelli` (solo export), `npm run render` (anche render e
+  `blender/esperienza.blend`).
+- Immagini statiche (`public/images/nutrexlab/`): fotogrammi della scena WebGL, una per prodotto
+  (`esperienza-<id>.webp` e `-mobile.webp`) e una per tipo. Si rigenerano dal banco di prova con
+  `await __postersAll()` nella console.
+
+## Banco di prova
+
+`Website/sezione bicchiere`: `npm run sandbox` -> http://127.0.0.1:5180 (`?prodotto=<id>`,
+`?type=powder|capsule|tablet`, `?p=0.6` per saltare a un punto). Nella console:
+
+- `await __qa()` / `await __qa({ long: true })`: controlli automatici su tutto lo scroll (prodotto
+  mai sul bicchiere, etichette nello schermo e lontane da prodotto, bicchiere e testi);
+- `await __sheetUi('foglio.jpg', [0.1, 0.5, 0.9])`: fotogrammi con i testi HTML disegnati sopra;
+- `await __shot('nome.jpg', 0.5, { w: 1440, h: 900, layout: 'desktop' })`: un fotogramma.
+
+I file finiscono in `Website/sezione bicchiere/render/shots`.

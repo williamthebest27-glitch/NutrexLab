@@ -1,0 +1,720 @@
+/* ==========================================================================
+   NUTREX LAB / Collagene Marino
+   Base: token, reset, tipografia, componenti condivisi.
+
+   Livelli (z-index) — unica scala del progetto:
+     0  .silk / .aura / .spot  raso della hero, luce dietro al prodotto
+     1  .stage--back         testi che passano DIETRO al barattolo
+     2  .webgl               canvas 3D (pointer-events: none)
+     3  .stage--front        testi e controlli DAVANTI al barattolo
+     4  .footer
+     10 .nav
+     30 .grain
+     40 .veil
+     50 .loader
+   ========================================================================== */
+
+:root {
+  /* palette: off-white freddo, nero profondo, bordeaux della label, argento */
+  --paper: #f1f0f3;
+  --mist: #e2e1e7;
+  --ink: #0e0c11;
+  --plum: #1e0b1c;
+  --night: #0d0a0f;
+  --wine: #3b0b27;
+  --berry: #9e2e65;
+  --berry-hi: #d45c95;
+  --silver: #b9b7c0;
+
+  /* valori animati da GSAP durante lo scroll */
+  --bg: #f1f0f3;
+  --fg: #0e0c11;
+  --accent: #9e2e65;
+
+  --fg-soft: color-mix(in srgb, var(--fg) 62%, transparent);
+  --fg-faint: color-mix(in srgb, var(--fg) 38%, transparent);
+  --line: color-mix(in srgb, var(--fg) 18%, transparent);
+
+  --font-display: 'Archivo Variable', 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Archivo Variable', 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --gutter: clamp(18px, 2.6vw, 44px);
+  --vh: 100vh;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* colori legati al prodotto attivo (valori del collagene; gli altri temi in src/products.js) */
+  --quot-dot: #8c0f4a;
+  --rit-glass-a: rgba(222, 182, 200, 0.66);
+  --rit-glass-b: rgba(196, 136, 163, 0.82);
+  --rit-liquid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23934a6d'/%3E%3Cstop offset='.025' stop-color='%23621a42'/%3E%3Cstop offset='.12' stop-color='%23480d2c'/%3E%3Cstop offset='.3' stop-color='%23300719'/%3E%3Cstop offset='1' stop-color='%231e030f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 10C40 4 80 4 120 10S200 16 240 10V300H0z' fill='url(%23g)'/%3E%3C/svg%3E");
+  --down-shadow: rgba(70, 12, 40, 0.45);
+  --curtain: #2e081c;
+  --curtain-glow: rgba(120, 28, 72, 0.32);
+  --curtain-ink: #f6eef2;
+  --curtain-ink-soft: rgba(246, 232, 239, 0.72);
+  --curtain-copy: rgba(246, 232, 239, 0.7);
+  --curtain-title-a: #fdf6f9;
+  --curtain-title-b: #f4dfe9;
+  --curtain-title-c: #d6a3bd;
+}
+
+/* Cambio prodotto: i colori del tema sfumano tutti insieme (la classe resta solo durante il cambio,
+   cosi' i colori guidati dallo scroll restano immediati). Le proprieta' registrate qui sotto
+   sono quelle che possono sfumare. */
+html.is-theming {
+  transition-property:
+    --bg, --fg, --accent, --paper, --mist, --ink, --plum, --night, --abyss, --wine, --berry, --berry-hi,
+    --quot-dot, --rit-glass-a, --rit-glass-b, --down-shadow, --curtain, --curtain-glow, --curtain-ink,
+    --curtain-ink-soft, --curtain-copy, --curtain-title-a, --curtain-title-b, --curtain-title-c;
+  transition-duration: var(--theme-dur, 1.4s);
+  transition-timing-function: var(--ease-in-out);
+}
+
+@property --bg { syntax: '<color>'; inherits: true; initial-value: #f1f0f3; }
+@property --fg { syntax: '<color>'; inherits: true; initial-value: #0e0c11; }
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #9e2e65; }
+@property --paper { syntax: '<color>'; inherits: true; initial-value: #f1f0f3; }
+@property --mist { syntax: '<color>'; inherits: true; initial-value: #e2e1e7; }
+@property --ink { syntax: '<color>'; inherits: true; initial-value: #0e0c11; }
+@property --plum { syntax: '<color>'; inherits: true; initial-value: #1e0b1c; }
+@property --night { syntax: '<color>'; inherits: true; initial-value: #0d0a0f; }
+@property --abyss { syntax: '<color>'; inherits: true; initial-value: #08060a; }
+@property --wine { syntax: '<color>'; inherits: true; initial-value: #3b0b27; }
+@property --berry { syntax: '<color>'; inherits: true; initial-value: #9e2e65; }
+@property --berry-hi { syntax: '<color>'; inherits: true; initial-value: #d45c95; }
+@property --quot-dot { syntax: '<color>'; inherits: true; initial-value: #8c0f4a; }
+@property --rit-glass-a { syntax: '<color>'; inherits: true; initial-value: rgba(222, 182, 200, 0.66); }
+@property --rit-glass-b { syntax: '<color>'; inherits: true; initial-value: rgba(196, 136, 163, 0.82); }
+@property --down-shadow { syntax: '<color>'; inherits: true; initial-value: rgba(70, 12, 40, 0.45); }
+@property --curtain { syntax: '<color>'; inherits: true; initial-value: #2e081c; }
+@property --curtain-glow { syntax: '<color>'; inherits: true; initial-value: rgba(120, 28, 72, 0.32); }
+@property --curtain-ink { syntax: '<color>'; inherits: true; initial-value: #f6eef2; }
+@property --curtain-ink-soft { syntax: '<color>'; inherits: true; initial-value: rgba(246, 232, 239, 0.72); }
+@property --curtain-copy { syntax: '<color>'; inherits: true; initial-value: rgba(246, 232, 239, 0.7); }
+@property --curtain-title-a { syntax: '<color>'; inherits: true; initial-value: #fdf6f9; }
+@property --curtain-title-b { syntax: '<color>'; inherits: true; initial-value: #f4dfe9; }
+@property --curtain-title-c { syntax: '<color>'; inherits: true; initial-value: #d6a3bd; }
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+html.is-loading body {
+  overflow: hidden;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul,
+dl,
+dd {
+  margin: 0;
+}
+
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+::selection {
+  background: var(--berry);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Tipografia
+   -------------------------------------------------------------------------- */
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-stretch: 112%;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  line-height: 0.86;
+  font-kerning: normal;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 0.88vw, 14px);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.body-copy {
+  font-size: clamp(17px, 1.3vw, 21px);
+  line-height: 1.55;
+  color: var(--fg-soft);
+  max-width: 36ch;
+}
+
+/* maschere create da SplitText: margine extra per non tagliare maiuscole e accenti */
+.line-mask {
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+}
+
+/* nascosti finche' il JS non li prepara (SplitText / autoAlpha) */
+[data-reveal],
+[data-split] {
+  visibility: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Bottoni (tutti a pillola)
+   -------------------------------------------------------------------------- */
+.btn {
+  --btn-bg: var(--fg);
+  --btn-fg: var(--bg);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  height: 52px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: auto;
+  transition: transform 0.25s var(--ease-out);
+  will-change: transform;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--accent);
+  transform: translateY(101%);
+  transition: transform 0.6s var(--ease-out);
+}
+
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: translateY(0);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn__label,
+.btn__icon {
+  display: inline-block;
+  will-change: transform;
+}
+
+.btn__icon {
+  font-size: 15px;
+  letter-spacing: 0;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.btn:hover .btn__icon {
+  transform: translateX(4px);
+}
+
+.btn--sm {
+  height: 42px;
+  gap: 10px;
+  padding: 0 22px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+}
+
+.btn--sm .btn__icon {
+  font-size: 13px;
+}
+
+.btn--xl {
+  height: clamp(62px, 6vw, 80px);
+  padding: 0 clamp(30px, 3.2vw, 52px);
+  gap: 22px;
+  font-size: clamp(13px, 1.05vw, 16px);
+}
+
+.btn--xl .btn__icon {
+  font-size: clamp(18px, 1.5vw, 24px);
+}
+
+/* link con sottolineatura animata */
+.link {
+  position: relative;
+  display: inline-block;
+  padding: 6px 0;
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.link:hover::after,
+.link:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+/* --------------------------------------------------------------------------
+   Livelli fissi
+   -------------------------------------------------------------------------- */
+
+/* raso perlato della hero (shader in Silk.js); il gradiente e' la riserva senza WebGL2 */
+.silk {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100lvh;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 45% at 74% 48%, rgba(226, 196, 208, 0.7), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 18% 70%, rgba(222, 205, 210, 0.8), transparent 70%),
+    linear-gradient(160deg, #f5f0ee, #e6dcdc 55%, #efe8e6);
+}
+
+.silk__c {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.webgl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.fallback {
+  position: fixed;
+  left: 50%;
+  top: 52%;
+  width: min(62vh, 80vw);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.aura {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 110vmin;
+  height: 110vmin;
+  margin: -55vmin 0 0 -55vmin;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--berry-hi) 42%, transparent),
+    color-mix(in srgb, var(--berry) 18%, transparent) 48%,
+    transparent 74%
+  );
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.spot {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse 46% 52% at 50% 54%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(ellipse 90% 80% at 50% 50%, rgba(14, 12, 17, 0) 55%, rgba(14, 12, 17, 0.1) 100%);
+}
+
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0.032;
+  background-size: 180px 180px;
+}
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: var(--bg);
+  opacity: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Logo (vettoriale dal PDF): monogramma nel colore accento, lettere in currentColor
+   -------------------------------------------------------------------------- */
+.logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.logo__hex {
+  fill: var(--logo-mark, currentColor);
+  stroke: var(--logo-mark, currentColor);
+  stroke-width: 0;
+}
+
+.logo__l,
+.logo__b {
+  fill: currentColor;
+}
+
+/* --------------------------------------------------------------------------
+   Loader: il logo si compone al centro, poi la camera ci "entra" dentro
+   -------------------------------------------------------------------------- */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.loader__logo {
+  width: min(64vw, 760px);
+  color: var(--berry);
+  --logo-mark: var(--berry);
+}
+
+.loader__logo .logo {
+  visibility: hidden;
+  will-change: transform;
+}
+
+/* --------------------------------------------------------------------------
+   Navbar
+   -------------------------------------------------------------------------- */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 78px;
+  /* in cima allineata ai testi della hero, durante lo scroll si stringe sul margine standard */
+  padding: 0 clamp(18px, 6vw, 100px);
+  color: var(--fg);
+  transition:
+    height 0.6s var(--ease-out),
+    padding 0.8s var(--ease-out),
+    color 0.5s var(--ease-out),
+    background-color 0.6s var(--ease-out),
+    backdrop-filter 0.6s var(--ease-out);
+}
+
+.nav::after {
+  content: '';
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 0;
+  height: 1px;
+  background: var(--line);
+  transform: scaleX(0);
+  transition: transform 0.9s var(--ease-out);
+}
+
+.nav.is-compact {
+  height: 62px;
+  padding: 0 var(--gutter);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+}
+
+.nav.is-compact::after {
+  transform: scaleX(1);
+}
+
+.nav.is-inverse {
+  --fg: var(--paper);
+  --bg: var(--ink);
+  --accent: var(--berry-hi);
+}
+
+.nav__logo {
+  justify-self: start;
+  display: block;
+  width: 128px;
+  --logo-mark: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  transition: transform 0.5s var(--ease-out);
+}
+
+.nav__logo:hover {
+  transform: scale(1.04);
+}
+
+.nav.is-compact .nav__logo {
+  width: 100px;
+}
+
+.nav__links {
+  display: flex;
+  gap: clamp(22px, 3.4vw, 56px);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.nav__cta {
+  justify-self: end;
+}
+
+/* Voci del menu: al passaggio del mouse le lettere si ricompongono in viola con uno zoom.
+   Strato A = lettere attuali, strato B = lettere viola sovrapposte nella stessa cella. */
+.nav-link {
+  position: relative;
+  display: inline-grid;
+  padding: 8px 2px;
+}
+
+.nav-link__a,
+.nav-link__b {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+
+.nav-link__b {
+  color: var(--accent);
+}
+
+.nav-link__c {
+  display: inline-block;
+  transform-origin: 50% 58%;
+  transition:
+    transform 0.5s var(--ease-out),
+    opacity 0.35s var(--ease-out),
+    filter 0.5s var(--ease-out);
+  /* uscita: in ordine inverso, dall'ultima lettera alla prima */
+  transition-delay: calc((var(--n) - 1 - var(--i)) * 22ms);
+}
+
+.nav-link__b .nav-link__c {
+  opacity: 0;
+  transform: scale(2.6);
+  filter: blur(3px);
+}
+
+.nav-link:hover .nav-link__c,
+.nav-link:focus-visible .nav-link__c {
+  transition-delay: calc(var(--i) * 32ms);
+}
+
+.nav-link:hover .nav-link__a .nav-link__c,
+.nav-link:focus-visible .nav-link__a .nav-link__c {
+  opacity: 0;
+  transform: scale(0.45);
+  transition-duration: 0.3s, 0.22s, 0.3s;
+}
+
+.nav-link:hover .nav-link__b .nav-link__c,
+.nav-link:focus-visible .nav-link__b .nav-link__c {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+  transition-delay: calc(60ms + var(--i) * 32ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link__c {
+    transition: opacity 0.3s;
+    transition-delay: 0s !important;
+  }
+
+  .nav-link__b .nav-link__c,
+  .nav-link:hover .nav-link__a .nav-link__c {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* schermi medi: con il pulsante PRODOTTI accanto ad "Acquista ora" i link si spostano vicino al logo,
+   sotto i 900 px lasciano il posto al pulsante */
+@media (min-width: 768px) and (max-width: 1180px) {
+  html.menu-docked .nav {
+    grid-template-columns: auto 1fr auto;
+    column-gap: 32px;
+  }
+
+  html.menu-docked .nav__links {
+    justify-self: start;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 899px) {
+  html.menu-docked .nav__links {
+    visibility: hidden;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  body {
+    font-size: 14px;
+  }
+
+  .body-copy {
+    font-size: 16px;
+  }
+
+  .nav {
+    grid-template-columns: 1fr auto;
+    height: 64px;
+  }
+
+  .nav.is-compact {
+    height: 56px;
+  }
+
+  .nav__links {
+    display: none;
+  }
+
+  .nav__logo,
+  .nav.is-compact .nav__logo {
+    width: 96px;
+  }
+
+  .loader__logo {
+    width: 82vw;
+  }
+
+  .btn {
+    height: 48px;
+    padding: 0 22px;
+  }
+
+  .btn--sm {
+    height: 38px;
+    padding: 0 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn::before,
+  .btn__icon,
+  .link::after,
+  .nav {
+    transition: none;
+  }
+}

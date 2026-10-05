@@ -1,0 +1,406 @@
+/* ==========================================================================
+   ProductExperience: sezione pinnata con il set 3D del prodotto.
+   Usa i token del sito quando ci sono (--vh, --gutter, font) e ha dei valori propri di riserva,
+   cosi' funziona anche fuori dal sito NutrexLab.
+   ========================================================================== */
+
+.pe {
+  --pe-vh: var(--vh, 100vh);
+  --pe-gutter: var(--gutter, clamp(18px, 2.6vw, 44px));
+  --pe-ink: #f3f0f3;
+  --pe-ink-soft: color-mix(in srgb, var(--pe-ink) 64%, transparent);
+  --pe-ink-faint: color-mix(in srgb, var(--pe-ink) 36%, transparent);
+  --pe-line: color-mix(in srgb, var(--pe-ink) 16%, transparent);
+  --pe-display: var(--font-display, 'Archivo Variable', 'Archivo', 'Helvetica Neue', Arial, sans-serif);
+  --pe-mono: var(--font-mono, 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  --pe-fs-title: min(7.2vw, 12.6vh);
+  position: relative;
+  z-index: 5;
+  /* passi del pin + 1 viewport (nel sito --steps arriva da data-steps prima che parta il JS) */
+  height: calc(var(--pe-vh) * (var(--pe-steps, var(--steps, 4)) + 1));
+  background: var(--pe-bg, #0b090d);
+  color: var(--pe-ink);
+}
+
+.pe__stage {
+  position: relative;
+  width: 100%;
+  height: var(--pe-vh);
+  overflow: hidden;
+  background: var(--pe-bg, #0b090d);
+  isolation: isolate;
+}
+
+.pe__stage > * {
+  position: absolute;
+}
+
+.pe__canvas,
+.pe__poster {
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.pe__canvas {
+  opacity: 0;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pe__poster {
+  object-fit: cover;
+  object-position: 50% 50%;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.9s;
+}
+
+/* la scena 3D e' pronta: l'immagine statica lascia il posto al canvas */
+.pe.is-live .pe__canvas {
+  opacity: 1;
+}
+
+.pe.is-live .pe__poster {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* senza WebGL: resta l'immagine del prodotto con i testi animati */
+.pe.is-fallback .pe__canvas {
+  display: none;
+}
+
+.pe.is-fallback .pe__poster {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* bordi morbidi: la sezione si fonde con le scene scure prima e dopo */
+.pe__fade {
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--pe-bg, #0b090d) 0%,
+    transparent 9%,
+    transparent 88%,
+    color-mix(in srgb, var(--pe-bg, #0b090d) 80%, transparent) 100%
+  );
+}
+
+/* --------------------------------------------------------------------------
+   Testi editoriali: pochissime parole, molto grandi
+   -------------------------------------------------------------------------- */
+.pe__copy {
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pe__copy--a {
+  left: var(--pe-gutter);
+  top: 15%;
+}
+
+.pe__copy--b {
+  right: var(--pe-gutter);
+  top: 17%;
+  text-align: right;
+}
+
+/* --pe-fit: riduzione calcolata dal JS quando una parola lunga non ci sta (es. SEMPLIFICATA.) */
+.pe__title {
+  margin: 0;
+  font-family: var(--pe-display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: calc(var(--pe-fs-title) * var(--pe-fit, 1));
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: var(--pe-ink);
+  white-space: nowrap;
+}
+
+/* righe mascherate: margine extra per non tagliare maiuscole e accenti (come .line-mask del sito) */
+.pe-line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+}
+
+.pe-line__in,
+.pe-line__txt {
+  display: block;
+  will-change: transform;
+}
+
+/* l'ultima parola nel colore del prodotto (come EFFICACE. nel sito) */
+.pe__title .pe-line:last-child .pe-line__in {
+  color: var(--pe-accent, #d45c95);
+}
+
+.pe__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 clamp(16px, 2.6vh, 30px);
+  font-family: var(--pe-mono);
+  font-size: clamp(12px, 0.9vw, 14px);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--pe-ink-soft);
+}
+
+.pe__eyebrow i {
+  display: none;
+  width: 16px;
+  height: 1px;
+  background: currentColor;
+}
+
+.pe__eyebrow.has-n i {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   Sequenza: PRODOTTO -> PRECISIONE -> PREPARAZIONE -> ATTIVAZIONE -> RISULTATO
+   -------------------------------------------------------------------------- */
+.pe__steps {
+  right: var(--pe-gutter);
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  gap: clamp(12px, 2vh, 20px);
+  margin: 0;
+  padding: 2px 20px 2px 0;
+  list-style: none;
+  transform: translateY(-50%);
+  font-family: var(--pe-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--pe-ink-faint);
+  pointer-events: none;
+}
+
+.pe__steps-track {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--pe-line);
+}
+
+.pe__steps-bar {
+  position: absolute;
+  inset: 0;
+  background: var(--pe-accent, #d45c95);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+}
+
+.pe__step {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  transition: color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pe__step-n {
+  opacity: 0.7;
+}
+
+.pe__step.is-done {
+  color: var(--pe-ink-soft);
+}
+
+.pe__step.is-active {
+  color: var(--pe-ink);
+}
+
+.pe__step.is-active .pe__step-n {
+  color: var(--pe-accent, #d45c95);
+  opacity: 1;
+}
+
+.pe__product {
+  right: var(--pe-gutter);
+  bottom: calc(var(--pe-gutter) + 4px);
+  z-index: 2;
+  margin: 0;
+  font-family: var(--pe-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pe-ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Etichette agganciate al 3D (come i dettagli della scena 5 del sito)
+   -------------------------------------------------------------------------- */
+.pe__pin {
+  left: 0;
+  top: 0;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.pe__pin-body {
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+}
+
+.pe__pin--left .pe__pin-body {
+  flex-direction: row-reverse;
+  transform: translate(-100%, -50%);
+}
+
+.pe__pin-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px;
+  border-radius: 50%;
+  background: var(--pe-accent, #d45c95);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--pe-accent, #d45c95) 24%, transparent);
+}
+
+/* --pe-line: lunghezza calcolata dal JS (la linea esce dalla sagoma dell'oggetto). La linea si
+   disegna partendo dal pallino e il testo compare gia' al suo posto: non scivola sopra il prodotto */
+.pe__pin-line {
+  flex: none;
+  width: var(--pe-line, clamp(44px, 5.4vw, 92px));
+  height: 1px;
+  margin: 0 4.5px;
+  background: var(--pe-ink-soft);
+  transform: scaleX(var(--pe-pin, 1));
+  transform-origin: left center;
+}
+
+.pe__pin--left .pe__pin-line {
+  transform-origin: right center;
+}
+
+.pe__pin-text {
+  padding-left: 14px;
+  font-family: var(--pe-mono);
+  font-size: clamp(11px, 0.92vw, 14px);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--pe-ink-soft);
+}
+
+.pe__pin--left .pe__pin-text {
+  padding-left: 0;
+  padding-right: 14px;
+  text-align: right;
+}
+
+/* sotto o sopra l'oggetto (schermi stretti): linea verticale e testo centrato (il JS lo tiene
+   nello schermo) */
+.pe__pin--below .pe__pin-body {
+  flex-direction: column;
+  transform: translateX(-50%);
+}
+
+.pe__pin--above .pe__pin-body {
+  flex-direction: column-reverse;
+  transform: translate(-50%, -100%);
+}
+
+.pe__pin--below .pe__pin-line,
+.pe__pin--above .pe__pin-line {
+  width: 1px;
+  height: var(--pe-line, 30px);
+  margin: 4.5px 0;
+  transform: scaleY(var(--pe-pin, 1));
+  transform-origin: center top;
+}
+
+.pe__pin--above .pe__pin-line {
+  transform-origin: center bottom;
+}
+
+.pe__pin--below .pe__pin-text {
+  padding: 10px 0 0;
+  text-align: center;
+}
+
+.pe__pin--above .pe__pin-text {
+  padding: 0 0 10px;
+  text-align: center;
+}
+
+.pe__pin,
+.pe__pin * {
+  box-sizing: border-box;
+}
+
+.pe__pin-text b {
+  display: block;
+  white-space: nowrap; /* va a capo solo la riga piccola */
+  margin-bottom: 5px;
+  font-family: var(--pe-display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: clamp(18px, 1.55vw, 26px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--pe-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Mobile: testi in alto, set 3D in basso; niente sequenza laterale
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  .pe {
+    --pe-fs-title: min(12.4vw, 7.4vh);
+  }
+
+  .pe__copy--a,
+  .pe__copy--b {
+    left: var(--pe-gutter);
+    right: var(--pe-gutter);
+    top: calc(64px + 4vh);
+    text-align: left;
+  }
+
+  .pe__eyebrow {
+    margin-bottom: 14px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+  }
+
+  .pe__steps,
+  .pe__product {
+    display: none;
+  }
+
+  .pe__pin-text {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+  }
+
+  .pe__pin-text b {
+    font-size: 17px;
+  }
+
+  .pe__pin-line {
+    width: var(--pe-line, 30px);
+  }
+}
