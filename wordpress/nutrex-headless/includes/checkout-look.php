@@ -45,10 +45,18 @@ add_action(
 		remove_action( 'wp_head', 'feed_links_extra', 3 );
 		remove_action( 'wp_head', 'rsd_link' );
 		remove_action( 'wp_head', 'wlwmanifest_link' );
-		// il <title> lo stampa il modello (templates/checkout.php): i plugin SEO del sito, che di solito
-		// lo stampano loro, qui sono esclusi
-		remove_action( 'wp_head', '_wp_render_title_tag', 1 );
-		remove_action( 'wp_head', '_block_template_render_title_tag', 1 ); // (temi a blocchi)
+		// il <title> lo stampa il modello (templates/checkout.php): via quelli di WordPress (tema classico e
+		// a blocchi); i plugin SEO del sito, che di solito lo stampano loro, qui sono esclusi
+		global $wp_filter;
+		if ( ! empty( $wp_filter['wp_head'] ) ) {
+			foreach ( $wp_filter['wp_head']->callbacks as $priority => $callbacks ) {
+				foreach ( $callbacks as $callback ) {
+					if ( is_string( $callback['function'] ) && preg_match( '/render_title_tag$/', $callback['function'] ) ) {
+						remove_action( 'wp_head', $callback['function'], $priority );
+					}
+				}
+			}
+		}
 		nutrex_headless_clean_frame();
 	},
 	PHP_INT_MAX
