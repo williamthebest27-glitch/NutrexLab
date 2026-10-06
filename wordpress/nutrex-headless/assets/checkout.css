@@ -360,22 +360,23 @@ body.nutrex-look :is(.woocommerce-info, .woocommerce-message)::before {
 }
 
 /* ---------------------------------------------------------------- checkout classico a due colonne */
-/* via la disposizione del tema del sito ospite (colonne flottanti strette, bordi neri): qui decide la griglia */
-body.nutrex-look form.checkout.woocommerce-checkout > #customer_details,
-body.nutrex-look form.checkout.woocommerce-checkout > #order_review_heading,
-body.nutrex-look form.checkout.woocommerce-checkout > #order_review {
+/* via la disposizione del tema del sito ospite (colonne flottanti strette, bordi neri): qui decide la griglia
+   (id ripetuti: le regole dei temi con :not(...) hanno due id) */
+body.nutrex-look form.checkout.woocommerce-checkout > #customer_details#customer_details,
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review_heading#order_review_heading,
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review#order_review {
   float: none;
   width: auto;
   max-width: none;
 }
 
-body.nutrex-look form.checkout.woocommerce-checkout > #order_review_heading {
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review_heading#order_review_heading {
   margin: 0 0 14px;
   padding: 0;
   border: 0;
 }
 
-body.nutrex-look form.checkout.woocommerce-checkout > #order_review {
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review#order_review {
   padding: 8px 20px 20px;
   border: 1px solid var(--nx-line);
   border-radius: 22px;
