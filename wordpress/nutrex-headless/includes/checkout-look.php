@@ -45,22 +45,30 @@ add_action(
 		remove_action( 'wp_head', 'feed_links_extra', 3 );
 		remove_action( 'wp_head', 'rsd_link' );
 		remove_action( 'wp_head', 'wlwmanifest_link' );
-		// il <title> lo stampa il modello (templates/checkout.php): via quelli di WordPress (tema classico e
-		// a blocchi); i plugin SEO del sito, che di solito lo stampano loro, qui sono esclusi
-		global $wp_filter;
-		if ( ! empty( $wp_filter['wp_head'] ) ) {
-			foreach ( $wp_filter['wp_head']->callbacks as $priority => $callbacks ) {
-				foreach ( $callbacks as $callback ) {
-					if ( is_string( $callback['function'] ) && preg_match( '/render_title_tag$/', $callback['function'] ) ) {
-						remove_action( 'wp_head', $callback['function'], $priority );
-					}
-				}
-			}
-		}
+		nutrex_headless_remove_title_tags();
 		nutrex_headless_clean_frame();
 	},
 	PHP_INT_MAX
 );
+
+/**
+ * Il <title> lo stampa il modello (templates/checkout.php): via quelli di WordPress (tema classico e a
+ * blocchi; quest'ultimo lo aggancia mentre sceglie il modello, dopo template_redirect). I plugin SEO del
+ * sito, che di solito lo stampano loro, qui sono esclusi (nutrex_headless_clean_frame).
+ */
+function nutrex_headless_remove_title_tags() {
+	global $wp_filter;
+	if ( empty( $wp_filter['wp_head'] ) ) {
+		return;
+	}
+	foreach ( $wp_filter['wp_head']->callbacks as $priority => $callbacks ) {
+		foreach ( $callbacks as $callback ) {
+			if ( is_string( $callback['function'] ) && preg_match( '/render_title_tag$/', $callback['function'] ) ) {
+				remove_action( 'wp_head', $callback['function'], $priority );
+			}
+		}
+	}
+}
 
 /*
  * Cornice pulita: sulla pagina Nutrex niente di cio' che il tema e le personalizzazioni di questo sito
@@ -205,7 +213,13 @@ add_filter(
 add_filter(
 	'template_include',
 	function ( $template ) {
-		return nutrex_headless_look() ? dirname( __DIR__ ) . '/templates/checkout.php' : $template;
+		if ( ! nutrex_headless_look() ) {
+			return $template;
+		}
+		// (cio' che il tema ha agganciato scegliendo il suo modello, es. il <title> dei temi a blocchi)
+		nutrex_headless_remove_title_tags();
+		nutrex_headless_clean_frame();
+		return dirname( __DIR__ ) . '/templates/checkout.php';
 	},
 	PHP_INT_MAX
 );
