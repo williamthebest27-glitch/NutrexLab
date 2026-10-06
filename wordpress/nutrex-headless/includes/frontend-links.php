@@ -83,7 +83,10 @@ add_action(
 		}
 		$id = get_queried_object_id();
 		if ( $id && nutrex_headless_is_product( $id ) ) {
-			wp_redirect( get_permalink( $id ), 302, 'Nutrex Headless' );
+			// permanente (301): per Google la pagina del prodotto e' quella del negozio. Senza cache nel
+			// browser, come prima: chi amministra vede ancora la pagina WooCommerce anche dopo averla aperta da non collegato
+			nocache_headers();
+			wp_redirect( get_permalink( $id ), 301, 'Nutrex Headless' );
 			exit;
 		}
 	}
@@ -97,7 +100,9 @@ add_action(
 		}
 		$term = get_queried_object();
 		if ( $term instanceof WP_Term && in_array( (int) $term->term_id, nutrex_headless_category_ids(), true ) ) {
-			wp_redirect( nutrex_headless_frontend_url() . '/acquista', 302, 'Nutrex Headless' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
+			// permanente (301), direttamente su /integratori (la pagina di tutti i prodotti; /acquista porta li')
+			nocache_headers();
+			wp_redirect( nutrex_headless_frontend_url() . '/integratori', 301, 'Nutrex Headless' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 			exit;
 		}
 	}

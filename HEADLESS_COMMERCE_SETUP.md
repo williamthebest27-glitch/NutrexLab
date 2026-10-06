@@ -12,7 +12,7 @@ Store API pubblica di WooCommerce (la stessa che usa il carrello di qualunque ne
 
 ```
 sito Nutrex (Vercel)                        WooCommerce di thedoubletwenty
-  /acquista, /prodotto/<slug>  --legge-->   Store API: prodotti, prezzi, varianti, disponibilita'
+  /integratori, /prodotto/<slug> -legge->    Store API: prodotti, prezzi, varianti, disponibilita'
   /carrello, /pagamenti        --carrello-> Store API: carrello del cliente (sessione)
   "Procedi al pagamento"       --porta-->   /?nutrex-checkout=1&items=...  ->  pagina di pagamento Nutrex
   /ordine?numero=N             <--torna--   pagina "Ordine ricevuto" (plugin Nutrex Headless)
@@ -38,7 +38,9 @@ Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
 
 1. **Prodotti > Categorie**: crea la categoria **Nutrex Lab** con slug `nutrex-lab`. Le sue
    sottocategorie (es. Polvere, Compresse, Capsule) diventano i filtri della pagina Acquista; compaiono
-   solo quelle con almeno un prodotto.
+   solo quelle con almeno un prodotto. Le sottocategorie con slug `collagene`, `vitamine-e-minerali` o
+   `estratti-vegetali` portano i prodotti (anche quelli nuovi) nelle pagine categoria del sito
+   (`/integratori/<slug>`).
 2. **I 12 prodotti in un colpo solo**: **Prodotti > Importa**, scegli `nutrex-prodotti-woocommerce.csv`
    (nella cartella `Website`), **Continua**; nella pagina dopo la colonna "Slug" deve essere abbinata a
    "Slug" (lo fa il plugin, dalla versione 2.1), poi **Esegui l'importazione**. Le foto si scaricano
@@ -135,7 +137,7 @@ thedoubletwenty.
 
 ### 5. Prova
 
-1. `/acquista`: ci sono solo i prodotti Nutrex, con foto e disponibilita'.
+1. `/integratori` (prima `/acquista`, che ci porta): ci sono solo i prodotti Nutrex, con foto e disponibilita'.
 2. Pagina di un prodotto: prezzo, varianti, "Aggiungi al carrello".
 3. `/carrello`: quantita', coupon, totali.
 4. "Procedi al pagamento": si apre la pagina di pagamento Nutrex (`thedoubletwenty.it/pagamento-nutrex-lab/`)
@@ -165,7 +167,8 @@ thedoubletwenty.
   di ordini e magazzino Nutrex arrivano a info@nutrexlab.it. Senza la password della casella nelle
   impostazioni partono con il mittente di thedoubletwenty.
 - Chi apre su thedoubletwenty il link di un prodotto Nutrex arriva alla sua pagina sul sito Nutrex (gli
-  amministratori vedono ancora la pagina WooCommerce).
+  amministratori vedono ancora la pagina WooCommerce). Dal plugin 2.3.2 il passaggio e' permanente (301):
+  per Google la pagina del prodotto e' quella di nutrexlab.it. Le categorie Nutrex portano a `/integratori`.
 - Sull'estratto conto, e nelle finestre di Apple Pay e Google Pay, il cliente vede il nome impostato nel
   metodo di pagamento (Stripe, PayPal...): e' lo stesso conto di thedoubletwenty (stesso titolare).
 - Chi ha un account lo usa dall'area clienti Nutrex (`/account` su nutrexlab.it); al pagamento chi non ha fatto
@@ -226,6 +229,7 @@ thedoubletwenty.
 | Il modulo contatti dice "Invio non riuscito" | plugin non aggiornato, oppure la posta non parte (vedi "Stato" nelle impostazioni) |
 | Nell'importazione la colonna "Slug" non e' abbinata | plugin precedente alla 2.1: aggiornalo e ripeti l'importazione (senza, lo slug viene dal nome e il prodotto perde colori e link 3D del sito) |
 | Un prezzo cambiato non si vede subito | cache di un paio di minuti: nel carrello e nel checkout e' gia' quello nuovo |
+| Su Google compaiono pagine di thedoubletwenty per i prodotti o le categorie Nutrex | plugin precedente alla 2.3.2 (passaggio temporaneo 302): aggiornalo; Google sposta le pagine su nutrexlab.it in qualche settimana |
 
 ## Sviluppo in locale
 
@@ -262,7 +266,7 @@ Poi il sito, in un altro terminale (le variabili si passano dal terminale: il si
 $env:WOOCOMMERCE_URL='http://127.0.0.1:9400'; $env:WOOCOMMERCE_CATEGORY='nutrex-lab'; $env:SITE_URL='http://127.0.0.1:5173'; npm run dev
 ```
 
-http://127.0.0.1:5173/acquista. Nel WooCommerce di prova l'indirizzo del negozio e' gia'
+http://127.0.0.1:5173/integratori. Nel WooCommerce di prova l'indirizzo del negozio e' gia'
 `http://127.0.0.1:5173`, quindi dopo il pagamento si torna qui. `npm run build` e `npm run preview`
 (porta 4173) provano la build di produzione con le stesse funzioni. `npm test` esegue le prove
 automatiche del codice del server (senza WooCommerce).
