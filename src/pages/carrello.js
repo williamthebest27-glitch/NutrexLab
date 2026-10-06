@@ -112,8 +112,11 @@ function removeRow(row) {
 function renderTotals(c) {
   const cur = c.totals.currency
   const products = c.totals.items
-  const out = [`<div><dt>Prodotti (${pieces(c.count)})</dt><dd>${money(products, cur)}</dd></div>`]
-  if (c.totals.discount > 0) out.push(`<div><dt>Sconto</dt><dd>${money(-c.totals.discount, cur)}</dd></div>`)
+  // sconti di WooCommerce sui prodotti (offerte quantita', prezzi in offerta): la differenza tra prezzo pieno e prezzo pagato
+  const saved = c.items.reduce((s, i) => s + Math.max(0, (i.prices.regular ?? 0) - (i.prices.price ?? 0)) * i.quantity, 0)
+  const out = [`<div><dt>Prodotti (${pieces(c.count)})</dt><dd>${money(products + saved, cur)}</dd></div>`]
+  if (saved > 0) out.push(`<div class="summary__off"><dt>Sconto sui prodotti</dt><dd>${money(-saved, cur)}</dd></div>`)
+  if (c.totals.discount > 0) out.push(`<div class="summary__off"><dt>Codice sconto</dt><dd>${money(-c.totals.discount, cur)}</dd></div>`)
   out.push('<div><dt>Spedizione</dt><dd><span class="soon">Al pagamento</span></dd></div>')
   out.push(`<div class="summary__total"><dt>Totale</dt><dd>${money(products - c.totals.discount, cur)}</dd></div>`)
   totalsEl.innerHTML = out.join('')

@@ -45,6 +45,10 @@ add_action(
 		remove_action( 'wp_head', 'feed_links_extra', 3 );
 		remove_action( 'wp_head', 'rsd_link' );
 		remove_action( 'wp_head', 'wlwmanifest_link' );
+		// il <title> lo stampa il modello (templates/checkout.php): i plugin SEO del sito, che di solito
+		// lo stampano loro, qui sono esclusi
+		remove_action( 'wp_head', '_wp_render_title_tag', 1 );
+		remove_action( 'wp_head', '_block_template_render_title_tag', 1 ); // (temi a blocchi)
 		nutrex_headless_clean_frame();
 	},
 	PHP_INT_MAX
@@ -78,25 +82,33 @@ function nutrex_headless_callback_file( $callback ) {
 	}
 }
 
-/** La funzione viene da WordPress, WooCommerce, un metodo di pagamento, la cache del sito o da questo plugin? */
+/**
+ * La funzione (o il file) viene da WordPress, WooCommerce, un metodo di pagamento, la cache del sito o da
+ * questo plugin? Si guardano le cartelle nel percorso, non il percorso intero: sugli hosting con link
+ * simbolici (SiteGround) ABSPATH e i percorsi dei file hanno prefissi diversi.
+ */
 function nutrex_headless_is_essential( $file ) {
+	$file = wp_normalize_path( (string) $file );
 	if ( '' === $file ) {
 		return true; // provenienza sconosciuta: si lascia
 	}
 	if ( false !== strpos( $file, '/siteground-optimizer-assets/' ) ) {
 		return true; // copie ottimizzate dalla cache del sito (anche di WooCommerce)
 	}
-	foreach ( array( ABSPATH . WPINC . '/', ABSPATH . 'wp-admin/', dirname( NUTREX_HEADLESS_FILE ) . '/' ) as $dir ) {
-		if ( 0 === strpos( $file, wp_normalize_path( $dir ) ) ) {
-			return true;
-		}
+	if ( 0 === strpos( $file, wp_normalize_path( dirname( NUTREX_HEADLESS_FILE ) ) . '/' ) || false !== strpos( $file, '/plugins/nutrex-headless/' ) ) {
+		return true; // questo plugin
 	}
-	$plugins = wp_normalize_path( WP_PLUGIN_DIR ) . '/';
-	if ( 0 !== strpos( $file, $plugins ) ) {
-		return false; // tema, mu-plugin, codice aggiunto
+	if ( preg_match( '#/(wp-includes|wp-admin)/#', $file ) ) {
+		return true; // WordPress
 	}
-	$folder = strtok( substr( $file, strlen( $plugins ) ), '/' );
-	return 'woocommerce' === $folder || 'sg-cachepress' === $folder || (bool) preg_match( '/pay|stripe|klarna|gateway|satispay|scalapay|nexi|mollie|braintree|square|amazon/i', (string) $folder );
+	if ( preg_match( '#/(themes|mu-plugins)/#', $file ) ) {
+		return false; // tema e codice aggiunto al sito
+	}
+	if ( preg_match( '#/plugins/([^/]+)/#', $file, $m ) ) {
+		$folder = $m[1];
+		return 'woocommerce' === $folder || 'sg-cachepress' === $folder || (bool) preg_match( '/pay|stripe|klarna|gateway|satispay|scalapay|nexi|mollie|braintree|square|amazon/i', $folder );
+	}
+	return true; // WordPress stesso o file di cui non si sa: si lascia
 }
 
 /** Toglie dalle azioni e dai filtri della cornice cio' che non e' essenziale. */
@@ -172,6 +184,15 @@ add_filter(
 	}
 );
 
+// la cache del sito (SG Optimizer) toglie i <link> degli stili e mette il suo foglio unito dopo </title>:
+// qui lo mette prima di </head>, cosi' c'e' sempre anche se un plugin cambia il titolo
+add_filter(
+	'sgo_css_combine_position',
+	function ( $position ) {
+		return nutrex_headless_look() ? 'head' : $position;
+	}
+);
+
 // la pagina si apre con il modello del plugin (cornice Nutrex) al posto di quello del tema
 add_filter(
 	'template_include',
@@ -217,8 +238,9 @@ add_action(
 			}
 			$src = (string) $styles->registered[ $handle ]->src;
 			if ( '' === $src ) {
-				// solo CSS in linea: si tengono quelli di WordPress e WooCommerce
-				$keep = (bool) preg_match( '/^(wp-|wc-|woocommerce|global-styles|classic-theme-styles|core-block|nutrex-)/', $handle );
+				// senza file (solo CSS in linea, o il foglio unito dalla cache del sito): si tengono quelli
+				// di WordPress, WooCommerce, metodi di pagamento e cache; via quelli del tema e del codice aggiunto
+				$keep = (bool) preg_match( '/^(wp-|wc|woocommerce|global-styles|classic-theme-styles|core-block|nutrex-|siteground|sgo|sg-|stripe|klarna|paypal|ppcp|satispay|scalapay|nexi|mollie|braintree|square|amazon)/', $handle );
 			} else {
 				$file = nutrex_headless_asset_file( $src );
 				$keep = '' === $file || nutrex_headless_is_essential( $file );

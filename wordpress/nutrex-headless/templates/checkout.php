@@ -16,6 +16,7 @@ $nutrex_back  = 'checkout' === nutrex_headless_look()
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="theme-color" content="#f1f0f3" />
+	<title><?php echo esc_html( wp_get_document_title() ); ?></title>
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class( 'nutrex-look' ); ?>>

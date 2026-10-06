@@ -1106,6 +1106,15 @@ ins.amount--sale {
   color: var(--fg-soft);
 }
 
+/* sconti nel riepilogo (offerte quantita', prezzi in offerta, codici): in verde */
+.summary__off dt,
+.summary__off dd {
+  color: #2f9e5b;
+}
+.summary__off dd {
+  font-weight: 600;
+}
+
 .summary__total {
   border-bottom: 0 !important;
   padding-top: 18px !important;
