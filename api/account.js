@@ -1,0 +1,19 @@
+import { route } from '../server/http.js'
+import { requireConfig } from '../server/env.js'
+
+/*
+  GET /account[?ref=CODICE&vista=registrati&torna=carrello|pagamento]
+  L'area clienti di Nutrex Lab sta sul WooCommerce (pagina /account-nutrex-lab/ creata dal plugin, con la
+  cornice Nutrex): da qui ci si arriva con un indirizzo di nutrexlab.it, portandosi dietro l'invito di un
+  amico (ref), la vista da aprire e dove tornare dopo l'accesso. Mai in cache.
+*/
+export const GET = route('account', async (request) => {
+  const { wooUrl } = requireConfig('wooUrl')
+  const from = new URL(request.url).searchParams
+  const url = new URL(`${wooUrl}/account-nutrex-lab/`)
+  for (const key of ['ref', 'vista', 'torna']) {
+    const value = (from.get(key) ?? '').trim().slice(0, 40)
+    if (value && /^[\w-]+$/.test(value)) url.searchParams.set(key, value)
+  }
+  return new Response(null, { status: 302, headers: { Location: url.toString(), 'Cache-Control': 'private, no-store' } })
+})

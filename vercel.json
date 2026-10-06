@@ -6,7 +6,9 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/prodotto/:slug", "destination": "/api/product-page?slug=:slug" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/googlef1435490fd6eb828.html", "destination": "/api/google-verify" },
+    { "source": "/account", "destination": "/api/account" }
   ],
   "functions": {
     "api/product-page.js": { "includeFiles": "dist/prodotto.html" }
