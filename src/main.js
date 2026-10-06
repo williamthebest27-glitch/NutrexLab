@@ -306,10 +306,11 @@ function dockMenu(scrolled) {
   menuDock = dock
 }
 
-/** Larghezza di "Acquista ora": il pulsante PRODOTTI (desktop) gli si affianca nella navbar. */
+/** Larghezza del gruppo a destra della navbar ("Acquista ora" e, sul desktop, il pulsante dell'account):
+ *  il pulsante PRODOTTI (desktop) gli si affianca. */
 function measureCta() {
-  const cta = document.querySelector('.nav__cta')
-  if (cta) html.style.setProperty('--cta-w', `${cta.offsetWidth}px`)
+  const right = document.querySelector('.nav__right') ?? document.querySelector('.nav__cta')
+  if (right) html.style.setProperty('--cta-w', `${right.offsetWidth}px`)
 }
 
 // ---------------------------------------------------------------------------
@@ -491,8 +492,8 @@ function intro() {
     tl.fromTo('.nav__logo', { xPercent: -120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.1))
     tl.fromTo('.nav__links > *', { yPercent: -180, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.1, ease: 'expo.out', stagger: 0.09, ...navClear }, at(2.25))
     tl.fromTo('.nav__cta', { xPercent: 120, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.3, ease: 'expo.out', ...navClear }, at(2.45))
-    // (mobile) l'hamburger arriva per ultimo, ruotando appena
-    tl.fromTo('.nav__burger', { scale: 0.5, rotation: -90, autoAlpha: 0 }, { scale: 1, rotation: 0, autoAlpha: 1, duration: 1.1, ease: 'back.out(2)', ...navClear }, at(2.6))
+    // il pulsante rotondo (account sul desktop, hamburger su mobile) arriva per ultimo, ruotando appena
+    tl.fromTo('.nav__account, .nav__burger', { scale: 0.5, rotation: -90, autoAlpha: 0 }, { scale: 1, rotation: 0, autoAlpha: 1, duration: 1.1, ease: 'back.out(2)', ...navClear }, at(2.6))
   }
   // menu prodotti: la scheda entra da destra, poi titolo e voci una alla volta
   // (su mobile entra il pulsante PRODOTTI, sotto "Acquista ora", come quello da destra)

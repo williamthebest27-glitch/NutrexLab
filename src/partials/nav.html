@@ -12,7 +12,7 @@
     <div class="nav-item" data-nav-sub>
       <a class="nav-link" href="/acquista" data-nav-link>Acquista</a>
       <span class="nav-badge mono" data-cart-count hidden>0</span>
-      <button class="nav-item__more" type="button" aria-expanded="false" aria-controls="nav-sub-acquista" aria-label="Apri il sottomenu: negozio, carrello, pagamenti e account">
+      <button class="nav-item__more" type="button" aria-expanded="false" aria-controls="nav-sub-acquista" aria-label="Apri il sottomenu: negozio, carrello e pagamenti">
         <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.75 6 6.25l4.5-4.5" /></svg>
       </button>
       <div class="nav-sub" id="nav-sub-acquista">
@@ -38,21 +38,20 @@
             <span class="nav-sub__text"><span class="nav-sub__t">Pagamenti</span><span class="nav-sub__d">Dati, spedizione e pagamento</span></span>
             <span class="nav-sub__arrow" aria-hidden="true">&rarr;</span>
           </a>
-          <a class="nav-sub__link" href="/account">
-            <span class="nav-sub__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.6" /><path d="M5 20.2c.7-3.6 3.5-5.6 7-5.6s6.3 2 7 5.6" /></svg>
-            </span>
-            <span class="nav-sub__text"><span class="nav-sub__t">Account</span><span class="nav-sub__d">Ordini, sconto primo ordine, invita un amico</span></span>
-            <span class="nav-sub__arrow" aria-hidden="true">&rarr;</span>
-          </a>
         </div>
       </div>
     </div>
     <a class="nav-link" href="/contatti" data-nav-link>Contatti</a>
   </nav>
-  <a class="btn btn--sm nav__cta" href="/acquista" data-magnetic>
-    <span class="btn__label">Acquista ora</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
-  </a>
+  <div class="nav__right">
+    <a class="btn btn--sm nav__cta" href="/acquista" data-magnetic>
+      <span class="btn__label">Acquista ora</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+    </a>
+    <!-- solo desktop: il pulsante rotondo dell'area clienti (su mobile Account sta nel menu hamburger) -->
+    <a class="nav__account" href="/account" aria-label="Il tuo account">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.6" /><path d="M5 20.2c.7-3.6 3.5-5.6 7-5.6s6.3 2 7 5.6" /></svg>
+    </a>
+  </div>
   <!-- solo mobile: apre il menu con le pagine (src/ui/mobileMenu.js) -->
   <button class="nav__burger" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="mnav" data-mnav-toggle>
     <span class="nav__burger-box" aria-hidden="true"><i></i><i></i></span>

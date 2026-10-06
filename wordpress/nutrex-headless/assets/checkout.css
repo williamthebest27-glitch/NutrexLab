@@ -466,6 +466,13 @@ body.nutrex-look #customer_login.col2-set {
   gap: 28px;
 }
 
+/* (i ::before/::after con cui WooCommerce chiude i float qui diventerebbero celle della griglia e
+   spingerebbero Accedi in alto a destra e Registrati in basso a sinistra) */
+body.nutrex-look #customer_login.col2-set::before,
+body.nutrex-look #customer_login.col2-set::after {
+  content: none;
+}
+
 body.nutrex-look #customer_login.col2-set > .col-1,
 body.nutrex-look #customer_login.col2-set > .col-2 {
   float: none;

@@ -144,9 +144,10 @@ diventa una dissolvenza).
 ## Menu e pagine
 
 Navbar e piè di pagina sono gli stessi in tutte le pagine (`src/partials/`): Homepage, Acquista
-(con il sottomenu Negozio / Carrello / Pagamenti / Account e il numero dei prodotti nel carrello),
-Contatti; "Acquista ora" porta al negozio. Su mobile il menu hamburger ha le sei pagine (Homepage,
-Acquista, Carrello, Pagamenti, Contatti, Account) con il numero dei prodotti accanto a Carrello.
+(con il sottomenu Negozio / Carrello / Pagamenti e il numero dei prodotti nel carrello), Contatti;
+"Acquista ora" porta al negozio e il pulsante rotondo accanto (desktop) all'area clienti. Su mobile
+il menu hamburger ha le sei pagine (Homepage, Acquista, Carrello, Pagamenti, Contatti, Account) con
+il numero dei prodotti accanto a Carrello.
 
 | Pagina | Indirizzo | Cosa fa |
 | --- | --- | --- |

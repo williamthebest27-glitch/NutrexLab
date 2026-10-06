@@ -616,13 +616,57 @@ ul {
   text-transform: uppercase;
 }
 
-.nav__cta {
+/* a destra: "Acquista ora" e, sul desktop, il pulsante rotondo dell'area clienti (su mobile Account
+   sta nel menu hamburger). main.js misura il gruppo: il pulsante PRODOTTI si mette alla sua sinistra */
+.nav__right {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav__cta {
   /* i colori della pagina cambiano con lo scroll: il pulsante li segue sfumando */
   transition:
     transform 0.25s var(--ease-out),
     background-color 0.5s var(--ease-out),
     color 0.5s var(--ease-out);
+}
+
+.nav__account {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  color: var(--fg);
+  transition:
+    border-color 0.5s var(--ease-out),
+    background-color 0.5s var(--ease-out),
+    color 0.5s var(--ease-out),
+    transform 0.45s var(--ease-out);
+}
+
+.nav__account svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav__account:hover,
+.nav__account:focus-visible {
+  border-color: color-mix(in srgb, var(--fg) 40%, transparent);
+  color: var(--accent);
+}
+
+.nav__account:active {
+  transform: scale(0.94);
 }
 
 /* Voci del menu: al passaggio del mouse le lettere si ricompongono in viola con uno zoom.
@@ -733,7 +777,8 @@ ul {
     height: 56px;
   }
 
-  .nav__links {
+  .nav__links,
+  .nav__account {
     display: none;
   }
 
@@ -763,7 +808,8 @@ ul {
   .btn__icon,
   .link::after,
   .nav,
-  .nav__bg {
+  .nav__bg,
+  .nav__account {
     transition: none;
   }
 }
