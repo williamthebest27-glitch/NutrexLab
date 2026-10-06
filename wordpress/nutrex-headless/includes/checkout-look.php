@@ -271,6 +271,13 @@ add_action(
 				wp_dequeue_style( $handle );
 			}
 		}
+		// il CSS in linea che il tema del sito aggancia ai fogli di WooCommerce (es. Astra: colonne strette,
+		// bordi e colori del checkout): via, qui vale il foglio di Nutrex
+		foreach ( array( 'woocommerce-general', 'woocommerce-layout', 'woocommerce-smallscreen' ) as $handle ) {
+			if ( isset( $styles->registered[ $handle ] ) ) {
+				$styles->registered[ $handle ]->extra['after'] = array();
+			}
+		}
 		// script: via solo quelli del tema e del codice aggiunto al sito (quelli dei plugin restano)
 		$scripts = wp_scripts();
 		$plugins = wp_normalize_path( WP_PLUGIN_DIR ) . '/';

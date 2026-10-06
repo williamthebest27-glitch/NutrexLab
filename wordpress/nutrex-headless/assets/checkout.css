@@ -359,6 +359,78 @@ body.nutrex-look :is(.woocommerce-info, .woocommerce-message)::before {
   color: var(--nx-berry);
 }
 
+/* ---------------------------------------------------------------- checkout classico a due colonne */
+/* via la disposizione del tema del sito ospite (colonne flottanti strette, bordi neri): qui decide la griglia */
+body.nutrex-look form.checkout.woocommerce-checkout > #customer_details,
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review_heading,
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review {
+  float: none;
+  width: auto;
+  max-width: none;
+}
+
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review_heading {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+}
+
+body.nutrex-look form.checkout.woocommerce-checkout > #order_review {
+  padding: 8px 20px 20px;
+  border: 1px solid var(--nx-line);
+  border-radius: 22px;
+  background: var(--nx-card);
+}
+
+body.nutrex-look #customer_details.col2-set .col-1,
+body.nutrex-look #customer_details.col2-set .col-2 {
+  float: none;
+  width: 100%;
+}
+
+/* dati a sinistra, "Il tuo ordine" (riepilogo e pagamento) a destra, fermo mentre si scorre */
+@media (min-width: 960px) {
+  body.nutrex-look form.checkout.woocommerce-checkout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+    column-gap: clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+
+  /* avvisi e pulsanti di pagamento rapido (Apple Pay, Google Pay) sopra, a tutta larghezza */
+  body.nutrex-look form.checkout.woocommerce-checkout > .woocommerce-NoticeGroup {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  body.nutrex-look form.checkout.woocommerce-checkout > .wcpay-express-checkout-wrapper {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  body.nutrex-look form.checkout.woocommerce-checkout > #customer_details {
+    grid-column: 1;
+    grid-row: 3 / span 2;
+  }
+
+  body.nutrex-look form.checkout.woocommerce-checkout > #order_review_heading {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  body.nutrex-look form.checkout.woocommerce-checkout > #order_review {
+    grid-column: 2;
+    grid-row: 4;
+    position: sticky;
+    top: 24px;
+  }
+
+  /* qualsiasi altra cosa aggiunta da altri plugin: a tutta larghezza */
+  body.nutrex-look form.checkout.woocommerce-checkout > :not(#customer_details):not(#order_review):not(#order_review_heading):not(.woocommerce-NoticeGroup):not(.wcpay-express-checkout-wrapper) {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ---------------------------------------------------------------- telefono */
 @media (max-width: 640px) {
   .nx-top__logo img {
