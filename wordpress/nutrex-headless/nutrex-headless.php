@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Nutrex Headless
- * Description:       Collega WooCommerce al negozio nutrexlab.it tenendo separati i due negozi: Nutrex Lab ha la sua pagina di pagamento, il suo carrello e le sue email (da info@nutrexlab.it); i prodotti Nutrex non compaiono e non si comprano su questo sito; pagine, carrello e ordini di questo sito non cambiano. In comune restano prodotti, magazzino, metodi di pagamento, sconti e Amazon MCF.
- * Version:           2.2.3
+ * Description:       Collega WooCommerce al negozio nutrexlab.it tenendo separati i due negozi: Nutrex Lab ha la sua pagina di pagamento, il suo carrello, la sua area clienti (sconto primo ordine, invita un amico) e le sue email (da info@nutrexlab.it); i prodotti Nutrex non compaiono e non si comprano su questo sito; pagine, carrello e ordini di questo sito non cambiano. In comune restano prodotti, magazzino, metodi di pagamento, sconti e Amazon MCF.
+ * Version:           2.3.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
@@ -22,7 +22,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NUTREX_HEADLESS_VERSION', '2.2.3' );
+define( 'NUTREX_HEADLESS_VERSION', '2.3.0' );
 define( 'NUTREX_HEADLESS_FILE', __FILE__ );
 
 add_action(
@@ -36,6 +36,7 @@ add_action(
 		require_once __DIR__ . '/includes/settings.php';
 		require_once __DIR__ . '/includes/separation.php';
 		require_once __DIR__ . '/includes/checkout-page.php';
+		require_once __DIR__ . '/includes/account.php';
 		require_once __DIR__ . '/includes/checkout-handoff.php';
 		require_once __DIR__ . '/includes/frontend-links.php';
 		require_once __DIR__ . '/includes/checkout-look.php';

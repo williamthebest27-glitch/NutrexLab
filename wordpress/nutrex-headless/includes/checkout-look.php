@@ -19,6 +19,10 @@ function nutrex_headless_look() {
 		return ''; // pagina non ancora nota: si decide dopo
 	}
 	$look = '';
+	if ( function_exists( 'nutrex_headless_on_account_page' ) && nutrex_headless_on_account_page() ) {
+		$look = 'account';
+		return $look;
+	}
 	if ( ! nutrex_headless_on_checkout_page() ) {
 		return $look;
 	}
@@ -47,6 +51,7 @@ add_action(
 		remove_action( 'wp_head', 'wlwmanifest_link' );
 		nutrex_headless_remove_title_tags();
 		nutrex_headless_clean_frame();
+		do_action( 'nutrex_headless_after_clean' ); // (l'area clienti rimette i suoi pezzi)
 	},
 	PHP_INT_MAX
 );
@@ -164,6 +169,31 @@ function nutrex_headless_clean_frame() {
 		'woocommerce_thankyou',
 		'woocommerce_pay_order_before_submit',
 		'woocommerce_pay_order_after_submit',
+		// area clienti
+		'woocommerce_before_customer_login_form',
+		'woocommerce_after_customer_login_form',
+		'woocommerce_login_form_start',
+		'woocommerce_login_form',
+		'woocommerce_login_form_end',
+		'woocommerce_register_form_start',
+		'woocommerce_register_form',
+		'woocommerce_register_form_end',
+		'woocommerce_before_lost_password_form',
+		'woocommerce_before_lost_password_confirmation_message',
+		'woocommerce_before_reset_password_form',
+		'woocommerce_before_account_navigation',
+		'woocommerce_account_navigation',
+		'woocommerce_after_account_navigation',
+		'woocommerce_account_content',
+		'woocommerce_account_dashboard',
+		'woocommerce_before_edit_account_form',
+		'woocommerce_edit_account_form_start',
+		'woocommerce_edit_account_form',
+		'woocommerce_edit_account_form_end',
+		'woocommerce_after_edit_account_form',
+		'woocommerce_before_account_orders',
+		'woocommerce_after_account_orders',
+		'woocommerce_my_account_my_orders_actions',
 	);
 	foreach ( $hooks as $hook ) {
 		if ( empty( $wp_filter[ $hook ] ) ) {
@@ -219,6 +249,7 @@ add_filter(
 		// (cio' che il tema ha agganciato scegliendo il suo modello, es. il <title> dei temi a blocchi)
 		nutrex_headless_remove_title_tags();
 		nutrex_headless_clean_frame();
+		do_action( 'nutrex_headless_after_clean' );
 		return dirname( __DIR__ ) . '/templates/checkout.php';
 	},
 	PHP_INT_MAX
@@ -318,6 +349,7 @@ add_filter(
 			'checkout' => __( 'Pagamento sicuro', 'nutrex-headless' ),
 			'received' => __( 'Ordine ricevuto', 'nutrex-headless' ),
 			'pay'      => __( 'Pagamento dell\'ordine', 'nutrex-headless' ),
+			'account'  => __( 'Il tuo account', 'nutrex-headless' ),
 		);
 		$look = nutrex_headless_look();
 		return $look ? $titles[ $look ] . ' | Nutrex Lab' : $title;
@@ -339,6 +371,7 @@ function nutrex_headless_look_title() {
 		'checkout' => __( 'Pagamento', 'nutrex-headless' ),
 		'received' => __( 'Ordine ricevuto', 'nutrex-headless' ),
 		'pay'      => __( 'Pagamento dell\'ordine', 'nutrex-headless' ),
+		'account'  => __( 'Account', 'nutrex-headless' ),
 	);
 	return $titles[ nutrex_headless_look() ] ?? '';
 }

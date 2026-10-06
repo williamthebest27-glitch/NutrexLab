@@ -79,7 +79,7 @@ function nutrex_headless_is_storefront() {
 			return false;
 		}
 	}
-	return ! nutrex_headless_on_checkout_page();
+	return ! nutrex_headless_on_checkout_page() && ! nutrex_headless_on_account_page();
 }
 
 /**

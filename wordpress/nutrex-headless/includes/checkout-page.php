@@ -246,11 +246,11 @@ function nutrex_headless_nutrex_checkout_context() {
 	return nutrex_headless_is_rest() && did_action( 'woocommerce_cart_loaded_from_session' ) && nutrex_headless_is_nutrex_cart();
 }
 
-// si paga come ospite: niente accesso o account di questo sito
+// si paga come ospite o con l'account Nutrex (accesso dal promemoria); l'account si crea nell'area clienti
 foreach (
 	array(
 		'woocommerce_enable_guest_checkout'                 => 'yes',
-		'woocommerce_enable_checkout_login_reminder'        => 'no',
+		'woocommerce_enable_checkout_login_reminder'        => 'yes',
 		'woocommerce_enable_signup_and_login_from_checkout' => 'no',
 		'woocommerce_enable_delayed_account_creation'       => 'no',
 	) as $nutrex_headless_option => $nutrex_headless_value

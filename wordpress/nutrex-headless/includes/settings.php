@@ -45,6 +45,10 @@ add_filter(
 				'id'   => 'nutrex_headless_checkout_page_info',
 			),
 			array(
+				'type' => 'nutrex_account_page',
+				'id'   => 'nutrex_headless_account_page_info',
+			),
+			array(
 				'type' => 'sectionend',
 				'id'   => 'nutrex_headless',
 			),
@@ -138,6 +142,27 @@ add_action(
 				<?php if ( $id ) : ?>
 					<a href="<?php echo esc_url( get_permalink( $id ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( get_permalink( $id ) ); ?></a>
 					<p class="description"><?php esc_html_e( 'Creata dal plugin, solo per i clienti di nutrexlab.it: non compare nei menu e nelle ricerche di questo sito. Non modificarla e non cancellarla (se manca, il plugin la ricrea).', 'nutrex-headless' ); ?></p>
+				<?php else : ?>
+					<p class="description"><?php esc_html_e( 'Pagina non ancora creata: imposta la categoria dei prodotti Nutrex e salva.', 'nutrex-headless' ); ?></p>
+				<?php endif; ?>
+			</td>
+		</tr>
+		<?php
+	}
+);
+
+// l'area clienti di Nutrex Lab (creata dal plugin)
+add_action(
+	'woocommerce_admin_field_nutrex_account_page',
+	function () {
+		$id = nutrex_headless_category_ids() ? nutrex_headless_ensure_account_page() : nutrex_headless_account_page_id();
+		?>
+		<tr valign="top">
+			<th scope="row" class="titledesc"><?php esc_html_e( 'Area clienti Nutrex', 'nutrex-headless' ); ?></th>
+			<td class="forminp">
+				<?php if ( $id ) : ?>
+					<a href="<?php echo esc_url( get_permalink( $id ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( get_permalink( $id ) ); ?></a>
+					<p class="description"><?php esc_html_e( 'Accesso, registrazione, ordini Nutrex, indirizzi; sconto del 5% sul primo ordine e "invita un amico" (WooCommerce > Nutrex Lab: inviti). Su nutrexlab.it e\' la pagina /account. Non modificarla e non cancellarla.', 'nutrex-headless' ); ?></p>
 				<?php else : ?>
 					<p class="description"><?php esc_html_e( 'Pagina non ancora creata: imposta la categoria dei prodotti Nutrex e salva.', 'nutrex-headless' ); ?></p>
 				<?php endif; ?>

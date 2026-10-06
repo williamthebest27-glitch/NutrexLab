@@ -69,6 +69,18 @@
               <span class="btn__label">Procedi al pagamento</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
             </button>
             <p class="coupon__msg" role="alert" data-checkout-msg></p>
+            <!-- l'area clienti sta sul WooCommerce (plugin): il 5% sul primo ordine e i bonus amici entrano al pagamento -->
+            <aside class="nudge" aria-label="Account Nutrex Lab">
+              <strong class="nudge__num">&minus;5%</strong>
+              <div class="nudge__text">
+                <span class="mono nudge__label">Con un account Nutrex Lab</span>
+                <p>Il 5% sul primo ordine e un bonus del 5% per ogni amico che inviti: si applicano al pagamento.</p>
+              </div>
+              <div class="nudge__actions">
+                <a class="btn btn--sm" href="/account?vista=registrati&amp;torna=carrello"><span class="btn__label">Crea il tuo account</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>
+                <a class="link mono" href="/account?torna=carrello">Hai gi&agrave; un account? Accedi</a>
+              </div>
+            </aside>
             <a class="link mono summary__back" href="/acquista">Continua gli acquisti</a>
             <ul class="ticks mono">
               <li>Prodotti in Italia</li>

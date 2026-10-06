@@ -144,9 +144,9 @@ diventa una dissolvenza).
 ## Menu e pagine
 
 Navbar e piè di pagina sono gli stessi in tutte le pagine (`src/partials/`): Homepage, Acquista
-(con il sottomenu Carrello / Pagamenti e il numero dei prodotti nel carrello), Contatti; "Acquista
-ora" porta al negozio. Su mobile il menu hamburger ha le cinque pagine (Homepage, Acquista, Carrello,
-Pagamenti, Contatti) con il numero dei prodotti accanto a Carrello.
+(con il sottomenu Negozio / Carrello / Pagamenti / Account e il numero dei prodotti nel carrello),
+Contatti; "Acquista ora" porta al negozio. Su mobile il menu hamburger ha le sei pagine (Homepage,
+Acquista, Carrello, Pagamenti, Contatti, Account) con il numero dei prodotti accanto a Carrello.
 
 | Pagina | Indirizzo | Cosa fa |
 | --- | --- | --- |
@@ -157,6 +157,7 @@ Pagamenti, Contatti) con il numero dei prodotti accanto a Carrello.
 | Pagamenti | `/pagamenti` | come funziona il pagamento, riepilogo, coupon, "Vai al pagamento sicuro" (checkout di WooCommerce) |
 | Grazie | `/ordine?numero=N` | dopo il pagamento: numero dell'ordine WooCommerce; svuota il carrello del sito |
 | Contatti | `/contatti` | recapiti e modulo che invia il messaggio a info@nutrexlab.it (`/api/contatto` -> plugin su WooCommerce) |
+| Account | `/account` | porta all'area clienti Nutrex sul WooCommerce (`/account-nutrex-lab/`, cornice Nutrex): accesso, registrazione, ordini Nutrex, indirizzi, sconto del 5% sul primo ordine, invita un amico; `?ref=` porta con se' l'invito, `?torna=carrello` riporta al carrello |
 
 Gli indirizzi sono senza `.html` (`cleanUrls` in `vercel.json`; in locale li gestisce Vite).
 Il carrello e' quello di WooCommerce (sessione nel cookie `nx_cart`): lo stesso in tutte le pagine e

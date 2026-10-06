@@ -432,6 +432,435 @@ body.nutrex-look #customer_details.col2-set .col-2 {
   }
 }
 
+/* ---------------------------------------------------------------- area clienti */
+body.nutrex-look .nxa__head {
+  margin: 0 0 22px;
+}
+
+body.nutrex-look .nxa__titolo {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+body.nutrex-look .nxa__sotto {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa__occhiello {
+  display: block;
+  margin-bottom: 8px;
+  font: 500 11px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nx-berry);
+}
+
+/* accesso e registrazione affiancati; da telefono, prima la registrazione per chi arriva per registrarsi */
+body.nutrex-look #customer_login.col2-set {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+
+body.nutrex-look #customer_login.col2-set > .col-1,
+body.nutrex-look #customer_login.col2-set > .col-2 {
+  float: none;
+  width: auto;
+  max-width: none;
+}
+
+body.nutrex-look #customer_login h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+body.nutrex-look .woocommerce form.login,
+body.nutrex-look .woocommerce form.register,
+body.nutrex-look form.woocommerce-ResetPassword,
+body.nutrex-look form.woocommerce-EditAccountForm,
+body.nutrex-look .woocommerce-address-fields {
+  margin: 0;
+  padding: 24px;
+  border: 1px solid var(--nx-line);
+  border-radius: 22px;
+  background: var(--nx-card);
+}
+
+body.nutrex-look .woocommerce form .form-row label {
+  color: var(--nx-ink);
+}
+
+body.nutrex-look .woocommerce-privacy-policy-text,
+body.nutrex-look .woocommerce-LostPassword {
+  font-size: 14px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-vantaggio {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 14px;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(158, 46, 101, 0.08);
+}
+
+body.nutrex-look .nxa-vantaggio__num {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--nx-berry);
+}
+
+body.nutrex-look .nxa-vantaggio__label {
+  grid-column: 2;
+  font: 500 11px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nx-berry);
+}
+
+body.nutrex-look .nxa-vantaggio__testo {
+  grid-column: 2;
+  font-size: 14px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-invitato {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(47, 158, 91, 0.1);
+  color: #1f6f3f;
+  font-size: 14px;
+}
+
+body.nutrex-look .nxa-codice-amico__nota {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-privacy label {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* navigazione dell'area: pillole */
+body.nutrex-look .woocommerce-MyAccount-navigation,
+body.nutrex-look .woocommerce-MyAccount-content {
+  float: none;
+  width: auto;
+}
+
+body.nutrex-look .woocommerce-MyAccount-navigation ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+body.nutrex-look .woocommerce-MyAccount-navigation li a {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--nx-line);
+  border-radius: 999px;
+  color: var(--nx-ink);
+  font: 500 11px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+body.nutrex-look .woocommerce-MyAccount-navigation li.is-active a {
+  border-color: var(--nx-ink);
+  background: var(--nx-ink);
+  color: #fff;
+}
+
+/* dashboard: benvenuto, le tre schede, invita un amico, risultati */
+body.nutrex-look .nxa-benvenuto {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(47, 158, 91, 0.1);
+  color: #1f6f3f;
+}
+
+body.nutrex-look .nxa-benvenuto strong {
+  display: block;
+}
+
+body.nutrex-look .nxa-vantaggi {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 24px;
+}
+
+body.nutrex-look .nxa-card {
+  display: grid;
+  gap: 6px;
+  padding: 18px 20px;
+  border: 1px solid var(--nx-line);
+  border-radius: 18px;
+  background: var(--nx-card);
+}
+
+body.nutrex-look .nxa-card--spento {
+  opacity: 0.62;
+}
+
+body.nutrex-look .nxa-card--totale {
+  border-color: var(--nx-ink);
+  background: var(--nx-ink);
+  color: #fff;
+}
+
+body.nutrex-look .nxa-card__label {
+  font: 500 11px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-card__num {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+body.nutrex-look .nxa-card__piede {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-card--totale .nxa-card__label,
+body.nutrex-look .nxa-card--totale .nxa-card__piede {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+body.nutrex-look .nxa-stato {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(14, 12, 17, 0.08);
+  font: 500 10px/1 var(--nx-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nx-ink);
+}
+
+body.nutrex-look .nxa-stato.is-on {
+  background: rgba(47, 158, 91, 0.16);
+  color: #1f6f3f;
+}
+
+body.nutrex-look .nxa-invita {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 24px;
+  margin: 0 0 24px;
+  padding: 24px;
+  border-radius: 22px;
+  background: rgba(158, 46, 101, 0.07);
+}
+
+body.nutrex-look .nxa-invita h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+body.nutrex-look .nxa-invita p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-link__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-link {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--nx-field);
+  border-radius: 12px;
+  background: #fff;
+  font: 13px/1.4 var(--nx-mono);
+  color: var(--nx-ink);
+}
+
+body.nutrex-look .nxa-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+body.nutrex-look .nxa-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--nx-ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--nx-ink);
+  font: 500 11px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.nutrex-look .nxa-btn--pieno {
+  background: var(--nx-ink);
+  color: #fff;
+}
+
+body.nutrex-look .nxa-codice {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-codice__b {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(14, 12, 17, 0.06);
+  color: var(--nx-ink);
+  font: 600 14px/1.4 var(--nx-mono);
+  cursor: pointer;
+}
+
+body.nutrex-look .nxa-risultati dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+body.nutrex-look .nxa-risultati dt {
+  font-size: 12.5px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-risultati dd {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* promemoria al pagamento per chi non ha fatto l'accesso */
+body.nutrex-look .nxa-promemoria {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px 18px;
+  align-items: center;
+  margin: 0 0 22px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: rgba(158, 46, 101, 0.08);
+}
+
+body.nutrex-look .nxa-promemoria__num {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--nx-berry);
+}
+
+body.nutrex-look .nxa-promemoria__label {
+  font: 500 11px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nx-berry);
+}
+
+body.nutrex-look .nxa-promemoria__titolo {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+body.nutrex-look .nxa-promemoria__sotto {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--nx-soft);
+}
+
+body.nutrex-look .nxa-promemoria__azioni {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+body.nutrex-look .nxa-promemoria__btn {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--nx-ink);
+  color: #fff;
+  font: 500 11px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+body.nutrex-look .nxa-promemoria__accedi {
+  font-size: 13px;
+  color: var(--nx-soft);
+}
+
+@media (max-width: 900px) {
+  body.nutrex-look #customer_login.col2-set,
+  body.nutrex-look .nxa-vantaggi,
+  body.nutrex-look .nxa-invita,
+  body.nutrex-look .nxa-promemoria {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.nutrex-look .nxa-prima-registrazione #customer_login.col2-set > .col-2 {
+    order: -1;
+  }
+
+  body.nutrex-look .nxa-promemoria__azioni {
+    justify-items: start;
+  }
+}
+
 /* ---------------------------------------------------------------- telefono */
 @media (max-width: 640px) {
   .nx-top__logo img {

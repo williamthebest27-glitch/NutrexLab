@@ -99,6 +99,7 @@ Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
 | Indirizzo del negozio | `https://www.nutrexlab.it` (solo il dominio; uguale a `SITE_URL`) |
 | Categoria dei prodotti Nutrex | `nutrex-lab` (uguale a `WOOCOMMERCE_CATEGORY`) |
 | Pagina di pagamento Nutrex | la crea il plugin (`/pagamento-nutrex-lab/`): e' il checkout dei clienti Nutrex, non va modificata ne' cancellata (se manca, il plugin la ricrea) |
+| Area clienti Nutrex | la crea il plugin (`/account-nutrex-lab/`, su nutrexlab.it e' `/account`): accesso, registrazione, ordini Nutrex, indirizzi, sconto primo ordine, invita un amico. Non va modificata ne' cancellata |
 
 Sezione **Email di Nutrex Lab** (stessa pagina): le email degli ordini Nutrex e i messaggi del modulo
 contatti partono dalla casella `info@nutrexlab.it` attraverso il suo server di posta, firmate dal dominio
@@ -167,6 +168,9 @@ thedoubletwenty.
   amministratori vedono ancora la pagina WooCommerce).
 - Sull'estratto conto, e nelle finestre di Apple Pay e Google Pay, il cliente vede il nome impostato nel
   metodo di pagamento (Stripe, PayPal...): e' lo stesso conto di thedoubletwenty (stesso titolare).
+- Chi ha un account lo usa dall'area clienti Nutrex (`/account` su nutrexlab.it); al pagamento chi non ha fatto
+  l'accesso vede il promemoria "Registrati e risparmi un ulteriore 5% sul primo ordine" e il link "Accedi",
+  che riportano al pagamento.
 
 ## Da sapere
 
@@ -181,6 +185,19 @@ thedoubletwenty.
   moderazione): si approvano in WordPress > Commenti come le altre.
 - **Modulo contatti**: i messaggi di `/contatti` arrivano a info@nutrexlab.it (plugin, `nutrex/v1/contatto`)
   con "Rispondi a" = chi ha scritto; al massimo 5 messaggi l'ora per indirizzo IP, 60 l'ora in tutto.
+- **Area clienti** (`/account-nutrex-lab/`, da nutrexlab.it `/account`): le stesse funzioni dell'area clienti
+  di thedoubletwenty ma separate. Registrazione con nome, cognome, email, password e conferma, codice amico,
+  privacy; **5% sul primo ordine Nutrex** di chi si registra (codice virtuale `membri-nutrex`, entra da solo al
+  pagamento di chi ha fatto l'accesso, vale finche' non c'e' un ordine Nutrex pagato, in attesa di bonifico,
+  completato o rimborsato fatto dopo la registrazione); **invita un amico**: codice `NX-XXXXX` e link personale
+  `nutrexlab.it/account?ref=NX-XXXXX`; per ogni amico che si registra chi l'ha invitato riceve subito un bonus del
+  5%, un codice monouso `nutrex-bonus-...` valido solo sui prodotti Nutrex, uno per ordine (gli altri restano).
+  Non vale se l'amico ha l'email di chi invita (anche con +etichetta o i punti di Gmail) o era gia' cliente
+  Nutrex. L'account (email e password) e' uno solo per i due negozi: e' lo stesso WordPress. Ma l'area Nutrex
+  mostra solo gli ordini Nutrex e quella di thedoubletwenty non mostra gli ordini Nutrex; lo sconto membri e i
+  bonus di thedoubletwenty non valgono sui carrelli Nutrex e viceversa. Le email di account (benvenuto, nuova
+  password) dei clienti registrati da Nutrex Lab hanno il design Nutrex e portano all'area Nutrex. In bacheca:
+  WooCommerce > Nutrex Lab: inviti.
 - **Prezzi e disponibilita'**: il sito li mostra con al massimo un paio di minuti di ritardo (cache); carrello e
   checkout usano sempre i dati attuali di WooCommerce.
 - **Spedizione e IVA**: le calcola WooCommerce nel checkout (zone di spedizione e aliquote come oggi).
@@ -254,11 +271,11 @@ automatiche del codice del server (senza WooCommerce).
 
 | Parte | File |
 | --- | --- |
-| Funzioni Vercel | `api/products.js` (elenco e singolo prodotto con i correlati), `api/cart.js` (carrello), `api/checkout.js` (indirizzo del checkout), `api/product-page.js` (pagina prodotto con titolo, descrizione e dati strutturati per Google), `api/recensioni.js` (recensioni: lettura e invio), `api/contatto.js` (modulo contatti), `api/sitemap.js` |
+| Funzioni Vercel | `api/products.js` (elenco e singolo prodotto con i correlati), `api/cart.js` (carrello), `api/checkout.js` (indirizzo del checkout), `api/product-page.js` (pagina prodotto con titolo, descrizione e dati strutturati per Google), `api/recensioni.js` (recensioni: lettura e invio), `api/contatto.js` (modulo contatti), `api/account.js` (porta all'area clienti Nutrex), `api/google-verify.js` (verifica di Google Search Console), `api/sitemap.js` |
 | Codice del server | `server/`: `woo.js` (Store API), `catalog.js` (prodotti e categoria del negozio, correlati, recensioni), `cart.js`, `checkout.js`, `product-page.js`, `plugin.js` (chiamate al plugin), `contact.js`, `reviews.js`, `session.js` (cookie del carrello), `http.js`, `errors.js` (messaggi per il cliente), `env.js` (variabili) |
 | Indirizzi | `vercel.json`: `/prodotto/<slug>` -> `api/product-page`, `/sitemap.xml` -> `api/sitemap`; in locale lo stesso lo fa `vite.config.js` |
 | Browser | `src/shop/` (`api.js`, `cart.js` carrello condiviso tra le schede, `card.js` scheda prodotto, `config.js` recapiti, offerte quantita' e metodi di pagamento, `money.js`, `themes.js` colori per slug), `src/pages/` (script delle pagine) |
-| Plugin WordPress | `wordpress/nutrex-headless/`: `includes/separation.php` (negozi separati), `checkout-page.php` (pagina di pagamento Nutrex), `checkout-look.php` (cornice Nutrex, senza menu e stili del sito ospite), `checkout-handoff.php` (dal carrello del sito), `frontend-links.php`, `emails.php` + `email-look.php` + `templates/emails/` (email Nutrex), `mail.php` (invio da info@nutrexlab.it), `contact.php`, `reviews.php`, `settings.php`, `import.php` |
+| Plugin WordPress | `wordpress/nutrex-headless/`: `includes/separation.php` (negozi separati), `checkout-page.php` (pagina di pagamento Nutrex), `checkout-look.php` (cornice Nutrex, senza menu e stili del sito ospite), `checkout-handoff.php` (dal carrello del sito), `frontend-links.php`, `emails.php` + `email-look.php` + `templates/emails/` (email Nutrex), `mail.php` (invio da info@nutrexlab.it), `contact.php`, `reviews.php`, `account.php` (area clienti: sconto primo ordine, invita un amico), `settings.php`, `import.php`; `templates/emails/nutrex-account.php` (email di account) |
 | WooCommerce di prova | `wordpress/sviluppo/` |
 | Prove automatiche | `tests/` (`npm test`) |
 

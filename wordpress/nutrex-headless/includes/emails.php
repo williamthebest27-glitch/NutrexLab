@@ -21,6 +21,19 @@ function nutrex_headless_email_order( $email ) {
 	return nutrex_headless_is_order( $object ) ? $object : null;
 }
 
+/** Il cliente registrato da Nutrex Lab di cui parla l'email (nuovo account, nuova password), se c'e'. */
+function nutrex_headless_email_user( $email ) {
+	if ( ! $email instanceof WC_Email || ! $email->object instanceof WP_User ) {
+		return null;
+	}
+	return get_user_meta( $email->object->ID, 'nutrex_headless_customer', true ) ? $email->object : null;
+}
+
+/** L'email e' di Nutrex Lab: parla di un ordine Nutrex o di un cliente registrato da Nutrex Lab. */
+function nutrex_headless_email_nutrex( $email ) {
+	return nutrex_headless_email_order( $email ) || nutrex_headless_email_user( $email );
+}
+
 /** Nome del mittente e del sito nelle email Nutrex. */
 function nutrex_headless_email_name() {
 	$custom = trim( (string) get_option( 'nutrex_headless_email_from_name', '' ) );
@@ -34,7 +47,7 @@ add_filter(
 	'woocommerce_email_from_name',
 	function ( $name, $email ) {
 		$custom = nutrex_headless_email_name();
-		return $custom && nutrex_headless_email_order( $email ) ? $custom : $name;
+		return $custom && nutrex_headless_email_nutrex( $email ) ? $custom : $name;
 	},
 	10,
 	2
@@ -45,7 +58,7 @@ add_filter(
 	'woocommerce_email_from_address',
 	function ( $address, $email ) {
 		$custom = nutrex_headless_sender_address();
-		if ( ! $custom || ! empty( $GLOBALS['nutrex_headless_mail_plain'] ) || ! nutrex_headless_email_order( $email ) ) {
+		if ( ! $custom || ! empty( $GLOBALS['nutrex_headless_mail_plain'] ) || ! nutrex_headless_email_nutrex( $email ) ) {
 			return $address;
 		}
 		return $custom;
@@ -59,7 +72,7 @@ add_filter(
 	'woocommerce_email_format_string',
 	function ( $string, $email ) {
 		$custom = nutrex_headless_email_name();
-		if ( ! $custom || ! nutrex_headless_email_order( $email ) ) {
+		if ( ! $custom || ! nutrex_headless_email_nutrex( $email ) ) {
 			return $string;
 		}
 		$site = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
@@ -93,7 +106,8 @@ $GLOBALS['nutrex_headless_email_look'] = false;
 add_action(
 	'woocommerce_email_header',
 	function ( $heading, $email = null ) {
-		$GLOBALS['nutrex_headless_email_look']  = (bool) nutrex_headless_email_order( $email );
+		$GLOBALS['nutrex_headless_email_look']  = (bool) nutrex_headless_email_nutrex( $email );
+		$GLOBALS['nutrex_headless_account_mail'] = (bool) nutrex_headless_email_user( $email ); // (i link dell'account portano all'area clienti Nutrex)
 		$GLOBALS['nutrex_headless_email_which'] = $email instanceof WC_Email ? $email : null; // (la chiusura non sempre lo riceve)
 	},
 	1,
@@ -101,7 +115,8 @@ add_action(
 );
 
 $nutrex_headless_email_done = function ( $value = null ) {
-	$GLOBALS['nutrex_headless_email_look'] = false;
+	$GLOBALS['nutrex_headless_email_look']   = false;
+	$GLOBALS['nutrex_headless_account_mail'] = false;
 	return $value;
 };
 add_filter( 'woocommerce_mail_content', $nutrex_headless_email_done, PHP_INT_MAX ); // email pronta (stili compresi)
@@ -141,6 +156,10 @@ add_filter(
 			$order = $args['order'] ?? null;
 			$email = $args['email'] ?? null;
 			return $email instanceof WC_Email && nutrex_headless_is_order( $order ) ? $dir . 'emails/nutrex-order.php' : $template;
+		}
+		// email dell'account (nuovo account, nuova password) ai clienti registrati da Nutrex Lab
+		if ( in_array( $template_name, array( 'emails/customer-new-account.php', 'emails/customer-reset-password.php' ), true ) && nutrex_headless_email_user( $args['email'] ?? null ) ) {
+			return $dir . 'emails/nutrex-account.php';
 		}
 		// cornice e parti comuni: mentre si scrive un'email Nutrex (anche quelle per l'amministratore)
 		$parts = array( 'emails/email-header.php', 'emails/email-footer.php', 'emails/email-order-details.php', 'emails/email-order-items.php', 'emails/email-addresses.php' );
