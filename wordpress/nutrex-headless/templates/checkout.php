@@ -6,7 +6,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$nutrex_front = nutrex_headless_frontend_url();
+$nutrex_front = nutrex_headless_shop_url();
 $nutrex_back  = 'checkout' === nutrex_headless_look()
 	? array( $nutrex_front . '/carrello', __( 'Torna al carrello', 'nutrex-headless' ) )
 	: array( $nutrex_front, __( 'Torna su Nutrex Lab', 'nutrex-headless' ) );

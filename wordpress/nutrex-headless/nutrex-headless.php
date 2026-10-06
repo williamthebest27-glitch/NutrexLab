@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Nutrex Headless
- * Description:       Collega WooCommerce al negozio nutrexlab.it: il carrello del negozio passa al checkout di WooCommerce, con l'aspetto di Nutrex Lab; dopo il pagamento il cliente torna su nutrexlab.it; link ed email degli ordini Nutrex parlano di Nutrex Lab. Il resto del sito non cambia.
- * Version:           2.1.0
+ * Description:       Collega WooCommerce al negozio nutrexlab.it tenendo separati i due negozi: Nutrex Lab ha la sua pagina di pagamento, il suo carrello e le sue email (da info@nutrexlab.it); i prodotti Nutrex non compaiono e non si comprano su questo sito; pagine, carrello e ordini di questo sito non cambiano. In comune restano prodotti, magazzino, metodi di pagamento, sconti e Amazon MCF.
+ * Version:           2.2.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
@@ -11,17 +11,18 @@
  * Text Domain:       nutrex-headless
  *
  * Il negozio nutrexlab.it mostra i prodotti e il carrello con la Store API di WooCommerce. Per pagare,
- * il cliente arriva al checkout di questo WooCommerce con gli stessi prodotti nel carrello: paga con i
- * metodi gia' attivi qui e l'ordine e' un normale ordine WooCommerce (stock, email, clienti, coupon,
- * spedizioni, tasse, Amazon MCF: tutto come sempre).
+ * il cliente arriva alla pagina di pagamento di Nutrex Lab (una pagina sua, creata dal plugin) con gli
+ * stessi prodotti: paga con i metodi gia' attivi qui e l'ordine e' un normale ordine WooCommerce (stock,
+ * coupon e sconti, spedizioni, tasse, Amazon MCF: tutto come sempre).
  *
  * Impostazioni: WooCommerce > Impostazioni > Avanzate > Nutrex Lab.
- * Riguarda solo i prodotti della categoria Nutrex e gli ordini che li contengono.
+ * Riguarda solo i prodotti della categoria Nutrex e gli ordini fatti solo di prodotti Nutrex: gli altri
+ * ordini, le loro email e il resto del sito restano come sono.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NUTREX_HEADLESS_VERSION', '2.1.0' );
+define( 'NUTREX_HEADLESS_VERSION', '2.2.0' );
 define( 'NUTREX_HEADLESS_FILE', __FILE__ );
 
 add_action(
@@ -30,30 +31,43 @@ add_action(
 		if ( ! function_exists( 'WC' ) ) {
 			return;
 		}
+		require_once __DIR__ . '/includes/mail.php';
+		require_once __DIR__ . '/includes/email-look.php';
 		require_once __DIR__ . '/includes/settings.php';
+		require_once __DIR__ . '/includes/separation.php';
+		require_once __DIR__ . '/includes/checkout-page.php';
 		require_once __DIR__ . '/includes/checkout-handoff.php';
 		require_once __DIR__ . '/includes/frontend-links.php';
 		require_once __DIR__ . '/includes/checkout-look.php';
 		require_once __DIR__ . '/includes/emails.php';
 		require_once __DIR__ . '/includes/import.php';
+		require_once __DIR__ . '/includes/contact.php';
 	},
 	11
 );
-
-/** Aspetto di Nutrex Lab per checkout ed email degli ordini Nutrex (impostazione, attivo di base). */
-function nutrex_headless_look_enabled() {
-	return 'no' !== get_option( 'nutrex_headless_look', 'yes' ) && '' !== nutrex_headless_frontend_url();
-}
 
 /** URL di un file del plugin (cartella assets). */
 function nutrex_headless_asset( $file ) {
 	return plugins_url( 'assets/' . $file, NUTREX_HEADLESS_FILE );
 }
 
-/** Indirizzo del negozio (es. https://nutrexlab.it), senza barra finale. Vuoto = nessun link cambiato. */
+/**
+ * Indirizzo del negozio (es. https://www.nutrexlab.it): solo protocollo e dominio, anche se
+ * nell'impostazione c'e' un percorso (es. /acquista). Vuoto = link dei prodotti Nutrex non cambiati.
+ */
 function nutrex_headless_frontend_url() {
-	$url = trim( (string) get_option( 'nutrex_headless_frontend_url', '' ) );
-	return $url ? untrailingslashit( esc_url_raw( $url ) ) : '';
+	$url   = esc_url_raw( trim( (string) get_option( 'nutrex_headless_frontend_url', '' ) ) );
+	$parts = $url ? wp_parse_url( $url ) : null;
+	if ( empty( $parts['host'] ) ) {
+		return '';
+	}
+	return ( $parts['scheme'] ?? 'https' ) . '://' . $parts['host'] . ( isset( $parts['port'] ) ? ':' . $parts['port'] : '' );
+}
+
+/** Indirizzo di una pagina del negozio Nutrex (senza impostazione: www.nutrexlab.it). */
+function nutrex_headless_shop_url( $path = '' ) {
+	$front = nutrex_headless_frontend_url();
+	return ( $front ? $front : 'https://www.nutrexlab.it' ) . $path;
 }
 
 /** Id della categoria Nutrex e di tutte le sue sottocategorie (vuoto se non impostata). */
@@ -89,15 +103,23 @@ function nutrex_headless_is_product( $product_id ) {
 	return (bool) array_intersect( $ids, array_map( 'intval', wp_list_pluck( $terms, 'term_id' ) ) );
 }
 
-/** Ordine con almeno un prodotto Nutrex. */
+/**
+ * Ordine Nutrex: solo prodotti Nutrex, come il carrello del checkout Nutrex. Un ordine che contiene anche
+ * prodotti di questo sito resta del sito (pagine, email, mittente). I prodotti poi cancellati non contano.
+ */
 function nutrex_headless_is_order( $order ) {
 	if ( ! $order instanceof WC_Order ) {
 		return false;
 	}
+	$nutrex = false;
 	foreach ( $order->get_items() as $item ) {
-		if ( $item instanceof WC_Order_Item_Product && nutrex_headless_is_product( $item->get_product_id() ) ) {
-			return true;
+		if ( ! $item instanceof WC_Order_Item_Product || ! $item->get_product_id() || ! get_post( $item->get_product_id() ) ) {
+			continue;
 		}
+		if ( ! nutrex_headless_is_product( $item->get_product_id() ) ) {
+			return false;
+		}
+		$nutrex = true;
 	}
-	return false;
+	return $nutrex;
 }

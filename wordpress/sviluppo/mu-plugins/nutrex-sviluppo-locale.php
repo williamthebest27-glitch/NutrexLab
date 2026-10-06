@@ -54,8 +54,8 @@ add_action(
 );
 
 /*
- * 4. Le email non partono: finiscono in /wp-out/mail/*.html (mittente, destinatario e oggetto in testa),
- *    per controllarne contenuto e aspetto.
+ * 4. Le email non partono: finiscono in /wp-out/mail/*.html (mittente, destinatario, oggetto, "Rispondi a"
+ *    e come partirebbero, in testa), per controllarne contenuto e aspetto. Nessun server di posta, mai.
  */
 add_filter(
 	'pre_wp_mail',
@@ -66,8 +66,14 @@ add_filter(
 		if ( ! is_dir( '/wp-out/mail' ) ) {
 			mkdir( '/wp-out/mail' );
 		}
-		$from = apply_filters( 'wp_mail_from_name', 'WordPress' ) . ' <' . apply_filters( 'wp_mail_from', 'wordpress@localhost' ) . '>';
-		$head = sprintf( "<!-- da: %s | a: %s | oggetto: %s -->\n", $from, implode( ', ', (array) $atts['to'] ), $atts['subject'] );
+		$address = apply_filters( 'wp_mail_from', 'wordpress@localhost' );
+		$from    = apply_filters( 'wp_mail_from_name', 'WordPress' ) . ' <' . $address . '>';
+		// come partirebbe: dal server di posta di nutrexlab.it (email Nutrex, vedi includes/mail.php) o normale
+		$smtp  = function_exists( 'nutrex_headless_smtp' ) ? nutrex_headless_smtp() : null;
+		$nx    = $smtp && ( ! empty( $GLOBALS['nutrex_headless_mail'] ) || 0 === strcasecmp( $address, nutrex_headless_sender_address() ) );
+		$via   = $nx ? 'SMTP ' . $smtp['host'] . ':' . $smtp['port'] . ' come ' . $smtp['user'] : 'mittente normale del sito';
+		$reply = implode( ' ', preg_grep( '/^reply-to:/i', array_map( 'trim', is_array( $atts['headers'] ) ? $atts['headers'] : explode( "\n", (string) $atts['headers'] ) ) ) );
+		$head  = sprintf( "<!-- da: %s | a: %s | oggetto: %s | invio: %s | %s -->\n", $from, implode( ', ', (array) $atts['to'] ), $atts['subject'], $via, $reply );
 		file_put_contents( sprintf( '/wp-out/mail/%s-%s.html', gmdate( 'His' ) . substr( (string) microtime( true ), -4 ), sanitize_title( $atts['subject'] ) ), $head . $atts['message'] );
 		return true;
 	},

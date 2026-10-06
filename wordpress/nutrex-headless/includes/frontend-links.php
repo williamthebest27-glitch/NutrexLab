@@ -2,9 +2,10 @@
 /**
  * Link verso il negozio nutrexlab.it, solo per cio' che appartiene a Nutrex (con "Indirizzo del
  * negozio" impostato):
- * - dopo il pagamento di un ordine con prodotti Nutrex il cliente torna su nutrexlab.it/ordine;
+ * - dopo il pagamento di un ordine Nutrex il cliente torna su nutrexlab.it/ordine;
  * - i prodotti Nutrex hanno il link /prodotto/<slug> del negozio (anche nelle email e in "Visualizza
- *   prodotto" del pannello) e la loro pagina WordPress porta a quella del negozio.
+ *   prodotto" del pannello) e la loro pagina WordPress porta a quella del negozio;
+ * - le pagine delle categorie Nutrex di questo sito portano al negozio Nutrex.
  * Tutto il resto del sito non cambia.
  */
 
@@ -12,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 /** La pagina "Grazie" del negozio per questo ordine. */
 function nutrex_headless_thanks_url( $order ) {
-	return add_query_arg( 'numero', rawurlencode( $order->get_order_number() ), nutrex_headless_frontend_url() . '/ordine' );
+	return add_query_arg( 'numero', rawurlencode( $order->get_order_number() ), nutrex_headless_shop_url( '/ordine' ) );
 }
 
 /**
@@ -48,7 +49,7 @@ add_action(
 add_action(
 	'woocommerce_thankyou',
 	function ( $order_id ) {
-		$order = nutrex_headless_frontend_url() ? wc_get_order( $order_id ) : null;
+		$order = wc_get_order( $order_id );
 		if ( ! $order || $order->has_status( 'failed' ) || ! nutrex_headless_is_order( $order ) ) {
 			return;
 		}
@@ -83,6 +84,20 @@ add_action(
 		$id = get_queried_object_id();
 		if ( $id && nutrex_headless_is_product( $id ) ) {
 			wp_redirect( get_permalink( $id ), 302, 'Nutrex Headless' );
+			exit;
+		}
+	}
+);
+
+add_action(
+	'template_redirect',
+	function () {
+		if ( ! nutrex_headless_frontend_url() || ! function_exists( 'is_product_category' ) || ! is_product_category() || current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		$term = get_queried_object();
+		if ( $term instanceof WP_Term && in_array( (int) $term->term_id, nutrex_headless_category_ids(), true ) ) {
+			wp_redirect( nutrex_headless_frontend_url() . '/acquista', 302, 'Nutrex Headless' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 			exit;
 		}
 	}

@@ -1,48 +1,15 @@
 <?php
 /**
- * Checkout con l'aspetto di Nutrex Lab per i clienti che arrivano dal negozio Nutrex: logo, colori e
- * caratteri di Nutrex, senza intestazione, menu e pie' di pagina del tema di questo sito. Il contenuto
- * resta quello di WooCommerce (dati, spedizione, metodi di pagamento, riepilogo): cambia la cornice.
- * Vale per il checkout (carrello con soli prodotti Nutrex), per "Ordine ricevuto" e "Paga l'ordine"
- * (ordini Nutrex). Il carrello di WooCommerce di un cliente Nutrex porta al carrello del negozio.
- * Tutto il resto del sito non cambia.
+ * La cornice di Nutrex Lab sulla sua pagina di pagamento (checkout-page.php): logo, colori e caratteri
+ * di Nutrex, senza intestazione, menu e pie' di pagina del tema di questo sito. Il contenuto resta quello
+ * di WooCommerce (dati, spedizione, metodi di pagamento, riepilogo). Vale solo su quella pagina:
+ * checkout, "Ordine ricevuto" e "Paga l'ordine" degli ordini Nutrex. Le pagine di questo sito (anche il
+ * suo checkout e il suo carrello) non cambiano mai.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Il carrello WooCommerce del visitatore e' un carrello Nutrex? Si' se contiene solo prodotti Nutrex,
- * oppure se e' vuoto ma il visitatore e' arrivato dal negozio Nutrex (passaggio al checkout).
- */
-function nutrex_headless_is_nutrex_cart() {
-	if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
-		return false;
-	}
-	$items = WC()->cart->get_cart();
-	if ( ! $items ) {
-		return WC()->session && WC()->session->get( 'nutrex_headless' );
-	}
-	foreach ( $items as $item ) {
-		if ( ! nutrex_headless_is_product( $item['product_id'] ) ) {
-			return false;
-		}
-	}
-	return true;
-}
-
-/** L'ordine della pagina "Ordine ricevuto" o "Paga l'ordine", se e' un ordine Nutrex con la chiave giusta. */
-function nutrex_headless_endpoint_order() {
-	global $wp;
-	$id    = absint( $wp->query_vars['order-received'] ?? ( $wp->query_vars['order-pay'] ?? 0 ) );
-	$order = $id ? wc_get_order( $id ) : null;
-	$key   = isset( $_GET['key'] ) ? wc_clean( wp_unslash( $_GET['key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( ! $order || ! $key || ! hash_equals( $order->get_order_key(), $key ) || ! nutrex_headless_is_order( $order ) ) {
-		return null;
-	}
-	return $order;
-}
-
-/** Quale pagina Nutrex si sta aprendo: 'checkout', 'received', 'pay' o '' (aspetto normale del sito). */
+/** Quale pagina Nutrex si sta aprendo: 'checkout', 'received', 'pay' o '' (non e' la pagina Nutrex). */
 function nutrex_headless_look() {
 	static $look = null;
 	if ( null !== $look ) {
@@ -52,52 +19,42 @@ function nutrex_headless_look() {
 		return ''; // pagina non ancora nota: si decide dopo
 	}
 	$look = '';
-	if ( ! nutrex_headless_look_enabled() || ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
+	if ( ! nutrex_headless_on_checkout_page() ) {
 		return $look;
 	}
 	if ( is_order_received_page() ) {
-		$look = nutrex_headless_endpoint_order() ? 'received' : '';
+		$look = 'received';
 	} elseif ( is_checkout_pay_page() ) {
-		$look = nutrex_headless_endpoint_order() ? 'pay' : '';
-	} elseif ( nutrex_headless_is_nutrex_cart() ) {
+		$look = 'pay';
+	} else {
 		$look = 'checkout';
 	}
 	return $look;
 }
 
-// carrello di un cliente Nutrex: il suo carrello e' sul negozio Nutrex (stessi prodotti)
-add_filter(
-	'woocommerce_get_cart_url',
-	function ( $url ) {
-		if ( ! is_admin() && nutrex_headless_look_enabled() && did_action( 'wp_loaded' ) && nutrex_headless_is_nutrex_cart() ) {
-			return nutrex_headless_frontend_url() . '/carrello';
-		}
-		return $url;
-	}
-);
-
-add_filter(
-	'woocommerce_return_to_shop_redirect',
-	function ( $url ) {
-		return nutrex_headless_look_enabled() && nutrex_headless_is_nutrex_cart() ? nutrex_headless_frontend_url() . '/acquista' : $url;
-	}
-);
-
 add_action(
 	'template_redirect',
 	function () {
-		if ( nutrex_headless_look_enabled() && function_exists( 'is_cart' ) && is_cart() && nutrex_headless_is_nutrex_cart() ) {
-			wp_redirect( nutrex_headless_frontend_url() . '/carrello', 302, 'Nutrex Headless' );
-			exit;
-		}
 		if ( ! nutrex_headless_look() ) {
 			return;
 		}
-		// niente CSS aggiuntivo del tema (Personalizza) ne' avviso del negozio
+		// niente CSS aggiuntivo del tema (Personalizza), avviso del negozio o feed di questo sito
 		remove_action( 'wp_head', 'wp_custom_css_cb', 101 );
 		remove_action( 'wp_footer', 'woocommerce_demo_store' );
+		remove_action( 'wp_head', 'feed_links', 2 );
+		remove_action( 'wp_head', 'feed_links_extra', 3 );
+		remove_action( 'wp_head', 'rsd_link' );
+		remove_action( 'wp_head', 'wlwmanifest_link' );
 	},
 	20
+);
+
+// sulla pagina Nutrex il nome del sito e' Nutrex Lab (testi di WooCommerce e dei metodi di pagamento, meta)
+add_filter(
+	'option_blogname',
+	function ( $name ) {
+		return nutrex_headless_look() ? 'Nutrex Lab' : $name;
+	}
 );
 
 // la pagina si apre con il modello del plugin (cornice Nutrex) al posto di quello del tema
