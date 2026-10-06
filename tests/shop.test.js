@@ -8,7 +8,9 @@ process.env.WOOCOMMERCE_URL = WOO_URL
 process.env.WOOCOMMERCE_CATEGORY = 'nutrex-lab'
 process.env.SITE_URL = 'https://negozio.test'
 
-const { decode, safeHtml, listProducts, listCategories, getProduct } = await import('../server/catalog.js')
+const { decode, safeHtml, listProducts, listCategories, getProduct, relatedProducts, listReviews } = await import('../server/catalog.js')
+const { cleanMessage } = await import('../server/contact.js')
+const { cleanReview } = await import('../server/reviews.js')
 const { cartAction, getCart } = await import('../server/cart.js')
 const { checkoutUrl } = await import('../server/checkout.js')
 const { publicError } = await import('../server/errors.js')
@@ -17,6 +19,8 @@ const { sessionCookies, readSession } = await import('../server/session.js')
 const productsApi = await import('../api/products.js')
 const cartApi = await import('../api/cart.js')
 const checkoutApi = await import('../api/checkout.js')
+const contactApi = await import('../api/contatto.js')
+const reviewsApi = await import('../api/recensioni.js')
 
 let woo
 before(() => {
@@ -278,5 +282,119 @@ describe('sessione', () => {
     assert.match(gone, /^nx_cart=; .*Max-Age=0/)
     assert.match(zero, /^nx_count=; .*Max-Age=0/)
     assert.deepEqual(readSession(new Request('http://x/', { headers: { cookie: 'a=1; nx_cart=tok%20en' } })), { token: 'tok en' })
+  })
+})
+
+describe('recensioni e prodotti correlati', () => {
+  test('voto medio di WooCommerce e recensioni approvate (testo ripulito, nomi decodificati)', async () => {
+    const p = await getProduct('magnesio')
+    assert.deepEqual(p.rating, { average: 4.5, count: 2 })
+    assert.equal(p.reviewsAllowed, true)
+    const reviews = await listReviews(110)
+    assert.equal(reviews.length, 2)
+    assert.equal(reviews[0].reviewer, 'Giulia')
+    assert.equal(reviews[0].verified, true)
+    assert.equal(reviews[0].date, '2026-09-20T08:00:00Z')
+    assert.doesNotMatch(reviews[0].review, /<script/)
+    assert.equal(reviews[1].reviewer, 'Marco & Co')
+  })
+
+  test('recensioni di un prodotto di un altro negozio o non valido: 404 / 400', async () => {
+    await rejectsWith(listReviews(200), 404, 'not_found')
+    await rejectsWith(listReviews('x'), 400, 'invalid_product')
+  })
+
+  test('correlati: prima la stessa sottocategoria, poi il negozio; mai il prodotto stesso o quelli nascosti', async () => {
+    const related = await relatedProducts(await getProduct('magnesio'))
+    assert.deepEqual(
+      related.map((p) => p.slug),
+      ['collagene'],
+    )
+    assert.equal(related[0].description, undefined)
+  })
+
+  test('/api/products?slug=: prodotto e correlati; /api/recensioni in cache sul CDN', async () => {
+    const res = await productsApi.GET(new Request('https://negozio.test/api/products?slug=magnesio'))
+    const body = await res.json()
+    assert.equal(body.product.slug, 'magnesio')
+    assert.deepEqual(
+      body.related.map((p) => p.slug),
+      ['collagene'],
+    )
+    const rev = await reviewsApi.GET(new Request('https://negozio.test/api/recensioni?product=110'))
+    assert.equal(rev.status, 200)
+    assert.match(rev.headers.get('cache-control'), /s-maxage=60/)
+    assert.equal((await rev.json()).reviews.length, 2)
+  })
+})
+
+describe('moduli verso il plugin: contatti e recensioni', () => {
+  const message = { nome: 'Anna Verdi', email: 'anna@example.com', tema: 'Ordini e spedizioni', prodotto: '', messaggio: 'Buongiorno, una domanda sulla spedizione.' }
+  const post = (api, url, body, headers = {}) => api.POST(new Request(url, { method: 'POST', headers, body: JSON.stringify(body) }))
+
+  test('campi controllati prima di chiamare il plugin', () => {
+    assert.throws(() => cleanMessage({ ...message, nome: 'A' }), /nome/)
+    assert.throws(() => cleanMessage({ ...message, email: 'anna' }), /email/)
+    assert.throws(() => cleanMessage({ ...message, messaggio: 'Ok' }), /messaggio/)
+    assert.equal(cleanMessage({ ...message, sito: 'http://spam.example' }), null)
+    assert.throws(() => cleanReview({ product: 110, nome: 'Anna', email: 'anna@example.com', voto: 6, testo: 'Ottimo davvero.' }), /stelle/)
+    assert.throws(() => cleanReview({ product: 'x', nome: 'Anna', email: 'anna@example.com', voto: 5, testo: 'Ottimo davvero.' }), /Prodotto/)
+  })
+
+  test('/api/contatto: inoltro al plugin con l\'indirizzo IP del visitatore, risposta mai in cache', async () => {
+    const before = woo.plugin.length
+    const res = await post(contactApi, 'https://negozio.test/api/contatto', message, { 'x-forwarded-for': '203.0.113.9, 10.0.0.1' })
+    assert.equal(res.status, 200)
+    assert.equal(res.headers.get('cache-control'), 'private, no-store')
+    assert.deepEqual(await res.json(), { ok: true })
+    const call = woo.plugin.at(-1)
+    assert.equal(woo.plugin.length, before + 1)
+    assert.equal(call.path, '/wp-json/nutrex/v1/contatto')
+    assert.equal(call.headers['X-Nutrex-Client'], '203.0.113.9')
+    assert.equal(JSON.parse(call.body).nome, 'Anna Verdi')
+    assert.equal(JSON.parse(call.body).sito, undefined)
+  })
+
+  test('robot (campo trappola compilato): ok senza chiamare il plugin', async () => {
+    const before = woo.plugin.length
+    const res = await post(contactApi, 'https://negozio.test/api/contatto', { ...message, sito: 'http://spam.example' })
+    assert.equal(res.status, 200)
+    assert.equal(woo.plugin.length, before)
+  })
+
+  test('errori del plugin: il suo messaggio al cliente (429), messaggio generico senza dettagli se il plugin manca', async () => {
+    try {
+      woo.pluginReply = { status: 429, data: { code: 'nutrex_contact_limit', message: "Hai inviato molti messaggi in poco tempo: riprova tra un po'." } }
+      let res = await post(contactApi, 'https://negozio.test/api/contatto', message)
+      assert.equal(res.status, 429)
+      assert.match((await res.json()).error.message, /molti messaggi/)
+      woo.pluginReply = { status: 404, data: { code: 'rest_no_route', message: 'Nessun percorso corrisponde.' } }
+      res = await post(contactApi, 'https://negozio.test/api/contatto', message)
+      assert.equal(res.status, 502)
+      const text = await res.text()
+      assert.match(text, /non riuscito/)
+      assert.doesNotMatch(text, /rest_no_route|percorso/)
+    } finally {
+      woo.pluginReply = null
+    }
+  })
+
+  test('/api/recensioni POST: la recensione arriva al plugin, che dice se e\' gia\' pubblicata', async () => {
+    try {
+      woo.pluginReply = { status: 200, data: { ok: true, approved: true } }
+      const res = await post(reviewsApi, 'https://negozio.test/api/recensioni', { product: 110, nome: 'Anna', email: 'anna@example.com', voto: 5, testo: 'Ottimo prodotto.' })
+      assert.equal(res.status, 200)
+      assert.deepEqual(await res.json(), { ok: true, approved: true })
+      const sent = JSON.parse(woo.plugin.at(-1).body)
+      assert.equal(woo.plugin.at(-1).path, '/wp-json/nutrex/v1/recensione')
+      assert.equal(sent.product_id, 110)
+      assert.equal(sent.voto, 5)
+      woo.pluginReply = { status: 403, data: { code: 'nutrex_review_verified', message: 'Possono scrivere una recensione solo i clienti che hanno acquistato questo prodotto.' } }
+      const no = await post(reviewsApi, 'https://negozio.test/api/recensioni', { product: 110, nome: 'Anna', email: 'anna@example.com', voto: 5, testo: 'Ottimo prodotto.' })
+      assert.equal(no.status, 403)
+      assert.match((await no.json()).error.message, /hanno acquistato/)
+    } finally {
+      woo.pluginReply = null
+    }
   })
 })

@@ -188,6 +188,7 @@ export function buildMaster(T, layout, palette = COLORS) {
   const C = palette
   let prev = { bg: C.paper, fg: C.ink, accent: C.berry }
   tl.set(root, vars(prev), 0)
+  if (chrome.length) tl.set(chrome, { '--page-bg': prev.bg }, 0) // (il valore di partenza: tornando in cima si rilegge questo)
   const steps = [
     { at: s + 1.1, dur: 0.9, bg: C.mist },
     { at: s + 3.0, dur: 0.6, bg: C.plum, fg: C.paper, accent: C.berryHi },

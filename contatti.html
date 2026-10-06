@@ -108,7 +108,11 @@
               <span>Acconsento all'uso dei miei dati solo per ricevere una risposta a questo messaggio.</span>
             </label>
             <p class="field__err" data-consent-err>Serve il consenso per poterti rispondere.</p>
-            <button class="btn btn--xl btn--block cform__send" type="submit" data-magnetic>
+            <div class="cform__hp" aria-hidden="true">
+              <label for="c-sito">Sito web</label>
+              <input id="c-sito" name="sito" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+            <button class="btn btn--xl btn--block cform__send type="submit" data-magnetic>
               <span class="btn__label">Invia il messaggio</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
             </button>
             <p class="cform__status" role="status" data-status></p>

@@ -4,7 +4,7 @@
 */
 export const SHOP = {
   contacts: {
-    email: 'carlo.lappostato@gmail.com',
+    email: 'info@nutrexlab.it',
     phone: '+39 333 719 2623',
     whatsapp: '393337192623', // numero internazionale senza spazi ne' +: pulsante "Scrivici su WhatsApp"
     address: null, // es. 'Via Roma 1, 00100 Roma (RM)'
@@ -18,4 +18,16 @@ export const SHOP = {
     tiktok: null,
     temu: null,
   },
+  /*
+    Offerte quantita': le stesse del WooCommerce condiviso, che le applica da solo nel carrello (prezzo
+    scontato di ogni prodotto) contando il totale dei pezzi, anche di prodotti diversi. Qui servono solo
+    per mostrarle: se cambiano su WooCommerce, vanno cambiate anche qui.
+  */
+  quantityOffers: [
+    { pieces: 2, off: 5 },
+    { pieces: 4, off: 10 },
+    { pieces: 10, off: 15 },
+  ],
+  // metodi di pagamento attivi nel checkout di WooCommerce (icone nella pagina prodotto e nel carrello)
+  payments: ['mastercard', 'visa', 'amex', 'paypal', 'klarna', 'applepay', 'googlepay'],
 }

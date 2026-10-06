@@ -6,7 +6,7 @@ import { LOGO } from '../ui/logo-paths.js'
 /*
   Contatti: recapiti da src/shop/config.js (quelli non ancora inseriti non compaiono; senza
   nessun recapito restano i tre principali con "Presto disponibile"), pulsante WhatsApp, negozi
-  online ("Dove vendiamo") e modulo che prepara l'email nel programma di posta di chi scrive.
+  online ("Dove vendiamo") e modulo che invia il messaggio a info@nutrexlab.it (/api/contatto, poi il plugin su WooCommerce).
 */
 
 const { ready } = initPage()
@@ -128,7 +128,7 @@ form.addEventListener('input', (e) => {
   if (e.target.name === 'consenso') consentErr.style.display = 'none'
 })
 
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault()
   const f = form.elements
   const bad = Object.keys(RULES).filter((name) => !check(f[name]))
@@ -136,16 +136,32 @@ form.addEventListener('submit', (e) => {
   consentErr.style.display = consent ? 'none' : 'block'
   if (bad.length) return f[bad[0]].focus()
   if (!consent) return f.consenso.focus()
-  if (!C.email) {
-    status.textContent = 'Il modulo sarà attivo a breve: grazie per la pazienza.'
-    return
+  const btn = form.querySelector('[type=submit]')
+  const label = btn.querySelector('.btn__label') || btn
+  const text = label.textContent
+  btn.disabled = true
+  label.textContent = 'Invio…'
+  status.classList.remove('is-error')
+  status.textContent = ''
+  try {
+    await api.contact({
+      nome: f.nome.value,
+      email: f.email.value,
+      tema: f.tema.value,
+      prodotto: f.prodotto.value,
+      messaggio: f.messaggio.value,
+      sito: f.sito ? f.sito.value : '', // trappola per i robot: resta vuota
+    })
+    form.reset()
+    status.textContent = "Messaggio inviato: ti rispondiamo appena possibile all'indirizzo che ci hai lasciato."
+  } catch (err) {
+    status.classList.add('is-error')
+    const fallback = C.email ? ` Puoi scriverci direttamente a <a class="link" href="mailto:${esc(C.email)}">${esc(C.email)}</a>.` : ''
+    status.innerHTML = esc(err.message || 'Invio non riuscito.') + fallback
+  } finally {
+    btn.disabled = false
+    label.textContent = text
   }
-  const subject = `${f.tema.value}, ${f.nome.value.trim()}`
-  const body = [f.messaggio.value.trim(), '', f.prodotto.value ? `Prodotto: ${f.prodotto.value}` : '', `${f.nome.value.trim()} <${f.email.value.trim()}>`]
-    .filter((x, i) => x || i === 1)
-    .join('\n')
-  window.location.href = `mailto:${C.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-  status.textContent = 'Si apre il tuo programma di posta con il messaggio pronto: premi Invia.'
 })
 
 // ---------------------------------------------------------------------------

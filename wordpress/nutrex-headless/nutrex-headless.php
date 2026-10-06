@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Nutrex Headless
  * Description:       Collega WooCommerce al negozio nutrexlab.it tenendo separati i due negozi: Nutrex Lab ha la sua pagina di pagamento, il suo carrello e le sue email (da info@nutrexlab.it); i prodotti Nutrex non compaiono e non si comprano su questo sito; pagine, carrello e ordini di questo sito non cambiano. In comune restano prodotti, magazzino, metodi di pagamento, sconti e Amazon MCF.
- * Version:           2.2.0
+ * Version:           2.2.1
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
@@ -22,7 +22,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NUTREX_HEADLESS_VERSION', '2.2.0' );
+define( 'NUTREX_HEADLESS_VERSION', '2.2.1' );
 define( 'NUTREX_HEADLESS_FILE', __FILE__ );
 
 add_action(
@@ -42,6 +42,7 @@ add_action(
 		require_once __DIR__ . '/includes/emails.php';
 		require_once __DIR__ . '/includes/import.php';
 		require_once __DIR__ . '/includes/contact.php';
+		require_once __DIR__ . '/includes/reviews.php';
 	},
 	11
 );

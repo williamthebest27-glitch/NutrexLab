@@ -47,6 +47,11 @@ export const api = {
   product: (slug) => call(`/api/products?slug=${encodeURIComponent(slug)}`),
   cart: () => call('/api/cart'),
   cartAction: (action, payload = {}) => call('/api/cart', { method: 'POST', body: { action, ...payload } }),
+  /** recensioni approvate di un prodotto; invio di una recensione */
+  reviews: (productId) => call(`/api/recensioni?product=${encodeURIComponent(productId)}`),
+  review: (review) => call('/api/recensioni', { method: 'POST', body: review }),
+  /** messaggio della pagina Contatti (arriva a info@nutrexlab.it) */
+  contact: (message) => call('/api/contatto', { method: 'POST', body: message }),
   /** indirizzo del checkout di WooCommerce con i prodotti del carrello */
   checkoutUrl: () => call('/api/checkout', { method: 'POST', body: {} }),
 }

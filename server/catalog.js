@@ -104,6 +104,8 @@ export function normalizeProduct(p) {
     description: safeHtml(p.description),
     summary: plain(p.short_description) || plain(p.description).slice(0, 220),
     onSale: !!p.on_sale,
+    rating: { average: Number.parseFloat(p.average_rating) || 0, count: Number.parseInt(p.review_count, 10) || 0 },
+    reviewsAllowed: p.reviews_allowed !== false,
     prices: prices(p.prices),
     stock: stock(p),
     images: (p.images ?? []).map(image),
@@ -264,4 +266,49 @@ export async function listCategories() {
   return all
     .filter((c) => c.count > 0 && scope.ids.has(c.id) && c.id !== scope.root.id)
     .map((c) => ({ id: c.id, name: c.name, slug: c.slug, count: c.count }))
+}
+
+/** Prodotti correlati: della stessa sottocategoria, poi del negozio (mai il prodotto stesso, mai quelli nascosti). */
+export async function relatedProducts(product, limit = 4) {
+  if (!product) return []
+  return cached(`related:${product.id}`, 60_000, async () => {
+    const scope = await shopScope()
+    const own = product.categories.filter((c) => scope.ids.has(c.id) && c.id !== scope.root.id).map((c) => c.id)
+    const out = []
+    const seen = new Set([product.id])
+    for (const categoryId of [...own, scope.root.id]) {
+      if (out.length >= limit) break
+      const res = await store('/products', {
+        query: { per_page: limit + 1, category: String(categoryId), exclude: String(product.id), catalog_visibility: 'catalog', orderby: 'menu_order', order: 'asc' },
+      })
+      for (const raw of res.data) {
+        if (out.length >= limit || seen.has(raw.id) || !inScope(scope, raw.categories ?? [])) continue
+        seen.add(raw.id)
+        const p = normalizeProduct(raw)
+        p.variationCount = p.variationIds.length
+        delete p.variationIds
+        delete p.description
+        out.push(p)
+      }
+    }
+    return out
+  })
+}
+
+/** Recensioni approvate di un prodotto del negozio, dalla piu' recente (testo gia' ripulito). */
+export async function listReviews(productId, limit = 20) {
+  const id = Number.parseInt(productId, 10)
+  if (!(id > 0)) throw new ShopError(400, 'invalid_product', 'Prodotto non valido.')
+  return cached(`reviews:${id}`, 60_000, async () => {
+    await assertSellable(id)
+    const res = await store('/products/reviews', { query: { product_id: String(id), per_page: limit, orderby: 'date', order: 'desc' } })
+    return res.data.map((r) => ({
+      id: r.id,
+      date: r.date_created_gmt ? `${r.date_created_gmt}Z` : r.date_created,
+      reviewer: decode(r.reviewer || 'Cliente'),
+      rating: Number.parseInt(r.rating, 10) || 0,
+      verified: !!r.verified,
+      review: safeHtml(r.review),
+    }))
+  })
 }

@@ -2,8 +2,10 @@
 
 Il sito (Vercel) mostra prodotti, pagine prodotto e carrello; i dati arrivano dal WooCommerce di
 thedoubletwenty, che resta l'unica fonte di prezzi, varianti, magazzino, ordini, clienti, coupon,
-spedizioni e IVA. Il pagamento avviene nel checkout di WooCommerce, con i metodi gia' attivi li': l'ordine
-e' un normale ordine WooCommerce, quindi email, magazzino e Amazon MCF funzionano come per gli altri ordini.
+spedizioni e IVA. Il pagamento avviene su una pagina di pagamento solo per Nutrex Lab, creata dal plugin su
+quel WooCommerce, con gli stessi metodi di pagamento, spedizioni e sconti: l'ordine e' un normale ordine
+WooCommerce, quindi magazzino e Amazon MCF funzionano come per gli altri ordini. I due negozi restano
+separati: pagine, carrelli, ordini ed email non si mescolano (vedi "Cosa vede il cliente").
 
 **Non serve nessuna chiave**: niente chiavi API WooCommerce, niente chiavi Stripe. Il sito legge la
 Store API pubblica di WooCommerce (la stessa che usa il carrello di qualunque negozio WooCommerce).
@@ -12,8 +14,9 @@ Store API pubblica di WooCommerce (la stessa che usa il carrello di qualunque ne
 sito Nutrex (Vercel)                        WooCommerce di thedoubletwenty
   /acquista, /prodotto/<slug>  --legge-->   Store API: prodotti, prezzi, varianti, disponibilita'
   /carrello, /pagamenti        --carrello-> Store API: carrello del cliente (sessione)
-  "Procedi al pagamento"       --porta-->   /?nutrex-checkout=1&items=...  ->  checkout WooCommerce
+  "Procedi al pagamento"       --porta-->   /?nutrex-checkout=1&items=...  ->  pagina di pagamento Nutrex
   /ordine?numero=N             <--torna--   pagina "Ordine ricevuto" (plugin Nutrex Headless)
+  /contatti, recensioni        --invia-->   plugin: email a info@nutrexlab.it, recensioni WooCommerce
                                             ordine -> email, magazzino, Amazon MCF
 ```
 
@@ -93,11 +96,23 @@ Nutrex e gli ordini che li contengono: il resto di thedoubletwenty non cambia.
 
 | Campo | Valore |
 | --- | --- |
-| Indirizzo del negozio | l'indirizzo del sito, es. `https://nutrexlab.it` (uguale a `SITE_URL`) |
+| Indirizzo del negozio | `https://www.nutrexlab.it` (solo il dominio; uguale a `SITE_URL`) |
 | Categoria dei prodotti Nutrex | `nutrex-lab` (uguale a `WOOCOMMERCE_CATEGORY`) |
-| Aspetto Nutrex Lab | attivo: checkout, "Ordine ricevuto" ed email degli ordini Nutrex con logo, colori e caratteri di Nutrex |
-| Mittente delle email degli ordini Nutrex | vuoto = "Nutrex Lab" (facoltativo) |
-| Indirizzo mittente delle email degli ordini Nutrex | lascialo vuoto, a meno che il server di posta del sito possa inviare da quell'indirizzo (altrimenti le email finiscono nello spam) |
+| Pagina di pagamento Nutrex | la crea il plugin (`/pagamento-nutrex-lab/`): e' il checkout dei clienti Nutrex, non va modificata ne' cancellata (se manca, il plugin la ricrea) |
+
+Sezione **Email di Nutrex Lab** (stessa pagina): le email degli ordini Nutrex e i messaggi del modulo
+contatti partono dalla casella `info@nutrexlab.it` attraverso il suo server di posta, firmate dal dominio
+nutrexlab.it (niente spam).
+
+| Campo | Valore |
+| --- | --- |
+| Casella email | `info@nutrexlab.it` |
+| Password della casella | la password di info@nutrexlab.it (salvata cifrata; campo vuoto = non cambia) |
+| Server di posta (SMTP), Sicurezza e porta | `mailserver5.vhosting-it.com`, STARTTLS porta 587 (gia' impostati) |
+| Messaggi del modulo contatti a | dove arrivano i messaggi di `/contatti` (vuoto = la casella) |
+| Notifiche degli ordini Nutrex a | dove arrivano "Nuovo ordine", ordini annullati o non riusciti e avvisi di magazzino dei prodotti Nutrex (vuoto = la casella dei messaggi) |
+| Nome del mittente, Indirizzo mittente diverso | di solito vuoti ("Nutrex Lab", la casella) |
+| Stato | dopo aver salvato: "Invia un'email di prova", deve arrivare a info@nutrexlab.it. Senza password le email Nutrex partono con il mittente normale di thedoubletwenty (rischio spam) e qui compare l'ultimo errore |
 
 ### 4. Variabili su Vercel
 
@@ -122,34 +137,50 @@ thedoubletwenty.
 1. `/acquista`: ci sono solo i prodotti Nutrex, con foto e disponibilita'.
 2. Pagina di un prodotto: prezzo, varianti, "Aggiungi al carrello".
 3. `/carrello`: quantita', coupon, totali.
-4. "Procedi al pagamento": si apre il checkout di thedoubletwenty con gli stessi prodotti e lo stesso coupon.
+4. "Procedi al pagamento": si apre la pagina di pagamento Nutrex (`thedoubletwenty.it/pagamento-nutrex-lab/`)
+   con gli stessi prodotti e lo stesso coupon, senza menu, pie' di pagina e passaggi di thedoubletwenty.
 5. Un ordine vero di piccolo importo (poi rimborsato da WooCommerce), con il metodo di pagamento che
    useranno i clienti.
 6. Dopo il pagamento si torna su `/ordine` con il numero dell'ordine; il carrello del sito e' vuoto.
 7. In WooCommerce: l'ordine con gli SKU giusti; Amazon MCF lo prende in carico come gli altri ordini.
+8. Carrello e checkout di thedoubletwenty sono quelli di sempre, anche nello stesso browser dopo la prova.
 
 ## Cosa vede il cliente
 
-- Acquista, pagine prodotto, carrello e "Grazie" sono sul sito Nutrex. Il checkout e' quello di
-  WooCommerce su thedoubletwenty, ma con l'aspetto di Nutrex Lab: logo, colori e caratteri di Nutrex,
-  titolo "Pagamento sicuro | Nutrex Lab", senza intestazione, menu e pie' di pagina di thedoubletwenty.
-  Restano l'indirizzo nella barra del browser e, nei link di termini e privacy, le pagine di
-  thedoubletwenty. Chi compra i cuscini vede il checkout di sempre.
+- Acquista, pagine prodotto, carrello e "Grazie" sono sul sito Nutrex. Il pagamento e' su una pagina
+  dedicata del WooCommerce di thedoubletwenty (`/pagamento-nutrex-lab/`, creata dal plugin), con logo,
+  colori e caratteri di Nutrex Lab e titolo "Pagamento sicuro | Nutrex Lab", senza menu, pie' di pagina,
+  passaggi e stili di thedoubletwenty; i link a carrello, negozio, termini e privacy portano alle pagine
+  di nutrexlab.it. Resta l'indirizzo thedoubletwenty.it nella barra del browser.
+- Pagine, carrello e checkout di thedoubletwenty non cambiano: i prodotti Nutrex non ci compaiono e non si
+  possono comprare da li' (le loro pagine e categorie portano a nutrexlab.it), e un carrello non contiene
+  mai prodotti dei due negozi insieme. Se un visitatore di thedoubletwenty passa al pagamento Nutrex, il suo
+  carrello di thedoubletwenty viene messo da parte e torna com'era alla prima pagina di thedoubletwenty.
 - Dopo il pagamento il cliente torna su `nutrexlab.it/ordine`. Con bonifico o assegno, o se il pagamento
   non e' ancora confermato, resta sulla pagina "Ordine ricevuto" (anche questa con l'aspetto Nutrex), con
   le istruzioni per pagare e il pulsante "Torna su Nutrex Lab".
-- Le email degli ordini Nutrex hanno mittente, nome, logo, colore e pie' di pagina di Nutrex Lab;
-  l'indirizzo del mittente resta quello di WooCommerce (vedi le impostazioni del plugin).
+- Le email degli ordini Nutrex partono da "Nutrex Lab" <info@nutrexlab.it> con il design di Nutrex Lab
+  (logo, riepilogo con le foto dei prodotti, indirizzi, riquadro di aiuto, dati dell'azienda); le notifiche
+  di ordini e magazzino Nutrex arrivano a info@nutrexlab.it. Senza la password della casella nelle
+  impostazioni partono con il mittente di thedoubletwenty.
 - Chi apre su thedoubletwenty il link di un prodotto Nutrex arriva alla sua pagina sul sito Nutrex (gli
   amministratori vedono ancora la pagina WooCommerce).
-- Il checkout collega condizioni di vendita e privacy di thedoubletwenty (stesso titolare di Nutrex Lab):
-  devono valere anche per gli integratori. Sull'estratto conto, e nelle finestre di Apple Pay e Google
-  Pay, il cliente vede il nome impostato nel metodo di pagamento (Stripe, PayPal...).
+- Sull'estratto conto, e nelle finestre di Apple Pay e Google Pay, il cliente vede il nome impostato nel
+  metodo di pagamento (Stripe, PayPal...): e' lo stesso conto di thedoubletwenty (stesso titolare).
 
 ## Da sapere
 
 - **Coupon**: si creano in WooCommerce > Marketing > Coupon. Un coupon senza limiti vale su entrambi i
   negozi; per limitarlo a Nutrex: Restrizioni di utilizzo > Categorie prodotto = Nutrex Lab.
+- **Offerte quantita'** (2 pezzi -5%, 4 pezzi -10%, 10 pezzi -15%): le applica WooCommerce nel carrello
+  contando il totale dei pezzi, anche di prodotti diversi, come su thedoubletwenty. Il sito le mostra nella
+  pagina prodotto da `src/shop/config.js` (`quantityOffers`): se cambiano su WooCommerce vanno cambiate
+  anche li'. Stessa cosa per i metodi di pagamento mostrati (`payments`).
+- **Recensioni**: la pagina prodotto mostra quelle approvate in WooCommerce e permette di scriverne (plugin,
+  `nutrex/v1/recensione`) con le stesse regole di WooCommerce (voto obbligatorio, solo chi ha acquistato,
+  moderazione): si approvano in WordPress > Commenti come le altre.
+- **Modulo contatti**: i messaggi di `/contatti` arrivano a info@nutrexlab.it (plugin, `nutrex/v1/contatto`)
+  con "Rispondi a" = chi ha scritto; al massimo 5 messaggi l'ora per indirizzo IP, 60 l'ora in tutto.
 - **Prezzi e disponibilita'**: il sito li mostra con al massimo un paio di minuti di ritardo (cache); carrello e
   checkout usano sempre i dati attuali di WooCommerce.
 - **Spedizione e IVA**: le calcola WooCommerce nel checkout (zone di spedizione e aliquote come oggi).
@@ -170,9 +201,12 @@ thedoubletwenty.
 | "Il negozio non risponde in questo momento" | la Store API non risponde: indirizzo sbagliato, sito lento o bloccato da un firewall |
 | Acquista vuota | prodotti non pubblicati, non nella categoria o nascosti dal catalogo |
 | Pagina prodotto "non trovata" | lo slug non esiste o il prodotto non e' nella categoria Nutrex |
-| Il checkout di WooCommerce si apre con il carrello vuoto | plugin non attivo, oppure una cache delle pagine o un firewall che toglie i parametri `?nutrex-checkout=...` |
+| "Procedi al pagamento" riporta al carrello di nutrexlab.it | plugin non attivo o categoria non impostata, oppure una cache delle pagine o un firewall che toglie i parametri `?nutrex-checkout=...` |
 | Dopo il pagamento il cliente resta su WooCommerce | "Indirizzo del negozio" vuoto nel plugin, oppure pagamento con bonifico/assegno o non ancora confermato (voluto: c'e' il pulsante "Torna su Nutrex Lab") |
-| Il checkout ha ancora l'aspetto di thedoubletwenty | plugin precedente alla 2.1, "Aspetto Nutrex Lab" spento, oppure nel carrello WooCommerce c'e' anche un prodotto non Nutrex |
+| La pagina di pagamento Nutrex mostra menu, pie' di pagina o passaggi di thedoubletwenty | plugin precedente alla 2.2.1, oppure cache delle pagine di thedoubletwenty da svuotare |
+| Le pagine di thedoubletwenty mostrano qualcosa di Nutrex (carrello, pagamento) | plugin precedente alla 2.2: aggiornalo e svuota la cache |
+| Le email Nutrex finiscono nello spam o partono da thedoubletwenty | manca la password di info@nutrexlab.it nelle impostazioni, o il server di posta l'ha rifiutata (vedi "Stato") |
+| Il modulo contatti dice "Invio non riuscito" | plugin non aggiornato, oppure la posta non parte (vedi "Stato" nelle impostazioni) |
 | Nell'importazione la colonna "Slug" non e' abbinata | plugin precedente alla 2.1: aggiornalo e ripeti l'importazione (senza, lo slug viene dal nome e il prodotto perde colori e link 3D del sito) |
 | Un prezzo cambiato non si vede subito | cache di un paio di minuti: nel carrello e nel checkout e' gia' quello nuovo |
 
@@ -220,11 +254,11 @@ automatiche del codice del server (senza WooCommerce).
 
 | Parte | File |
 | --- | --- |
-| Funzioni Vercel | `api/products.js` (elenco e singolo prodotto), `api/cart.js` (carrello), `api/checkout.js` (indirizzo del checkout), `api/product-page.js` (pagina prodotto con titolo, descrizione e dati strutturati per Google), `api/sitemap.js` |
-| Codice del server | `server/`: `woo.js` (Store API), `catalog.js` (prodotti e categoria del negozio), `cart.js`, `checkout.js`, `product-page.js`, `session.js` (cookie del carrello), `http.js`, `errors.js` (messaggi per il cliente), `env.js` (variabili) |
+| Funzioni Vercel | `api/products.js` (elenco e singolo prodotto con i correlati), `api/cart.js` (carrello), `api/checkout.js` (indirizzo del checkout), `api/product-page.js` (pagina prodotto con titolo, descrizione e dati strutturati per Google), `api/recensioni.js` (recensioni: lettura e invio), `api/contatto.js` (modulo contatti), `api/sitemap.js` |
+| Codice del server | `server/`: `woo.js` (Store API), `catalog.js` (prodotti e categoria del negozio, correlati, recensioni), `cart.js`, `checkout.js`, `product-page.js`, `plugin.js` (chiamate al plugin), `contact.js`, `reviews.js`, `session.js` (cookie del carrello), `http.js`, `errors.js` (messaggi per il cliente), `env.js` (variabili) |
 | Indirizzi | `vercel.json`: `/prodotto/<slug>` -> `api/product-page`, `/sitemap.xml` -> `api/sitemap`; in locale lo stesso lo fa `vite.config.js` |
-| Browser | `src/shop/` (`api.js`, `cart.js` carrello condiviso tra le schede, `money.js`, `themes.js` colori per slug), `src/pages/` (script delle pagine) |
-| Plugin WordPress | `wordpress/nutrex-headless/` |
+| Browser | `src/shop/` (`api.js`, `cart.js` carrello condiviso tra le schede, `card.js` scheda prodotto, `config.js` recapiti, offerte quantita' e metodi di pagamento, `money.js`, `themes.js` colori per slug), `src/pages/` (script delle pagine) |
+| Plugin WordPress | `wordpress/nutrex-headless/`: `includes/separation.php` (negozi separati), `checkout-page.php` (pagina di pagamento Nutrex), `checkout-look.php` (cornice Nutrex, senza menu e stili del sito ospite), `checkout-handoff.php` (dal carrello del sito), `frontend-links.php`, `emails.php` + `email-look.php` + `templates/emails/` (email Nutrex), `mail.php` (invio da info@nutrexlab.it), `contact.php`, `reviews.php`, `settings.php`, `import.php` |
 | WooCommerce di prova | `wordpress/sviluppo/` |
 | Prove automatiche | `tests/` (`npm test`) |
 
@@ -232,6 +266,7 @@ Carrello: la sessione della Store API (Cart-Token) sta nel cookie `nx_cart` (htt
 `nx_count` serve solo al numero sul pulsante del carrello. Cache: prodotti 60 s sul CDN (poi aggiornati in
 background), pagina prodotto 120 s, sitemap 1 ora, carrello mai.
 
-Il passaggio al checkout porta a `WOOCOMMERCE_URL/?nutrex-checkout=1&items=<id>:<quantita>,...&coupons=...`:
-il plugin svuota il carrello WooCommerce del visitatore, ci mette gli stessi prodotti (solo della
-categoria Nutrex) e coupon e apre il checkout. I prezzi non passano dall'indirizzo: li calcola WooCommerce.
+Il passaggio al pagamento porta a `WOOCOMMERCE_URL/?nutrex-checkout=1&items=<id>:<quantita>,...&coupons=...`:
+il plugin mette da parte l'eventuale carrello di thedoubletwenty del visitatore (torna com'era alla sua
+prima pagina di thedoubletwenty), mette nel carrello gli stessi prodotti (solo della categoria Nutrex) e
+coupon e apre la pagina di pagamento Nutrex. I prezzi non passano dall'indirizzo: li calcola WooCommerce.

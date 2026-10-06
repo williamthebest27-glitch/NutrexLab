@@ -152,18 +152,20 @@ Pagamenti, Contatti) con il numero dei prodotti accanto a Carrello.
 | --- | --- | --- |
 | Homepage | `/` | il racconto 3D; il pulsante finale ("Acquista il collagene") apre la pagina del prodotto mostrato |
 | Acquista | `/acquista` | i prodotti Nutrex di WooCommerce (nell'ordinamento del pannello), 4 per riga su desktop, senza prezzo; filtri dalle sottocategorie; "Scopri" apre la pagina del prodotto |
-| Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita', varianti, quantita', "Aggiungi al carrello", descrizione e caratteristiche; titolo e dati strutturati per Google preparati sul server |
+| Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita', varianti, quantita', "Aggiungi al carrello", offerte quantita' (le stesse di WooCommerce), metodi di pagamento, descrizione e caratteristiche, recensioni (lettura e invio) e prodotti correlati; titolo e dati strutturati per Google preparati sul server |
 | Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento"; vuoto: invito al negozio |
 | Pagamenti | `/pagamenti` | come funziona il pagamento, riepilogo, coupon, "Vai al pagamento sicuro" (checkout di WooCommerce) |
 | Grazie | `/ordine?numero=N` | dopo il pagamento: numero dell'ordine WooCommerce; svuota il carrello del sito |
-| Contatti | `/contatti` | recapiti e modulo che prepara l'email nel programma di posta |
+| Contatti | `/contatti` | recapiti e modulo che invia il messaggio a info@nutrexlab.it (`/api/contatto` -> plugin su WooCommerce) |
 
 Gli indirizzi sono senza `.html` (`cleanUrls` in `vercel.json`; in locale li gestisce Vite).
 Il carrello e' quello di WooCommerce (sessione nel cookie `nx_cart`): lo stesso in tutte le pagine e
 le schede aperte, con prezzi e disponibilita' sempre aggiornati.
 
 I recapiti della pagina Contatti stanno in `src/shop/config.js` (email, telefono, WhatsApp, sede,
-orari, social; quelli `null` non compaiono). Tutto il resto del negozio si gestisce in WooCommerce.
+orari, social; quelli `null` non compaiono). Li' stanno anche le offerte quantita' mostrate nella pagina
+prodotto (`quantityOffers`: le stesse impostate su WooCommerce, che le applica nel carrello) e i metodi di
+pagamento mostrati (`payments`). Tutto il resto del negozio si gestisce in WooCommerce.
 
 Pagina nuova: un file HTML accanto a `index.html` con `<!-- @head -->`, `<!-- @nav -->`,
 `<!-- @mnav -->` e `<!-- @footer -->`, uno script in `src/pages/` che chiama `initPage()` e la voce

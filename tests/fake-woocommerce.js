@@ -60,6 +60,9 @@ function product(id, slug, name, categoryId, extra = {}) {
     variations: [],
     weight: '',
     add_to_cart: { minimum: 1, maximum: 9999, multiple_of: 1 },
+    average_rating: '0',
+    review_count: 0,
+    reviews_allowed: true,
     ...extra,
   }
 }
@@ -80,9 +83,15 @@ export const PRODUCTS = [
   }),
   product(101, 'collagene-1', 'Collagene - 1 confezione', 0, { _variation: true, type: 'variation', parent: 100, sku: 'COLL-1', on_sale: true, prices: prices(4490, 4990) }),
   product(102, 'collagene-2', 'Collagene - 2 confezioni', 0, { _variation: true, type: 'variation', parent: 100, sku: 'COLL-2', prices: prices(8990), is_in_stock: false, is_purchasable: false }),
-  product(110, 'magnesio', 'Magnesio', 12, { _order: 2, on_sale: true, prices: prices(1690, 1990), low_stock_remaining: 3 }),
+  product(110, 'magnesio', 'Magnesio', 12, { _order: 2, on_sale: true, prices: prices(1690, 1990), low_stock_remaining: 3, average_rating: '4.50', review_count: 2 }),
   product(120, 'nascosto', 'Prodotto nascosto', 12, { _order: 3, _hidden: true }),
   product(200, 'altro-prodotto', 'Prodotto di un altro negozio', 20, { _order: 0 }),
+]
+
+// recensioni approvate (Store API /products/reviews)
+export const REVIEWS = [
+  { id: 501, date_created: '2026-09-20T10:00:00', date_created_gmt: '2026-09-20T08:00:00', product_id: 110, reviewer: 'Giulia', review: '<p>Ottimo, lo prendo ogni sera.</p><script>alert(1)</script>', rating: 5, verified: true },
+  { id: 502, date_created: '2026-09-02T09:00:00', date_created_gmt: '2026-09-02T07:00:00', product_id: 110, reviewer: 'Marco &amp; Co', review: '<p>Buono.</p>', rating: 4, verified: false },
 ]
 
 const COUPONS = { prova10: 0.1 }
@@ -127,7 +136,8 @@ const visible = (p) => {
 
 /** Sostituisce fetch con il WooCommerce finto. Ritorna i controlli per le prove. */
 export function installFakeWoo() {
-  const state = { carts: new Map(), down: false, requests: [], nextToken: 1 }
+  // plugin: le chiamate ricevute (/wp-json/nutrex/v1/...) e la risposta da dare (null = ok)
+  const state = { carts: new Map(), down: false, requests: [], nextToken: 1, plugin: [], pluginReply: null }
   const realFetch = globalThis.fetch
 
   function cartJson(cart) {
@@ -178,6 +188,15 @@ export function installFakeWoo() {
     const body = init.body ? JSON.parse(init.body) : {}
     let token = init.headers?.['Cart-Token'] ?? null
 
+    if (url.pathname.startsWith('/wp-json/nutrex/v1/')) {
+      state.plugin.push({ path: url.pathname, body: init.body ?? '', headers: init.headers ?? {} })
+      const r = state.pluginReply ?? { status: 200, data: { ok: true } }
+      return reply(r.status, r.data)
+    }
+    if (path === '/products/reviews') {
+      const ids = String(params.get('product_id') ?? '').split(',').map(Number)
+      return page(REVIEWS.filter((r) => ids.includes(r.product_id)), params)
+    }
     if (path === '/products/categories') return page(CATEGORIES, params, 2) // a pagine piccole, come un negozio con tante categorie
     if (path === '/products') {
       let list = PRODUCTS.filter((p) => (params.get('type') === 'variation' ? p._variation : !p._variation))
@@ -186,6 +205,10 @@ export function installFakeWoo() {
       if (params.has('category')) {
         const ids = descendants(Number(params.get('category')))
         list = list.filter((p) => p.categories.some((c) => ids.has(c.id)))
+      }
+      if (params.has('exclude')) {
+        const out = params.get('exclude').split(',').map(Number)
+        list = list.filter((p) => !out.includes(p.id))
       }
       if (params.get('catalog_visibility') === 'catalog') list = list.filter((p) => !p._hidden)
       if (params.get('orderby') === 'menu_order') list = [...list].sort((a, b) => a._order - b._order)

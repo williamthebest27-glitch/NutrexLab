@@ -5,6 +5,7 @@ import { api } from '../shop/api.js'
 import { initDock } from './dock.js'
 import { colorVars, productUrl, pad, esc, availability } from '../shop/themes.js'
 import { discountPercent } from '../shop/money.js'
+import { productCard } from '../shop/card.js'
 
 gsap.registerPlugin(Flip)
 
@@ -24,48 +25,8 @@ let cards = []
 let current = 'all'
 
 // ---------------------------------------------------------------------------
-// Schede
-function badges(p, categories) {
-  const out = []
-  const cat = p.categories.find((c) => categories.some((k) => k.id === c.id))
-  if (cat) out.push(`<span class="mono badge">${esc(cat.name)}</span>`)
-  if (!p.stock.inStock) out.push('<span class="mono badge badge--out">Esaurito</span>')
-  else if (p.onSale) {
-    const off = p.type === 'variable' ? 0 : discountPercent(p.prices)
-    out.push(`<span class="mono badge badge--sale">${off ? `−${off}%` : 'Offerta'}</span>`)
-  } else if (p.stock.low) out.push('<span class="mono badge badge--low">Ultimi pezzi</span>')
-  return `<span class="badges">${out.join('')}</span>`
-}
-
-function card(p, i, categories) {
-  const name = esc(p.name)
-  const url = productUrl(p.slug)
-  const img = p.images[0]
-  const stock = availability(p.stock)
-  const picture = img
-    ? `<img class="pcard__img" src="${esc(img.src)}"${img.srcset ? ` srcset="${esc(img.srcset)}" sizes="(max-width: 767px) 46vw, (max-width: 1240px) 30vw, 22vw"` : ''} alt="${esc(img.alt || p.name)}" width="800" height="1000" loading="lazy" decoding="async" />`
-    : `<svg class="pcard__noimg" viewBox="0 0 26 24" aria-hidden="true"><path d="${HEX}"/></svg>`
-  return `<li class="pcard${p.stock.inStock ? '' : ' is-soldout'}" id="p-${esc(p.slug)}" data-cats="${p.categories.map((c) => c.id).join(',')}" style="${colorVars(p.slug)}">
-    <a class="pcard__media" href="${url}" aria-label="${name}">
-      <svg class="pcard__hex" viewBox="0 0 26 24" aria-hidden="true"><path d="${HEX}"/></svg>
-      <svg class="pcard__hex pcard__hex--in" viewBox="0 0 26 24" aria-hidden="true"><path d="${HEX}"/></svg>
-      <span class="pcard__floor" aria-hidden="true"></span>
-      ${picture}
-      <span class="mono pcard__idx" aria-hidden="true">${pad(i + 1)}</span>
-      ${badges(p, categories)}
-    </a>
-    <div class="pcard__body">
-      <h2 class="display pcard__name"><a href="${url}">${name}</a></h2>
-      ${p.summary ? `<p class="pcard__line">${esc(p.summary)}</p>` : ''}
-      <div class="pcard__foot">
-        <p class="mono stock stock--${stock.tone}">${esc(stock.text)}</p>
-        <a class="btn btn--sm pcard__cta" href="${url}">
-          <span class="btn__label">Scopri</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
-        </a>
-      </div>
-    </div>
-  </li>`
-}
+// Schede (src/shop/card.js: la stessa dei prodotti correlati nella pagina prodotto)
+const card = (p, i, categories) => productCard(p, i, categories)
 
 function skeleton(n = 8) {
   const one = `<li class="pcard pcard--skel" aria-hidden="true">

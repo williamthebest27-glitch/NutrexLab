@@ -3,28 +3,38 @@ import { initPage, rise, reduced } from './common.js'
 import { initDock } from './dock.js'
 import { api } from '../shop/api.js'
 import { cart } from '../shop/cart.js'
-import { priceHtml, discountPercent } from '../shop/money.js'
+import { SHOP } from '../shop/config.js'
+import { money, priceHtml, discountPercent } from '../shop/money.js'
 import { colorVars, storyUrl, esc, availability } from '../shop/themes.js'
+import { productCard, HEX } from '../shop/card.js'
 
 /*
   Pagina prodotto (/prodotto/<slug>): tutto da WooCommerce (nome, descrizioni, prezzo e offerta,
-  immagini, SKU, categorie, attributi, variazioni, stock). Il server la prepara gia' con i dati
-  (motori di ricerca e anteprime social); qui diventa interattiva e si aggiorna con prezzi e stock
-  freschi. Scegliendo una variante cambiano prezzo, SKU, disponibilita' e immagine.
+  immagini, SKU, categorie, attributi, variazioni, stock, recensioni, prodotti correlati). Il server la
+  prepara gia' con i dati (motori di ricerca e anteprime social); qui diventa interattiva e si aggiorna
+  con prezzi e stock freschi. Scegliendo una variante cambiano prezzo, SKU, disponibilita' e immagine.
+  Offerte quantita' e metodi di pagamento sono quelli del WooCommerce condiviso (src/shop/config.js):
+  gli sconti li applica WooCommerce nel carrello, qui si vedono in anticipo.
 */
 
 const { ready } = initPage()
 const dock = initDock()
 const root = document.querySelector('[data-pp]')
-const HEX = 'M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z'
 const ICON = {
   minus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 12h11"/></svg>',
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5v11M6.5 12h11"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
 }
+const PAY = { mastercard: 'Mastercard', visa: 'Visa', amex: 'American Express', paypal: 'PayPal', klarna: 'Klarna', applepay: 'Apple Pay', googlepay: 'Google Pay' }
+const TIERS = [...(SHOP.quantityOffers ?? [])].sort((a, b) => a.pieces - b.pieces)
+const dateIt = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 let product = null
 let selected = {}
 let qty = 1
+let related = []
+let reviews = null // null = non ancora lette
 
 const initial = (() => {
   try {
@@ -86,6 +96,60 @@ function specsHtml() {
   return `<table class="pp__specs"><tbody>${rows.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table>`
 }
 
+/** Offerte quantita': le soglie di sconto di WooCommerce (il messaggio si aggiorna con la quantita'). */
+function offersHtml() {
+  if (!TIERS.length) return ''
+  const tiers = TIERS.map(
+    (t) =>
+      `<button type="button" class="tier" data-tier="${t.pieces}" aria-pressed="false" aria-label="${t.pieces} pezzi: ${t.off}% di sconto"><b>${t.pieces} pezzi</b><span>&minus;${t.off}%</span></button>`,
+  ).join('')
+  return `<div class="pp__offers" data-offers data-anim>
+    <p class="pp__offers-k"><span class="mono">Offerte quantit&agrave;</span><small>Anche prodotti diversi: conta il totale dei pezzi. Lo sconto compare nel carrello.</small></p>
+    <div class="pp__tiers" role="group" aria-label="Offerte quantit&agrave;">${tiers}</div>
+    <p class="pp__offers-msg" data-offer-msg aria-live="polite"></p>
+  </div>`
+}
+
+/** Metodi di pagamento del checkout. */
+function payHtml() {
+  const list = (SHOP.payments ?? []).filter((k) => PAY[k])
+  if (!list.length) return ''
+  const items = list.map((k) => `<li class="pay pay--${k}">${k === 'mastercard' ? '<i aria-hidden="true"></i>' : ''}${PAY[k]}</li>`).join('')
+  return `<div class="pp__pay mono" data-anim><span class="pp__pay-k">${ICON.lock} Pagamento sicuro</span><ul class="pp__pay-list" aria-label="Metodi di pagamento accettati">${items}</ul></div>`
+}
+
+function starsHtml(value, label) {
+  const pct = (Math.max(0, Math.min(5, value)) / 5) * 100
+  return `<span class="stars" role="img" aria-label="${esc(label ?? `${value} su 5`)}"><span class="stars__on" style="width:${pct.toFixed(1)}%" aria-hidden="true">★★★★★</span><span aria-hidden="true">★★★★★</span></span>`
+}
+
+function reviewFormHtml() {
+  // nel codice le stelle stanno da 5 a 1 (si vedono da 1 a 5, vedi pages.css)
+  const stars = [5, 4, 3, 2, 1]
+    .map((n) => `<label class="starpick__s"><input type="radio" name="voto" value="${n}" /><span aria-hidden="true">★</span><span class="sr-only">${n} ${n === 1 ? 'stella' : 'stelle'}</span></label>`)
+    .join('')
+  return `<form class="rform glass" data-rform novalidate aria-labelledby="scrivi-recensione">
+    <p class="mono rform__k" id="scrivi-recensione">Scrivi una recensione</p>
+    <fieldset class="rform__stars"><legend class="rform__label">La tua valutazione</legend><div class="starpick" data-starpick>${stars}</div></fieldset>
+    <div class="fgrid">
+      <div class="field field--3"><input id="r-nome" name="nome" autocomplete="name" placeholder=" " required /><label for="r-nome">Nome</label></div>
+      <div class="field field--3"><input id="r-email" name="email" type="email" autocomplete="email" placeholder=" " required /><label for="r-email">Email (non pubblicata)</label></div>
+      <div class="field"><textarea id="r-testo" name="testo" rows="4" placeholder=" " required></textarea><label for="r-testo">La tua recensione</label></div>
+    </div>
+    <div class="cform__hp" aria-hidden="true"><label for="r-sito">Sito web</label><input id="r-sito" name="sito" type="text" tabindex="-1" autocomplete="off" /></div>
+    <button class="btn btn--sm" type="submit"><span class="btn__label">Invia la recensione</span><span class="btn__icon" aria-hidden="true">&rarr;</span></button>
+    <p class="mono rform__status" role="status" data-rstatus></p>
+  </form>`
+}
+
+function reviewsSectionHtml() {
+  if (product.reviewsAllowed === false) return ''
+  return `<section class="pp__reviews" data-reviews data-anim aria-labelledby="recensioni">
+    <div class="pp__reviews-head"><h2 class="display pp__h" id="recensioni">Recensioni</h2><p class="pp__rating" data-rating></p></div>
+    <div class="pp__reviews-grid"><div class="reviews" data-reviews-list></div>${reviewFormHtml()}</div>
+  </section>`
+}
+
 function render() {
   const story = storyUrl(product.slug)
   const cat = product.categories.find((c) => !/nutrex/i.test(c.slug)) ?? product.categories[0]
@@ -129,6 +193,8 @@ function render() {
           </button>
         </div>
         <p class="pp__msg" role="status" data-msg></p>
+        ${offersHtml()}
+        ${payHtml()}
         ${story ? `<a class="link mono pp__story" href="${story}" data-anim>Scopri il prodotto in 3D &rarr;</a>` : ''}
         <dl class="pp__meta mono" data-meta data-anim></dl>
       </div>
@@ -140,9 +206,16 @@ function render() {
             ${specsHtml() ? `<div><h2 class="display pp__h">Caratteristiche</h2>${specsHtml()}</div>` : ''}
           </section>`
         : ''
-    }`
+    }
+    ${reviewsSectionHtml()}
+    <section class="pp__related" data-related hidden aria-labelledby="correlati">
+      <h2 class="display pp__h" id="correlati">Ti potrebbero piacere</h2>
+      <ul class="pp__related-grid" data-related-grid></ul>
+    </section>`
   document.title = `${product.name} | Nutrex Lab`
   update()
+  renderReviews()
+  renderRelated()
 }
 
 function update() {
@@ -172,13 +245,32 @@ function update() {
 
   const add = root.querySelector('[data-add]')
   const label = add.querySelector('.btn__label')
+  const buyable = item.stock.inStock && item.stock.purchasable && hasPrice
   if (!add.classList.contains('is-added')) {
     if (isVariable && !chosen) label.textContent = 'Scegli una variante'
     else if (!item.stock.inStock) label.textContent = 'Esaurito'
-    else if (!item.stock.purchasable || !hasPrice) label.textContent = 'Presto disponibile'
+    else if (!buyable) label.textContent = 'Presto disponibile'
     else label.textContent = 'Aggiungi al carrello'
   }
-  add.disabled = (isVariable && !chosen) || !item.stock.inStock || !item.stock.purchasable || !hasPrice
+  add.disabled = (isVariable && !chosen) || !buyable
+
+  // offerte quantita': conta anche i pezzi gia' nel carrello (come fa WooCommerce)
+  const offers = root.querySelector('[data-offers]')
+  if (offers) {
+    offers.hidden = !buyable && !(isVariable && !chosen && hasPrice)
+    const inCart = cart.count || 0
+    const total = qty + inCart
+    const reached = [...TIERS].reverse().find((t) => total >= t.pieces) ?? null
+    const next = TIERS.find((t) => total < t.pieces) ?? null
+    offers.querySelectorAll('[data-tier]').forEach((b) => b.setAttribute('aria-pressed', String(!!reached && Number(b.dataset.tier) === reached.pieces)))
+    const unit = reached && prices?.price > 0 ? ` <b>${money(Math.round((prices.price * (100 - reached.off)) / 100), prices.currency)} cad.</b>` : ''
+    const already = inCart ? ` (${qty} + ${inCart} gi&agrave; nel carrello)` : ''
+    let msg = ''
+    if (!reached && next) msg = `Con ${next.pieces} pezzi ottieni il <b>${next.off}%</b> di sconto su tutto l'ordine.`
+    else if (reached && next) msg = `Con ${total} pezzi${already} hai il <b>${reached.off}%</b> di sconto su tutto l'ordine:${unit} &middot; con ${next.pieces} pezzi il ${next.off}%.`
+    else if (reached) msg = `Con ${total} pezzi${already} hai il <b>${reached.off}%</b> di sconto su tutto l'ordine:${unit}`
+    offers.querySelector('[data-offer-msg]').innerHTML = msg.replace(/:\s*$/, '.')
+  }
 
   const badges = []
   if (!item.stock.inStock) badges.push('<span class="mono badge badge--out">Esaurito</span>')
@@ -215,6 +307,53 @@ function swapImage(img) {
   root.querySelectorAll('[data-thumb]').forEach((b) => b.setAttribute('aria-pressed', String(product.images[b.dataset.thumb]?.src === img.src)))
 }
 
+/** Recensioni: media e conteggio di WooCommerce, poi l'elenco appena arriva. */
+function renderReviews() {
+  const box = root.querySelector('[data-reviews-list]')
+  if (!box) return
+  const list = reviews ?? []
+  const count = product.rating?.count || list.length
+  const avg = product.rating?.count ? product.rating.average : list.length ? list.reduce((s, r) => s + r.rating, 0) / list.length : 0
+  root.querySelector('[data-rating]').innerHTML = count
+    ? `${starsHtml(avg, `${avg.toFixed(1)} su 5`)} <span><b>${avg.toFixed(1).replace('.', ',')}</b> su 5 &middot; ${count} ${count === 1 ? 'recensione' : 'recensioni'}</span>`
+    : ''
+  if (reviews === null) {
+    box.innerHTML = '<p class="reviews__empty">Caricamento delle recensioni&hellip;</p>'
+    return
+  }
+  box.innerHTML = list.length
+    ? list
+        .map(
+          (r) =>
+            `<article class="review"><header>${starsHtml(r.rating, `${r.rating} su 5`)}<b class="review__who">${esc(r.reviewer)}</b>${r.verified ? '<span class="mono review__ok">Acquisto verificato</span>' : ''}<time class="mono" datetime="${esc(r.date)}">${esc(dateIt.format(new Date(r.date)))}</time></header><div class="review__text">${r.review}</div></article>`,
+        )
+        .join('')
+    : '<p class="reviews__empty">Ancora nessuna recensione: scrivi tu la prima.</p>'
+}
+
+function loadReviews() {
+  if (product.reviewsAllowed === false) return
+  api
+    .reviews(product.id)
+    .then(({ reviews: list }) => {
+      reviews = list ?? []
+      renderReviews()
+    })
+    .catch(() => {
+      reviews = []
+      renderReviews()
+    })
+}
+
+function renderRelated() {
+  const sec = root.querySelector('[data-related]')
+  if (!sec) return
+  sec.hidden = !related.length
+  sec.querySelector('[data-related-grid]').innerHTML = related
+    .map((p, i) => productCard(p, i, [], { heading: 'h3', sizes: '(max-width: 1080px) 46vw, 22vw' }))
+    .join('')
+}
+
 // ---------------------------------------------------------------------------
 // interazioni
 root.addEventListener('click', async (e) => {
@@ -232,8 +371,31 @@ root.addEventListener('click', async (e) => {
     qty = Math.max(1, qty + Number(step.dataset.step))
     return update()
   }
+  const tier = e.target.closest('[data-tier]')
+  if (tier) {
+    // la soglia conta anche i pezzi gia' nel carrello
+    qty = Math.max(1, Number(tier.dataset.tier) - (cart.count || 0))
+    return update()
+  }
   if (e.target.closest('[data-add]')) addToCart()
 })
+
+// stelle della recensione: si accendono fino a quella scelta
+root.addEventListener('change', (e) => {
+  if (e.target.name !== 'voto') return
+  const v = Number(e.target.value)
+  root.querySelectorAll('[data-starpick] .starpick__s').forEach((l) => l.classList.toggle('is-on', Number(l.querySelector('input').value) <= v))
+})
+
+root.addEventListener('submit', (e) => {
+  const form = e.target.closest('[data-rform]')
+  if (!form) return
+  e.preventDefault()
+  submitReview(form)
+})
+
+// i pezzi nel carrello cambiano (anche da un'altra scheda): il messaggio delle offerte si aggiorna
+cart.subscribe(() => product && root.querySelector('[data-offers]') && update())
 
 function setMsg(html, error = false) {
   const el = root.querySelector('[data-msg]')
@@ -271,6 +433,43 @@ async function addToCart() {
   }
 }
 
+async function submitReview(form) {
+  const f = form.elements
+  const status = form.querySelector('[data-rstatus]')
+  const say = (html, error = false) => {
+    status.classList.toggle('is-error', error)
+    status.innerHTML = html
+  }
+  const voto = Number(form.querySelector('input[name="voto"]:checked')?.value || 0)
+  if (!voto) return say('Scegli da 1 a 5 stelle.', true)
+  if (f.nome.value.trim().length < 2) {
+    f.nome.focus()
+    return say('Inserisci il tuo nome.', true)
+  }
+  if (!EMAIL.test(f.email.value.trim())) {
+    f.email.focus()
+    return say('Inserisci un indirizzo email valido.', true)
+  }
+  if (f.testo.value.trim().length < 5) {
+    f.testo.focus()
+    return say('Scrivi la tua recensione.', true)
+  }
+  const btn = form.querySelector('[type="submit"]')
+  btn.disabled = true
+  say('Invio…')
+  try {
+    const { approved } = await api.review({ product: product.id, nome: f.nome.value, email: f.email.value, voto, testo: f.testo.value, sito: f.sito.value })
+    form.reset()
+    root.querySelectorAll('[data-starpick] .starpick__s').forEach((l) => l.classList.remove('is-on'))
+    say(approved ? 'Grazie! La tua recensione &egrave; pubblicata.' : 'Grazie! La tua recensione sar&agrave; pubblicata dopo un controllo.')
+    if (approved) loadReviews()
+  } catch (err) {
+    say(esc(err.message), true)
+  } finally {
+    btn.disabled = false
+  }
+}
+
 // ---------------------------------------------------------------------------
 function showProblem(status, message) {
   root.removeAttribute('style')
@@ -285,20 +484,24 @@ function show(p) {
   product = p
   preselect()
   render()
+  loadReviews()
   rise(root.querySelectorAll('[data-anim]'), { y: 34, stagger: 0.06, after: ready })
 }
 
 if (initial?.product) {
   show(initial.product)
-  // prezzi e stock freschi (la pagina puo' essere in cache per qualche minuto)
+  // prezzi, stock e correlati freschi (la pagina puo' essere in cache per qualche minuto)
   api
     .product(slug)
-    .then(({ product: fresh }) => {
+    .then(({ product: fresh, related: rel }) => {
       const keep = selected
       product = fresh
       selected = keep
+      related = rel ?? []
       root.querySelector('[data-variants]').innerHTML = variantsHtml()
       update()
+      renderReviews()
+      renderRelated()
     })
     .catch(() => {})
 } else if (initial && initial.status === 404) {
@@ -307,7 +510,10 @@ if (initial?.product) {
   root.innerHTML = '<div class="pp__grid"><div class="pcard__media skel" style="aspect-ratio:4/5"></div><div><div class="skel skel-line skel-line--title"></div><div class="skel skel-line"></div><div class="skel skel-line skel-line--short"></div></div></div>'
   api
     .product(slug)
-    .then(({ product: p }) => show(p))
+    .then(({ product: p, related: rel }) => {
+      related = rel ?? []
+      show(p)
+    })
     .catch((err) => showProblem(err.status, err.message))
 } else {
   showProblem(404)

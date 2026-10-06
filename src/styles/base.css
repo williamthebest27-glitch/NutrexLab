@@ -91,6 +91,9 @@ html.is-theming .nav__bg {
 @property --mist { syntax: '<color>'; inherits: true; initial-value: #e2e1e7; }
 @property --ink { syntax: '<color>'; inherits: true; initial-value: #0e0c11; }
 @property --plum { syntax: '<color>'; inherits: true; initial-value: #1e0b1c; }
+/* fondo del momento per navbar e menu prodotti (home, choreography.js): registrata, cosi' ha un colore vero
+   anche prima del primo cambio di scena (GSAP legge da qui il valore a cui tornare) */
+@property --page-bg { syntax: '<color>'; inherits: true; initial-value: #f1f0f3; }
 @property --night { syntax: '<color>'; inherits: true; initial-value: #0d0a0f; }
 @property --abyss { syntax: '<color>'; inherits: true; initial-value: #08060a; }
 @property --wine { syntax: '<color>'; inherits: true; initial-value: #3b0b27; }
