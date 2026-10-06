@@ -21,6 +21,8 @@ const cartApi = await import('../api/cart.js')
 const checkoutApi = await import('../api/checkout.js')
 const contactApi = await import('../api/contatto.js')
 const reviewsApi = await import('../api/recensioni.js')
+const sitemapApi = await import('../api/sitemap.js')
+const { categoryFor, isSitePhoto, productTrail } = await import('../src/seo/catalog.js')
 
 let woo
 before(() => {
@@ -231,24 +233,60 @@ describe('funzioni Vercel', () => {
 
 describe('pagina prodotto per Google e social', () => {
   const template = '<html><head><title>Prodotto | Nutrex Lab</title></head><body><!-- ssr:prodotto --></body></html>'
+  const graphOf = (html) => JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])['@graph']
+  const node = (graph, type) => graph.find((n) => n['@type'] === type)
 
-  test('titolo, canonical, dati strutturati con le varianti', async () => {
+  test('titolo e descrizione curati, canonical sul dominio principale, dati strutturati con le varianti', async () => {
     const product = await getProduct('collagene')
-    const html = renderProductPage(template, { product, site: 'https://negozio.test', slug: 'collagene' })
-    assert.match(html, /<title>Collagene &amp; vitamina C \| Nutrex Lab<\/title>/)
-    assert.match(html, /<link rel="canonical" href="https:\/\/negozio.test\/prodotto\/collagene" \/>/)
-    const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])
-    assert.equal(ld['@type'], 'Product')
+    const html = renderProductPage(template, { product, slug: 'collagene' })
+    assert.match(html, /<title>Collagene Marino in Polvere 10\.000 mg \| Nutrex Lab<\/title>/)
+    assert.equal(html.match(/<title>/g).length, 1, 'un solo titolo')
+    assert.match(html, /<link rel="canonical" href="https:\/\/www\.nutrexlab\.it\/prodotto\/collagene" \/>/)
+    assert.match(html, /<meta property="og:url" content="https:\/\/www\.nutrexlab\.it\/prodotto\/collagene" \/>/)
+    const graph = graphOf(html)
+    const ld = node(graph, 'Product')
+    assert.equal(ld.brand.name, 'Nutrex Lab')
     assert.equal(ld.offers['@type'], 'AggregateOffer')
     assert.equal(ld.offers.lowPrice, '44.90')
     assert.equal(ld.offers.highPrice, '89.90')
     assert.equal(ld.offers.availability, 'https://schema.org/InStock')
+    assert.equal(ld.offers.offers[0].hasMerchantReturnPolicy.merchantReturnDays, 14)
+    assert.equal(ld.offers.offers[0].seller.name, 'Nutrex Lab')
+    assert.equal(ld.aggregateRating, undefined, 'nessun voto senza recensioni')
+    // breadcrumb: Home / Integratori / Collagene / prodotto, lo stesso della barra visibile
+    const crumbs = node(graph, 'BreadcrumbList').itemListElement.map((i) => i.name)
+    assert.deepEqual(crumbs, ['Home', 'Integratori', 'Collagene', 'Collagene & vitamina C'])
+    assert.match(html, /<nav class="crumbs[^"]*" aria-label="Percorso">/)
+    // domande frequenti: le stesse nella pagina e nei dati strutturati
+    const faq = node(graph, 'FAQPage').mainEntity
+    assert.ok(faq.length >= 3)
+    for (const q of faq) assert.ok(html.includes(`<span>${q.name.replace(/'/g, '&#39;')}</span>`), q.name)
+    // prodotti della stessa categoria e categoria, linkati anche senza JavaScript
+    assert.match(html, /href="\/prodotto\/collagene-marino-compresse"/)
+    assert.match(html, /href="\/integratori\/collagene"/)
+  })
+
+  test('voto medio solo con recensioni vere', async () => {
+    const product = await getProduct('magnesio')
+    const ld = node(graphOf(renderProductPage(template, { product, slug: 'magnesio' })), 'Product')
+    assert.deepEqual(ld.aggregateRating, { '@type': 'AggregateRating', ratingValue: '4.5', reviewCount: 2, bestRating: 5, worstRating: 1 })
+  })
+
+  test('prodotto senza dati SEO: titolo dal nome, descrizione dalla breve descrizione tagliata', async () => {
+    const product = await getProduct('magnesio')
+    const other = { ...product, slug: 'nuovo', summary: 'Parola '.repeat(60).trim() }
+    const html = renderProductPage(template, { product: other, slug: 'nuovo' })
+    assert.match(html, /<title>Magnesio \| Nutrex Lab<\/title>/)
+    const description = /<meta name="description" content="([^"]*)"/.exec(html)[1]
+    assert.ok(description.length <= 160 && description.endsWith('…'))
+    assert.deepEqual(node(graphOf(html), 'BreadcrumbList').itemListElement.map((i) => i.name), ['Home', 'Integratori', 'Magnesio'])
+    assert.equal(node(graphOf(html), 'FAQPage'), undefined)
   })
 
   test('testi con "</script>" o "$&" non rompono la pagina', async () => {
     const product = await getProduct('magnesio')
-    const tricky = { ...product, name: 'Magnesio $& $\' </script><script>alert(1)</script>', summary: 'Prezzo $` speciale' }
-    const html = renderProductPage(template, { product: tricky, site: 'https://negozio.test', slug: 'magnesio' })
+    const tricky = { ...product, slug: 'nuovo', name: 'Magnesio $& $\' </script><script>alert(1)</script>', summary: 'Prezzo $` speciale' }
+    const html = renderProductPage(template, { product: tricky, slug: 'nuovo' })
     assert.equal(html.match(/<\/script>/g).length, 2, 'solo le chiusure dei due script del server')
     assert.equal(html.split('<html>').length, 2, 'il modello non viene duplicato')
     assert.match(html, /<title>Magnesio \$&amp; \$&#39; &lt;\/script&gt;/)
@@ -259,17 +297,81 @@ describe('pagina prodotto per Google e social', () => {
   test('prodotto ancora senza prezzo: "Prezzo in arrivo", nessuna offerta per Google', async () => {
     const product = await getProduct('magnesio')
     const unpriced = { ...product, prices: { ...product.prices, price: 0, regular: 0, sale: 0 }, stock: { ...product.stock, purchasable: false } }
-    const html = renderProductPage(template, { product: unpriced, site: 'https://negozio.test', slug: 'magnesio' })
-    const ld = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])
-    assert.equal(ld.offers, undefined)
+    const html = renderProductPage(template, { product: unpriced, slug: 'magnesio' })
+    assert.equal(node(graphOf(html), 'Product').offers, undefined)
     assert.doesNotMatch(html, /product:price:amount|0,00/)
     assert.match(html, /<p>Prezzo in arrivo<\/p>/)
   })
 
-  test('prodotto non trovato: noindex', () => {
-    const html = renderProductPage(template, { product: null, site: 'https://negozio.test', slug: 'niente', status: 404 })
+  test('prodotto non trovato: noindex, nessun canonical', () => {
+    const html = renderProductPage(template, { product: null, slug: 'niente', status: 404 })
     assert.match(html, /<meta name="robots" content="noindex" \/>/)
     assert.match(html, /<title>Prodotto non trovato \| Nutrex Lab<\/title>/)
+    assert.doesNotMatch(html, /rel="canonical"/)
+  })
+
+  test('foto senza testo alternativo: descrizione dal nome del prodotto, mai il nome del file', async () => {
+    const product = await getProduct('magnesio')
+    assert.equal(product.images[0].alt, 'Magnesio Nutrex Lab, flacone da 180 compresse')
+    const collagene = await getProduct('collagene')
+    assert.equal(collagene.variations[0].images[0].alt, 'Collagene - 1 confezione Nutrex Lab')
+  })
+})
+
+describe('sincronizzazione con WooCommerce', () => {
+  test('prodotto nuovo: categoria del sito dalla sottocategoria di WooCommerce con lo stesso slug', () => {
+    assert.equal(categoryFor('collagene')?.slug, 'collagene', 'i prodotti della linea hanno la loro categoria')
+    assert.equal(categoryFor('collagene-nuovo', [{ id: 9, slug: 'nutrex-lab' }])?.slug, undefined)
+    assert.equal(categoryFor('collagene-nuovo', [{ id: 9, slug: 'nutrex-lab' }, { id: 30, slug: 'collagene' }])?.slug, 'collagene')
+    const trail = productTrail('omega-3', 'Omega 3', [{ id: 31, slug: 'estratti-vegetali' }]).map(([name]) => name)
+    assert.deepEqual(trail, ['Home', 'Integratori', 'Estratti vegetali', 'Omega 3'])
+  })
+
+  test('foto delle schede: quella del sito finche\' WooCommerce ha la stessa, altrimenti quella nuova', () => {
+    assert.ok(isSitePhoto('https://thedoubletwenty.it/wp-content/uploads/2026/10/collagene.webp', 'collagene'))
+    assert.ok(isSitePhoto('https://thedoubletwenty.it/wp-content/uploads/2026/10/collagene-300x375.webp', 'collagene'))
+    assert.ok(!isSitePhoto('https://thedoubletwenty.it/wp-content/uploads/2026/11/collagene-1.webp', 'collagene'), 'foto ricaricata')
+    assert.ok(!isSitePhoto('https://thedoubletwenty.it/wp-content/uploads/2026/11/nuova-foto.jpg', 'collagene'))
+    assert.ok(!isSitePhoto('https://thedoubletwenty.it/wp-content/uploads/2026/10/omega-3.webp', 'omega-3'), 'prodotto nuovo: sempre WooCommerce')
+  })
+
+  test('pagina di un prodotto nuovo in una sottocategoria del sito: breadcrumb con la categoria', async () => {
+    const product = await getProduct('magnesio')
+    const fresh = { ...product, slug: 'omega-3', name: 'Omega 3', categories: [{ id: 30, name: 'Estratti vegetali', slug: 'estratti-vegetali' }] }
+    const html = renderProductPage('<html><head><title>x</title></head><body><!-- ssr:prodotto --></body></html>', { product: fresh, slug: 'omega-3' })
+    const graph = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])['@graph']
+    const crumbs = graph.find((n) => n['@type'] === 'BreadcrumbList').itemListElement.map((i) => i.name)
+    assert.deepEqual(crumbs, ['Home', 'Integratori', 'Estratti vegetali', 'Omega 3'])
+    assert.equal(graph.find((n) => n['@type'] === 'Product').category, 'Integratori alimentari > Estratti vegetali')
+  })
+})
+
+describe('sitemap', () => {
+  test('indirizzi canonici: pagine, categorie e prodotti pubblicati con le foto', async () => {
+    const res = await sitemapApi.GET(new Request('https://anteprima.vercel.app/sitemap.xml'))
+    assert.equal(res.status, 200)
+    assert.match(res.headers.get('content-type'), /application\/xml/)
+    const xml = await res.text()
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
+    assert.ok(locs.every((u) => u.startsWith('https://www.nutrexlab.it/')), 'sempre sul dominio principale')
+    const paths = ['/', '/integratori', '/integratori/collagene', '/integratori/vitamine-e-minerali', '/integratori/estratti-vegetali', '/chi-siamo', '/prodotto/collagene', '/prodotto/magnesio']
+    for (const path of paths) assert.ok(locs.includes(`https://www.nutrexlab.it${path}`), path)
+    for (const path of ['/carrello', '/pagamenti', '/ordine', '/account', '/prodotto/nascosto', '/prodotto/altro-prodotto']) {
+      assert.ok(!locs.includes(`https://www.nutrexlab.it${path}`), path)
+    }
+    assert.match(xml, /<image:loc>https:\/\/woo\.test\/img\/magnesio\.webp<\/image:loc>/)
+    const head = await sitemapApi.HEAD(new Request('https://www.nutrexlab.it/sitemap.xml', { method: 'HEAD' }))
+    assert.equal(head.status, 200)
+    assert.equal(await head.text(), '')
+  })
+
+  test('WooCommerce non disponibile: i prodotti della linea, in cache per poco', async () => {
+    const res = await withEnv({ WOOCOMMERCE_CATEGORY: undefined }, () => sitemapApi.GET(new Request('https://www.nutrexlab.it/sitemap.xml')))
+    assert.equal(res.status, 200)
+    assert.match(res.headers.get('cache-control'), /s-maxage=300/)
+    const xml = await res.text()
+    assert.equal((xml.match(/\/prodotto\//g) ?? []).length, 12)
+    assert.match(xml, /<image:loc>https:\/\/www\.nutrexlab\.it\/images\/prodotti\/vitamina-c\.webp<\/image:loc>/)
   })
 })
 

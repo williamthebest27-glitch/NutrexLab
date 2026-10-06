@@ -3,56 +3,47 @@ import { Flip } from 'gsap/Flip'
 import { initPage, rise, reduced } from './common.js'
 import { api } from '../shop/api.js'
 import { initDock } from './dock.js'
-import { colorVars, productUrl, pad, esc, availability } from '../shop/themes.js'
-import { discountPercent } from '../shop/money.js'
+import { pad, esc } from '../shop/themes.js'
 import { productCard } from '../shop/card.js'
+import { CATEGORIES, categoryBySlug, productsIn } from '../seo/catalog.js'
 
 gsap.registerPlugin(Flip)
 
 /*
-  Acquista: i prodotti pubblicati in WooCommerce (nell'ordine scelto nel pannello), con i colori del
-  sito per i prodotti della linea. Niente prezzi qui: si vedono nella pagina del prodotto, dove si
-  sceglie la variante e si aggiunge al carrello.
+  Integratori (/integratori) e categorie (/integratori/<categoria>, <main data-catalog="...">).
+  Le schede dei prodotti sono gia' nella pagina (build, src/seo/build.js: le leggono anche i motori di
+  ricerca e gli assistenti AI senza JavaScript); qui si aggiornano con i dati di WooCommerce
+  (disponibilita', offerte, nomi e descrizioni attuali, nell'ordine scelto nel pannello), si aggiungono i
+  prodotti nuovi e si tolgono quelli non piu' in vendita. In una categoria restano solo i suoi prodotti.
+  Se WooCommerce non risponde restano le schede della pagina. Niente prezzi qui: si vedono nella pagina
+  del prodotto, dove si sceglie la variante e si aggiunge al carrello.
 */
 
 const { ready } = initPage()
 
-const HEX = 'M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z'
+const category = categoryBySlug(document.querySelector('[data-catalog]')?.dataset.catalog)
+const own = category ? new Set(productsIn(category.slug).map((p) => p.slug)) : null
+/** Prodotto della pagina: tutti, oppure quelli della categoria (anche i nuovi messi in WooCommerce nella
+ *  sottocategoria di "Nutrex Lab" con lo stesso slug, es. collagene). */
+const belongs = (p) => !category || own.has(p.slug) || p.categories.some((c) => c.slug === category.slug)
+/** Filtri per formato: nelle categorie non si ripetono le sottocategorie che sono gia' le categorie del sito. */
+const formatFilters = (categories) => (category ? categories.filter((c) => !CATEGORIES.some((k) => k.slug === c.slug)) : categories)
 const grid = document.querySelector('[data-grid]')
 const filters = document.querySelector('[data-filters]')
 const countEl = document.querySelector('[data-count]')
-let cards = []
+let cards = [...grid.querySelectorAll('.pcard')]
 let current = 'all'
 
-// ---------------------------------------------------------------------------
-// Schede (src/shop/card.js: la stessa dei prodotti correlati nella pagina prodotto)
-const card = (p, i, categories) => productCard(p, i, categories)
+// le schede salgono a gruppi entrando nello schermo (anche quelle aggiunte dopo)
+const reveal = rise(cards, { stagger: 0.07, after: ready })
 
-function skeleton(n = 8) {
-  const one = `<li class="pcard pcard--skel" aria-hidden="true">
-    <div class="pcard__media skel"></div>
-    <div class="pcard__body"><div class="skel skel-line skel-line--title"></div><div class="skel skel-line"></div><div class="skel skel-line skel-line--short"></div></div>
-  </li>`
-  grid.innerHTML = one.repeat(n)
-}
-
-function showError(err) {
-  grid.setAttribute('aria-busy', 'false')
-  grid.innerHTML = `<li class="alert" style="grid-column: 1 / -1">
-    <p class="alert__title">Prodotti non disponibili</p>
-    <p class="alert__text">${esc(err?.message || 'Il negozio non risponde in questo momento.')}</p>
-    <button class="btn btn--sm" type="button" data-retry><span class="btn__label">Riprova</span><span class="btn__icon" aria-hidden="true">&#8635;</span></button>
-  </li>`
-  grid.querySelector('[data-retry]').addEventListener('click', load)
-}
-
-// ---------------------------------------------------------------------------
-// Filtri per categoria (le schede si ridispongono scivolando al loro posto)
 function setCount() {
   const n = cards.filter((c) => !c.classList.contains('is-out')).length
   countEl.textContent = `${pad(n)} / ${pad(cards.length)} ${cards.length === 1 ? 'prodotto' : 'prodotti'}`
 }
 
+// ---------------------------------------------------------------------------
+// Filtri per formato (sottocategorie di WooCommerce, se ci sono): le schede si ridispongono scivolando
 function renderFilters(categories, total) {
   const options = [['all', 'Tutti', total], ...categories.map((c) => [String(c.id), c.name, c.count])]
   filters.innerHTML = options
@@ -83,23 +74,63 @@ filters.addEventListener('click', (e) => {
 })
 
 // ---------------------------------------------------------------------------
+const toElement = (html) => {
+  const tpl = document.createElement('template')
+  tpl.innerHTML = html.trim()
+  return tpl.content.firstElementChild
+}
+
+/**
+ * Scheda gia' nella pagina -> dati di WooCommerce. Si cambia solo quello che e' diverso (testi, bollini,
+ * disponibilita'): la scheda resta la stessa (animazione d'ingresso intatta) e la foto non si ricarica.
+ */
+function patch(el, fresh) {
+  el.classList.toggle('is-soldout', fresh.classList.contains('is-soldout'))
+  el.dataset.cats = fresh.dataset.cats
+  for (const sel of ['.pcard__body', '.badges', '.pcard__idx']) {
+    const a = el.querySelector(sel)
+    const b = fresh.querySelector(sel)
+    if (a && b && a.outerHTML !== b.outerHTML) a.replaceWith(b)
+  }
+  const a = el.querySelector('.pcard__img')
+  const b = fresh.querySelector('.pcard__img')
+  if (a && b && a.getAttribute('src') !== b.getAttribute('src')) a.replaceWith(b)
+}
+
+function showEmpty() {
+  grid.innerHTML = `<li class="alert" style="grid-column: 1 / -1"><p class="alert__title">Presto disponibili</p><p class="alert__text">I prodotti saranno pubblicati a breve.</p></li>`
+  cards = []
+}
+
 async function load() {
-  skeleton()
   grid.setAttribute('aria-busy', 'true')
   try {
     const data = await api.products({ per_page: 48 })
-    const categories = data.categories ?? []
-    grid.innerHTML = data.products.map((p, i) => card(p, i, categories)).join('')
-    grid.setAttribute('aria-busy', 'false')
-    cards = [...grid.querySelectorAll('.pcard')]
-    if (!cards.length) {
-      grid.innerHTML = `<li class="alert" style="grid-column: 1 / -1"><p class="alert__title">Presto disponibili</p><p class="alert__text">I prodotti saranno pubblicati a breve.</p></li>`
+    const categories = formatFilters(data.categories ?? [])
+    const products = data.products.filter(belongs)
+    if (!products.length) {
+      showEmpty()
+    } else {
+      const next = products.map((p, i) => {
+        const fresh = toElement(productCard(p, i, categories))
+        const old = cards.find((c) => c.id === fresh.id)
+        if (old) {
+          patch(old, fresh)
+          return old
+        }
+        reveal.observe(fresh)
+        return fresh
+      })
+      cards.filter((c) => !next.includes(c)).forEach((c) => c.remove())
+      next.forEach((el) => grid.appendChild(el)) // ordine del pannello di WooCommerce
+      cards = next
     }
-    renderFilters(categories, data.products.length)
-    setCount()
-    rise(cards, { stagger: 0.07, after: ready })
-  } catch (err) {
-    showError(err)
+    renderFilters(categories, cards.length)
+  } catch {
+    // WooCommerce non risponde: restano le schede della pagina (senza disponibilita'), tutte cliccabili
+  } finally {
+    grid.setAttribute('aria-busy', 'false')
+    if (cards.length) setCount()
   }
 }
 load()
@@ -107,9 +138,10 @@ load()
 // carrello sempre a portata in basso
 initDock()
 
-// ingresso: con i titoli si disegna il filetto, poi le schede salgono a gruppi entrando nello schermo
+// ingresso: con i titoli si disegna il filetto, poi strumenti, testi e domande frequenti salgono entrando in scena
 if (!reduced) gsap.set('[data-rule]', { scaleX: 0 })
 rise(document.querySelectorAll('.toolbar > *'), { y: 24, after: ready })
+rise(document.querySelectorAll('[data-rise]'), { y: 30, stagger: 0.06, after: ready })
 ready.then(() => {
   if (!reduced) gsap.to('[data-rule]', { scaleX: 1, duration: 1.6, ease: 'expo.inOut', delay: 0.3 })
 })

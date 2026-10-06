@@ -3,17 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Collagene Marino | Nutrex Lab</title>
-    <meta
-      name="description"
-      content="Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 10.000 mg in ogni misurino. Prodotto in Italia."
-    />
+    <!-- titolo, descrizione, canonical (anche per /?prodotto=...), Open Graph e dati strutturati
+         (organizzazione, sito, linea prodotti): src/seo/pages.js ("home") -->
+    <!-- seo:home -->
     <!-- @head -->
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="it_IT" />
-    <meta property="og:title" content="Collagene Marino | Nutrex Lab" />
-    <meta property="og:description" content="Il tuo rituale quotidiano. 10.000 mg di collagene marino in ogni misurino." />
-    <meta property="og:image" content="/og.jpg" />
     <script>
       // scarica subito il barattolo del prodotto aperto (?prodotto=id, i file in /models hanno il nome
       // dell'id e la versione nell'indirizzo: le versioni le inserisce vite.config.js)
@@ -48,7 +41,7 @@
     <div class="aura" aria-hidden="true"></div>
     <div class="spot" aria-hidden="true"></div>
     <canvas class="webgl" aria-hidden="true"></canvas>
-    <img class="fallback" src="/og.jpg" alt="Barattolo di Collagene Marino Nutrex Lab" hidden />
+    <img class="fallback" src="/og.jpg" alt="Collagene marino Nutrex Lab, barattolo da 500 g" width="1200" height="1200" hidden />
 
     <!-- @nav -->
 
@@ -344,13 +337,18 @@
 
         <div class="stage stage--front">
           <div class="shop__cta" data-reveal="shop-cta">
-            <a class="btn btn--xl" href="/acquista" data-buy data-magnetic>
+            <a class="btn btn--xl" href="/prodotto/collagene" data-buy data-magnetic>
               <span class="btn__label">Acquista il collagene</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
             </a>
             <p class="mono">500 g. Gusto neutro. Prodotto in Italia.</p>
           </div>
         </div>
       </section>
+
+      <!-- ============ LA LINEA ============
+           fuori dal racconto 3D (nessun data-section): entra come il footer, coprendo la scena.
+           Chi e' Nutrex Lab, categorie e i 12 prodotti con i loro link: src/seo/build.js (lineSection) -->
+      <!-- seo:linea -->
     </main>
 
     <!-- @footer -->

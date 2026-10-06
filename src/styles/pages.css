@@ -3544,3 +3544,209 @@ a.shop:hover {
 .nudge__actions .link {
   font-size: 10.5px;
 }
+
+/* --------------------------------------------------------------------------
+   SEO visibile (src/seo/): breadcrumb, categorie, testi delle categorie, domande frequenti.
+   Stessi materiali del resto del negozio: etichette mono, titoli Archivo, filetti sottili.
+   -------------------------------------------------------------------------- */
+
+/* breadcrumb: nella testata prende il posto dell'etichetta (Home / Integratori / Collagene) */
+.crumbs ol {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crumbs li + li::before {
+  content: '/';
+  margin: 0 0.7em;
+  opacity: 0.45;
+}
+
+.crumbs a:hover {
+  color: var(--fg);
+}
+
+.eyebrow.crumbs [aria-current='page'] {
+  opacity: 0.7;
+}
+
+/* categorie del negozio: link nello stile dei filtri, quella aperta piena */
+.cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip[aria-current='page'] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+
+/* pagine categoria: i filtri per formato (solo se in WooCommerce ci sono sottocategorie) vanno a capo */
+.cats ~ .filters:not(:empty) {
+  flex-basis: 100%;
+}
+
+/* testi della categoria, sotto la griglia: tre colonne editoriali */
+.seo-copy {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(28px, 4vw, 72px);
+  padding-top: clamp(32px, 5vh, 56px);
+  border-top: 1px solid var(--line);
+}
+
+.seo-copy__h {
+  margin-bottom: 16px;
+  font-size: clamp(22px, 1.9vw, 30px);
+  line-height: 1;
+}
+
+.seo-copy p {
+  max-width: 60ch;
+  font-size: clamp(15.5px, 1.05vw, 17px);
+  line-height: 1.65;
+  color: var(--fg-soft);
+}
+
+.seo-copy .link,
+.faq__a .link {
+  padding: 0;
+  color: var(--accent);
+}
+
+/* domande frequenti: <details> nativi, il segno + diventa - aprendo */
+/* sotto la griglia basta il suo spazio; dopo i testi della categoria serve il proprio */
+.faq {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr);
+  align-items: start;
+  gap: clamp(24px, 4vw, 72px);
+  padding-bottom: clamp(90px, 14vh, 160px);
+}
+
+.seo-copy + .faq {
+  margin-top: clamp(64px, 11vh, 130px);
+}
+
+.faq__title {
+  font-size: clamp(34px, 4.2vw, 72px);
+}
+
+.faq__list {
+  border-top: 1px solid var(--line);
+}
+
+.faq__item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(18px, 2.4vh, 24px) 0;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: clamp(17px, 1.3vw, 21px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  transition: color 0.3s var(--ease-out);
+}
+
+.faq__q::-webkit-details-marker {
+  display: none;
+}
+
+.faq__q:hover {
+  color: var(--accent);
+}
+
+.faq__icon {
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--fg);
+  transition:
+    background-color 0.4s var(--ease-out),
+    border-color 0.4s var(--ease-out),
+    color 0.4s var(--ease-out);
+}
+
+.faq__icon::before,
+.faq__icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 1.5px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.faq__icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+  transition: transform 0.5s var(--ease-out);
+}
+
+.faq__item[open] .faq__icon {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.faq__item[open] .faq__icon::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.faq__a {
+  max-width: 64ch;
+  padding: 0 52px clamp(20px, 2.6vh, 28px) 0;
+  font-size: clamp(15.5px, 1.05vw, 17px);
+  line-height: 1.65;
+  color: var(--fg-soft);
+}
+
+/* nella pagina prodotto: come Descrizione e Recensioni */
+.pp .faq {
+  margin-top: clamp(56px, 10vh, 120px);
+  padding-top: clamp(32px, 5vh, 56px);
+  padding-bottom: 0;
+  border-top: 1px solid var(--line);
+}
+
+.pp .faq__title {
+  font-size: clamp(26px, 2.4vw, 40px);
+}
+
+@media (max-width: 1080px) {
+  .seo-copy {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .faq {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq__icon,
+  .faq__icon::after {
+    transition: none;
+  }
+}

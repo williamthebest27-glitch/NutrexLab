@@ -1,0 +1,13 @@
+# Nutrex Lab - https://www.nutrexlab.it
+# Tutto il sito e' aperto ai motori di ricerca e agli assistenti AI. CSS, JavaScript, immagini e
+# /api/products restano accessibili: servono a Google per disegnare le pagine del negozio.
+# Carrello, pagamento e ordine sono noindex (meta robots), non bloccati qui: cosi' Google vede il noindex.
+# Bloccate solo le funzioni che non mostrano contenuti (carrello, checkout, moduli).
+
+User-agent: *
+Disallow: /api/cart
+Disallow: /api/checkout
+Disallow: /api/contatto
+Allow: /
+
+Sitemap: https://www.nutrexlab.it/sitemap.xml

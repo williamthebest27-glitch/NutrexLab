@@ -7,6 +7,8 @@ import { SHOP } from '../shop/config.js'
 import { money, priceHtml, discountPercent } from '../shop/money.js'
 import { colorVars, storyUrl, esc, availability } from '../shop/themes.js'
 import { productCard, HEX } from '../shop/card.js'
+import { BRAND, SHOP as SEO_SHOP, productBySlug, categoryFor, categoryPath } from '../seo/catalog.js'
+import { faqHtml } from '../seo/render.js'
 
 /*
   Pagina prodotto (/prodotto/<slug>): tutto da WooCommerce (nome, descrizioni, prezzo e offerta,
@@ -150,9 +152,21 @@ function reviewsSectionHtml() {
   </section>`
 }
 
+/**
+ * Percorso in alto (stesso aspetto di sempre): Integratori / categoria del sito, con i loro link.
+ * La categoria e' quella di src/seo/catalog.js o la sottocategoria di WooCommerce con lo stesso slug.
+ */
+function crumbsHtml() {
+  const cat = categoryFor(product.slug, product.categories)
+  const woo = product.categories.find((c) => !/nutrex/i.test(c.slug)) ?? product.categories[0]
+  const second = cat ? `<a href="${categoryPath(cat.slug)}">${esc(cat.name)}</a>` : `<span>${esc(woo?.name ?? 'Prodotto')}</span>`
+  return `<nav class="mono pp__crumbs" aria-label="Percorso" data-anim><a href="${SEO_SHOP.path}">${esc(SEO_SHOP.name)}</a><span aria-hidden="true">/</span>${second}</nav>`
+}
+
 function render() {
   const story = storyUrl(product.slug)
-  const cat = product.categories.find((c) => !/nutrex/i.test(c.slug)) ?? product.categories[0]
+  // domande frequenti: le stesse del server (dati strutturati FAQPage) e di src/seo/catalog.js
+  const seo = productBySlug(product.slug)
   root.setAttribute('style', colorVars(product.slug))
   root.innerHTML = `
     <div class="pp__grid">
@@ -173,7 +187,7 @@ function render() {
         }
       </div>
       <div class="pp__info">
-        <nav class="mono pp__crumbs" aria-label="Percorso" data-anim><a href="/acquista">Acquista</a><span aria-hidden="true">/</span><span>${esc(cat?.name ?? 'Prodotto')}</span></nav>
+        ${crumbsHtml()}
         <h1 class="display pp__name" data-anim>${esc(product.name)}</h1>
         ${product.shortDescription ? `<div class="pp__summary" data-anim>${product.shortDescription}</div>` : ''}
         <div data-anim>
@@ -207,12 +221,14 @@ function render() {
           </section>`
         : ''
     }
+    ${faqHtml(seo?.faq, { attrs: 'data-anim' })}
     ${reviewsSectionHtml()}
     <section class="pp__related" data-related hidden aria-labelledby="correlati">
       <h2 class="display pp__h" id="correlati">Ti potrebbero piacere</h2>
       <ul class="pp__related-grid" data-related-grid></ul>
     </section>`
-  document.title = `${product.name} | Nutrex Lab`
+  // il titolo lo scrive il server (src/seo/catalog.js); senza pagina preparata dal server si mette qui
+  if (!initial?.product) document.title = seo?.title ?? `${product.name} | ${BRAND}`
   update()
   renderReviews()
   renderRelated()
@@ -279,9 +295,12 @@ function update() {
 
   const meta = []
   const sku = chosen?.sku ?? product.sku
-  if (sku) meta.push(['Codice', sku])
-  if (product.categories.length) meta.push(['Categoria', product.categories.map((c) => c.name).join(', ')])
-  root.querySelector('[data-meta]').innerHTML = meta.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')
+  if (sku) meta.push(['Codice', esc(sku)])
+  // categoria del sito con il suo link, stesso aspetto del testo (quella di WooCommerce, "Nutrex Lab", non dice nulla)
+  const cat = categoryFor(product.slug, product.categories)
+  if (cat) meta.push(['Categoria', `<a href="${categoryPath(cat.slug)}">${esc(cat.name)}</a>`])
+  else if (product.categories.length) meta.push(['Categoria', esc(product.categories.map((c) => c.name).join(', '))])
+  root.querySelector('[data-meta]').innerHTML = meta.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')
 
   for (const [name, value] of Object.entries(selected)) {
     const el = root.querySelector(`[data-attr-value="${CSS.escape(name)}"]`)
@@ -475,7 +494,7 @@ function showProblem(status, message) {
   root.removeAttribute('style')
   root.innerHTML =
     status === 404
-      ? `<div class="alert"><p class="alert__title">Prodotto non trovato</p><p class="alert__text">Il prodotto che cerchi non c'e' piu' o ha cambiato indirizzo.</p><a class="btn btn--sm" href="/acquista"><span class="btn__label">Vai al negozio</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a></div>`
+      ? `<div class="alert"><p class="alert__title">Prodotto non trovato</p><p class="alert__text">Il prodotto che cerchi non c'e' piu' o ha cambiato indirizzo.</p><a class="btn btn--sm" href="/integratori"><span class="btn__label">Vai al negozio</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a></div>`
       : `<div class="alert"><p class="alert__title">Prodotto non disponibile</p><p class="alert__text">${esc(message || 'Il negozio non risponde in questo momento.')}</p><button class="btn btn--sm" type="button" data-retry><span class="btn__label">Riprova</span><span class="btn__icon" aria-hidden="true">&#8635;</span></button></div>`
   root.querySelector('[data-retry]')?.addEventListener('click', () => location.reload())
 }

@@ -1,5 +1,6 @@
 import gsap from 'gsap'
 import { COPY } from '../content.js'
+import { PRODUCTS } from '../products.js'
 
 /*
   Mette nella pagina i testi del prodotto (src/content.js).
@@ -162,13 +163,21 @@ function hero(h, animate) {
 export function applyCopy(id, { animate = false, parts = 'all' } = {}) {
   const c = COPY[id]
   if (!c) return
-  if (parts !== 'rest') applyTop(c, animate)
-  if (parts !== 'top') applyRest(c)
+  if (parts !== 'rest') applyTop(c, animate, id)
+  if (parts !== 'top') applyRest(c, id)
 }
 
-function applyTop(c, animate) {
-  document.title = c.meta.title
-  $('meta[name="description"]')?.setAttribute('content', c.meta.description)
+/*
+  Titolo e descrizione della homepage (src/seo/pages.js, gli stessi che legge Google): restano con il
+  primo prodotto della linea; scegliendone un altro dal menu (o aprendo /?prodotto=...) la scheda del
+  browser mostra il suo nome. Il canonical resta la homepage.
+*/
+const HOME_META = { title: document.title, description: $('meta[name="description"]')?.getAttribute('content') }
+
+function applyTop(c, animate, id) {
+  const home = id === PRODUCTS[0].id
+  document.title = home ? HOME_META.title : c.meta.title
+  $('meta[name="description"]')?.setAttribute('content', home ? HOME_META.description : c.meta.description)
 
   hero(c.hero, animate)
 
@@ -193,13 +202,15 @@ function applyTop(c, animate) {
   }
 }
 
-function applyRest(c) {
+function applyRest(c, id) {
   ingredients(c.ing)
   science(c.sci)
   daily(c.daily)
 
   const shopLabel = $('.shop__cta .btn__label')
   if (shopLabel) shopLabel.textContent = c.shop.cta
+  // il pulsante finale porta alla pagina del prodotto mostrato (anche aperto in una nuova scheda)
+  $('.shop__cta [data-buy]')?.setAttribute('href', `/prodotto/${encodeURIComponent(id)}`)
   const shopMeta = $('.shop__cta p')
   if (shopMeta) shopMeta.textContent = c.shop.meta
 }

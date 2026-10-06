@@ -56,12 +56,13 @@ produce in `dist/` le pagine; su un hosting solo statico il sito si vede ma il n
 | Cosa | File |
 | --- | --- |
 | Testi di ogni prodotto (hero, sipario, ingredienti, scienza, uso, shop, titolo della pagina) | `src/content.js` |
+| SEO: titoli e descrizioni per Google, categorie, domande frequenti, sezione "La linea" della homepage, dati dell'azienda | `src/seo/catalog.js` (dati) + `src/seo/pages.js` (pagine); vedi "SEO" qui sotto |
 | Struttura delle sezioni della homepage | `index.html` |
 | Navbar, menu mobile, piè di pagina (uguali in tutte le pagine) | `src/partials/` (`nav.html`, `mnav.html`, `footer.html`, `head.html`) |
 | Prodotti, prezzi, offerte, varianti, magazzino, foto, descrizioni, coupon, spedizioni, IVA | nel pannello di WooCommerce (vedi [HEADLESS_COMMERCE_SETUP.md](HEADLESS_COMMERCE_SETUP.md)) |
 | Recapiti della pagina Contatti | `src/shop/config.js` (`null` = non mostrato) |
 | Foto dei barattoli da caricare in WooCommerce | `public/images/prodotti/<id>.webp`: si rifanno da `/tools/foto-prodotti.html` (con `npm run dev`) |
-| Pagine del negozio | `acquista.html`, `prodotto.html`, `carrello.html`, `pagamenti.html`, `ordine.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
+| Pagine del negozio | `integratori.html` (+ categorie in `integratori/`), `prodotto.html`, `carrello.html`, `pagamenti.html`, `ordine.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
 | Collegamento a WooCommerce (catalogo, carrello, checkout, pagina prodotto per Google) | `api/` + `server/` |
 | Plugin da installare su WooCommerce | `wordpress/nutrex-headless/` |
 | Movimenti del barattolo, camera e luci per ogni scena | `src/choreography.js` (keyframe per desktop e mobile) |
@@ -152,7 +153,9 @@ il numero dei prodotti accanto a Carrello.
 | Pagina | Indirizzo | Cosa fa |
 | --- | --- | --- |
 | Homepage | `/` | il racconto 3D; il pulsante finale ("Acquista il collagene") apre la pagina del prodotto mostrato |
-| Acquista | `/acquista` | i prodotti Nutrex di WooCommerce (nell'ordinamento del pannello), 4 per riga su desktop, senza prezzo; filtri dalle sottocategorie; "Scopri" apre la pagina del prodotto |
+| Acquista | `/integratori` (`/acquista` ci porta) | i prodotti Nutrex di WooCommerce (nell'ordinamento del pannello), 4 per riga su desktop, senza prezzo; filtri dalle sottocategorie; "Scopri" apre la pagina del prodotto; domande frequenti |
+| Categorie | `/integratori/collagene`, `/integratori/vitamine-e-minerali`, `/integratori/estratti-vegetali` | i prodotti della categoria, testi e domande frequenti (`src/seo/catalog.js`) |
+| Chi siamo | `/chi-siamo` | il marchio, la linea, l'azienda (solo dati veri) |
 | Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita', varianti, quantita', "Aggiungi al carrello", offerte quantita' (le stesse di WooCommerce), metodi di pagamento, descrizione e caratteristiche, recensioni (lettura e invio) e prodotti correlati; titolo e dati strutturati per Google preparati sul server |
 | Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento"; vuoto: invito al negozio |
 | Pagamenti | `/pagamenti` | come funziona il pagamento, riepilogo, coupon, "Vai al pagamento sicuro" (checkout di WooCommerce) |
@@ -172,6 +175,25 @@ pagamento mostrati (`payments`). Tutto il resto del negozio si gestisce in WooCo
 Pagina nuova: un file HTML accanto a `index.html` con `<!-- @head -->`, `<!-- @nav -->`,
 `<!-- @mnav -->` e `<!-- @footer -->`, uno script in `src/pages/` che chiama `initPage()` e la voce
 in `vite.config.js` (`build.rolldownOptions.input`), altrimenti `npm run build` la ignora.
+
+## SEO
+
+Tutto in `src/seo/` (una sola fonte per build, server e browser): `catalog.js` (dominio, azienda,
+prodotti con titolo/descrizione/FAQ, categorie), `pages.js` (`<head>` di ogni pagina statica: nel file HTML
+`<!-- seo:chiave -->`), `schema.js` (dati strutturati), `build.js` (griglie gia' pronte, categorie, sezione
+"La linea" della homepage). La pagina prodotto la prepara il server (`server/product-page.js`), la sitemap
+`api/sitemap.js`, `public/robots.txt`. Canonical e indirizzi sempre su `https://www.nutrexlab.it`.
+
+Sincronizzazione con WooCommerce: prezzi, offerte, disponibilita', varianti, SKU, foto, nomi e descrizioni
+arrivano da WooCommerce e si aggiornano da soli (un paio di minuti di cache; carrello e pagamento sempre
+esatti). Un prodotto nuovo pubblicato nella categoria Nutrex Lab ha subito la sua pagina, e' nella pagina
+Integratori, nella sitemap e nei dati per Google; per farlo entrare in una categoria del sito mettilo in
+WooCommerce in una sottocategoria di Nutrex Lab con slug `collagene`, `vitamine-e-minerali` o
+`estratti-vegetali`. Solo titolo per Google, FAQ e la riga nella sezione "La linea" della homepage si
+aggiungono a mano in `src/seo/catalog.js` (e il barattolo 3D come in "Aggiungere un prodotto al menu").
+
+Mai usare le classi `line` e `char` in CSS: sono le righe e le lettere create da SplitText per le
+animazioni dei titoli (`src/ui/text.js`).
 
 ## Fluidita' (cose da sapere prima di modificare)
 

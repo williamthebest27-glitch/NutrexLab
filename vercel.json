@@ -4,6 +4,17 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "nutrex-collagene-marino.vercel.app" }],
+      "destination": "https://www.nutrexlab.it/:path*",
+      "permanent": true
+    },
+    { "source": "/acquista", "destination": "/integratori", "permanent": true },
+    { "source": "/acquista.html", "destination": "/integratori", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/prodotto/:slug", "destination": "/api/product-page?slug=:slug" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
@@ -16,12 +27,37 @@
   },
   "headers": [
     {
+      "source": "/(.*)",
+      "missing": [{ "type": "host", "value": "www.nutrexlab.it" }],
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    },
+    {
+      "source": "/prodotto",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
       "source": "/models/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
+    },
+    {
+      "source": "/draco/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000, stale-while-revalidate=86400" }]
+    },
+    {
+      "source": "/(og.jpg|favicon.svg|apple-touch-icon.png)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }]
     }
   ]
 }

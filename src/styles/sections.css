@@ -2041,3 +2041,221 @@ html.no-lines .ing__lines {
     bottom: calc(6% + 46px);
   }
 }
+
+/* --------------------------------------------------------------------------
+   LA LINEA (homepage, dopo il racconto 3D e prima del footer): chi e' Nutrex Lab, categorie e i 12
+   prodotti con i loro link (src/seo/build.js). Fuori dalla coreografia (nessun data-section): entra
+   come il footer, coprendo la scena, con il sipario scuro e il bordo curvo dei colori del prodotto
+   mostrato (--curtain*). Solo classi .linea*: "line" e "char" sono di SplitText (src/ui/text.js).
+   -------------------------------------------------------------------------- */
+.linea {
+  --dip: min(4.1vw, 6.2vh);
+  position: relative;
+  z-index: 4;
+  margin-top: calc(var(--dip) * -1);
+  color: var(--curtain-ink);
+}
+
+.linea__cap {
+  display: block;
+  width: 100%;
+  height: var(--dip);
+  fill: var(--curtain);
+}
+
+.linea__body {
+  margin-top: -1px;
+  padding: clamp(56px, 10vh, 120px) var(--gutter) clamp(72px, 12vh, 140px);
+  background:
+    radial-gradient(ellipse 55% 60% at 80% 18%, var(--curtain-glow), transparent 70%),
+    var(--curtain);
+}
+
+.linea__head,
+.linea__groups,
+.linea__foot {
+  width: min(100%, 1480px);
+  margin-inline: auto;
+}
+
+.linea__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 22px clamp(32px, 5vw, 96px);
+}
+
+.linea__eyebrow {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--curtain-title-c);
+}
+
+.linea__eyehex {
+  width: 15px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.linea__title {
+  font-size: clamp(44px, 6.6vw, 120px);
+  color: var(--curtain-title-a);
+}
+
+.linea__title em {
+  font-style: normal;
+  color: var(--curtain-title-c);
+}
+
+.linea__lead {
+  max-width: 52ch;
+  font-size: clamp(16px, 1.2vw, 19px);
+  line-height: 1.6;
+  color: var(--curtain-copy);
+}
+
+.linea__groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(28px, 4vw, 72px);
+  margin-top: clamp(48px, 8vh, 96px);
+}
+
+.linea__group {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding-top: 22px;
+  border-top: 1px solid color-mix(in srgb, var(--curtain-ink) 22%, transparent);
+}
+
+.linea__cat a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 1.9vw, 30px);
+  font-weight: 700;
+  font-stretch: 105%;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--curtain-title-a);
+  transition: color 0.3s var(--ease-out);
+}
+
+.linea__cat a:hover {
+  color: var(--curtain-title-c);
+}
+
+.linea__num {
+  font-size: 11px;
+  color: var(--curtain-title-c);
+}
+
+.linea__catline {
+  max-width: 40ch;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--curtain-copy);
+}
+
+.linea__list {
+  margin-top: 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.linea__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'hex name arrow'
+    'hex note arrow';
+  align-items: center;
+  gap: 2px 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--curtain-ink) 12%, transparent);
+  color: var(--curtain-ink);
+}
+
+.linea__hex {
+  grid-area: hex;
+  width: 18px;
+  height: 17px;
+  fill: transparent;
+  stroke: var(--sw);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  transition: fill 0.4s var(--ease-out);
+}
+
+.linea__name {
+  grid-area: name;
+  font-size: clamp(16px, 1.15vw, 18px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.linea__note {
+  grid-area: note;
+  font-size: 10.5px;
+  color: var(--curtain-ink-soft);
+}
+
+.linea__arrow {
+  grid-area: arrow;
+  opacity: 0.45;
+  transition:
+    transform 0.5s var(--ease-out),
+    opacity 0.3s var(--ease-out);
+}
+
+.linea__item:hover .linea__hex,
+.linea__item:focus-visible .linea__hex {
+  fill: var(--sw);
+}
+
+.linea__item:hover .linea__arrow,
+.linea__item:focus-visible .linea__arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.linea__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  margin-top: clamp(48px, 8vh, 88px);
+}
+
+/* pulsante chiaro sul sipario scuro */
+.linea .btn {
+  --btn-bg: var(--curtain-ink);
+  --btn-fg: var(--curtain);
+}
+
+.linea .btn:hover {
+  --btn-fg: var(--curtain-ink);
+}
+
+.linea__link {
+  color: var(--curtain-ink);
+}
+
+@media (max-width: 900px) {
+  .linea__head,
+  .linea__groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linea__hex,
+  .linea__arrow {
+    transition: none;
+  }
+}

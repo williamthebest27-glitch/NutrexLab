@@ -10,7 +10,7 @@ export function initNavMenu() {
   document.querySelectorAll('[data-nav-sub]').forEach(setupSub)
 }
 
-/** '/acquista.html' e '/acquista/' diventano '/acquista' */
+/** '/integratori.html' e '/integratori/' diventano '/integratori' */
 function cleanPath(p) {
   p = p.replace(/\/index\.html$/, '/').replace(/\.html$/, '')
   return p.length > 1 ? p.replace(/\/$/, '') : '/'
@@ -22,7 +22,8 @@ function markCurrent() {
     if (a.classList.contains('nav__logo') || a.classList.contains('nav__cta')) return
     if (cleanPath(a.getAttribute('href')) === here) a.setAttribute('aria-current', 'page')
   })
-  if (here === '/carrello' || here === '/pagamenti') {
+  // Acquista resta segnata in tutto il negozio: categorie, prodotti, carrello e pagamenti
+  if (here === '/carrello' || here === '/pagamenti' || here.startsWith('/integratori/') || here.startsWith('/prodotto/')) {
     document.querySelector('[data-nav-sub] > .nav-link')?.classList.add('is-section')
   }
 }

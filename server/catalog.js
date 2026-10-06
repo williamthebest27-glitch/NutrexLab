@@ -1,6 +1,7 @@
 import { store } from './woo.js'
 import { requireConfig } from './env.js'
 import { ShopError } from './errors.js'
+import { productAlt, siblings } from '../src/seo/catalog.js'
 
 /*
   Catalogo dalla Store API di WooCommerce, trasformato nella forma usata dal negozio.
@@ -83,21 +84,34 @@ function stock(p) {
   }
 }
 
-const image = (img) => ({
+/*
+  Testo alternativo delle foto: quello scritto in WooCommerce se descrive la foto, altrimenti uno
+  descrittivo dal nome del prodotto (WooCommerce, senza testo alternativo, ripiega sul nome del file:
+  "719y55Y5tL._AC_SL1500_.jpg" non dice nulla a Google ne' a chi usa un lettore di schermo).
+*/
+const FILE_LIKE = /\.(jpe?g|png|webp|gif|avif)$/i
+function imageAlt(img, name, slug, index) {
+  const alt = decode(img.alt || '').trim()
+  if (alt && !FILE_LIKE.test(alt) && /\s/.test(alt)) return alt
+  return productAlt(name, slug, index)
+}
+
+const image = (img, index, name, slug) => ({
   id: img.id,
   src: img.src,
   thumbnail: img.thumbnail,
   srcset: img.srcset,
   sizes: img.sizes,
-  alt: decode(img.alt || img.name || ''),
+  alt: imageAlt(img, name, slug, index),
 })
 
 /** Prodotto della Store API -> prodotto del negozio. */
 export function normalizeProduct(p) {
+  const name = decode(p.name)
   return {
     id: p.id,
     slug: p.slug,
-    name: decode(p.name),
+    name,
     type: p.type,
     sku: p.sku || null,
     shortDescription: safeHtml(p.short_description),
@@ -108,7 +122,7 @@ export function normalizeProduct(p) {
     reviewsAllowed: p.reviews_allowed !== false,
     prices: prices(p.prices),
     stock: stock(p),
-    images: (p.images ?? []).map(image),
+    images: (p.images ?? []).map((img, i) => image(img, i, name, p.slug)),
     categories: (p.categories ?? []).map((c) => ({ id: c.id, name: decode(c.name), slug: c.slug })),
     tags: (p.tags ?? []).map((t) => ({ id: t.id, name: decode(t.name), slug: t.slug })),
     attributes: (p.attributes ?? []).map((a) => ({
@@ -134,7 +148,7 @@ function normalizeVariation(v, attributes) {
     onSale: !!v.on_sale,
     prices: prices(v.prices),
     stock: stock(v),
-    images: (v.images ?? []).map(image),
+    images: (v.images ?? []).map((img, i) => image(img, i, decode(v.name) || 'Integratore', null)),
     weight: v.weight || null,
     addToCart: { min: v.add_to_cart?.minimum ?? 1, max: v.add_to_cart?.maximum ?? 9999, step: v.add_to_cart?.multiple_of ?? 1 },
   }
@@ -268,30 +282,37 @@ export async function listCategories() {
     .map((c) => ({ id: c.id, name: c.name, slug: c.slug, count: c.count }))
 }
 
-/** Prodotti correlati: della stessa sottocategoria, poi del negozio (mai il prodotto stesso, mai quelli nascosti). */
+/**
+ * Prodotti correlati: prima quelli della stessa categoria della linea (src/seo/catalog.js: collagene,
+ * vitamine e minerali, estratti vegetali), poi della stessa sottocategoria di WooCommerce, poi del
+ * negozio nell'ordine del pannello. Mai il prodotto stesso, mai quelli nascosti dal catalogo.
+ */
 export async function relatedProducts(product, limit = 4) {
   if (!product) return []
   return cached(`related:${product.id}`, 60_000, async () => {
     const scope = await shopScope()
-    const own = product.categories.filter((c) => scope.ids.has(c.id) && c.id !== scope.root.id).map((c) => c.id)
-    const out = []
-    const seen = new Set([product.id])
-    for (const categoryId of [...own, scope.root.id]) {
-      if (out.length >= limit) break
-      const res = await store('/products', {
-        query: { per_page: limit + 1, category: String(categoryId), exclude: String(product.id), catalog_visibility: 'catalog', orderby: 'menu_order', order: 'asc' },
-      })
-      for (const raw of res.data) {
-        if (out.length >= limit || seen.has(raw.id) || !inScope(scope, raw.categories ?? [])) continue
-        seen.add(raw.id)
+    const res = await store('/products', {
+      query: { per_page: 100, category: String(scope.root.id), exclude: String(product.id), catalog_visibility: 'catalog', orderby: 'menu_order', order: 'asc' },
+    })
+    const line = siblings(product.slug, 100, product.categories).map((p) => p.slug)
+    const own = new Set(product.categories.filter((c) => scope.ids.has(c.id) && c.id !== scope.root.id).map((c) => c.id))
+    const rank = (raw) => {
+      const i = line.indexOf(raw.slug)
+      if (i >= 0) return i
+      return (raw.categories ?? []).some((c) => own.has(c.id)) ? 1000 : 2000
+    }
+    return res.data
+      .filter((raw) => raw.id !== product.id && inScope(scope, raw.categories ?? []))
+      .map((raw, order) => ({ raw, order, rank: rank(raw) }))
+      .sort((a, b) => a.rank - b.rank || a.order - b.order)
+      .slice(0, limit)
+      .map(({ raw }) => {
         const p = normalizeProduct(raw)
         p.variationCount = p.variationIds.length
         delete p.variationIds
         delete p.description
-        out.push(p)
-      }
-    }
-    return out
+        return p
+      })
   })
 }
 

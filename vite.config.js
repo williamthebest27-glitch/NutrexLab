@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs'
 import { resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { defineConfig } from 'vite'
+import { PAGES } from './src/seo/pages.js'
+import { headTags } from './src/seo/head.js'
+import { catalogMain, staticGrid, shopFaq, lineSection } from './src/seo/build.js'
 
 // versioni dei modelli 3D (scripts/sync-model.mjs) nello script di precaricamento di index.html
 const modelVersions = {
@@ -28,6 +31,33 @@ const partials = {
     server.watcher.on('change', (file) => {
       if (file.startsWith(PARTIALS + sep)) server.ws.send({ type: 'full-reload' })
     })
+  },
+}
+
+/*
+  SEO delle pagine statiche (dati in src/seo/): nel file HTML
+  - <!-- seo:chiave -->      -> titolo, descrizione, canonical, Open Graph, Twitter e dati strutturati
+                                della pagina "chiave" di src/seo/pages.js (solo dentro <head>: nulla di visibile)
+  - <!-- seo:linea -->       -> sezione "La linea Nutrex Lab" della homepage (prima del footer)
+  - <!-- griglia:tutti -->   -> le schede dei prodotti della pagina Integratori, gia' nell'HTML
+  - <!-- faq:integratori --> -> domande frequenti della pagina Integratori
+  - <!-- catalogo:chiave --> -> contenuto delle pagine categoria (src/seo/build.js)
+  Cambiando i dati in src/seo/ il server di sviluppo si riavvia da solo (sono dipendenze di questo file).
+*/
+const seo = {
+  name: 'seo',
+  transformIndexHtml: {
+    order: 'pre',
+    handler: (html, ctx) =>
+      html
+        .replace(/<!--\s*seo:linea\s*-->/g, () => lineSection())
+        .replace(/<!--\s*faq:integratori\s*-->/g, () => shopFaq())
+        .replace(/<!--\s*seo:([a-z0-9-]+)\s*-->/g, (_, key) => {
+          if (!PAGES[key]) throw new Error(`SEO: nessuna pagina "${key}" in src/seo/pages.js (${ctx.filename})`)
+          return headTags(PAGES[key])
+        })
+        .replace(/<!--\s*griglia:([a-z0-9-]+)\s*-->/g, (_, key) => staticGrid(key))
+        .replace(/<!--\s*catalogo:([a-z0-9-]+)\s*-->/g, (_, key) => catalogMain(key)),
   },
 }
 
@@ -80,11 +110,7 @@ function shopFunctions() {
       const request = await toRequest(req)
       if (r.name === 'product-page') {
         // il modello della pagina e' prodotto.html (in sviluppo trasformato da Vite)
-        const [{ getProduct }, { renderProductPage }, { siteUrl }] = await Promise.all([
-          load('/server/catalog.js'),
-          load('/server/product-page.js'),
-          load('/server/env.js'),
-        ])
+        const [{ getProduct }, { renderProductPage }] = await Promise.all([load('/server/catalog.js'), load('/server/product-page.js')])
         const slug = decodeURIComponent(r.query.replace(/^slug=/, ''))
         let product = null
         let status = 200
@@ -94,7 +120,7 @@ function shopFunctions() {
           status = err?.status === 404 ? 404 : 503
           if (status === 503) console.error('[negozio:product-page]', err?.message)
         }
-        const html = renderProductPage(await productTemplate(req.url), { product, site: siteUrl(request), slug, status })
+        const html = renderProductPage(await productTemplate(req.url), { product, slug, status })
         res.statusCode = status
         res.setHeader('Content-Type', 'text/html; charset=utf-8')
         return res.end(html)
@@ -130,8 +156,9 @@ function shopFunctions() {
 }
 
 export default defineConfig({
-  plugins: [partials, modelVersions, shopFunctions()],
-  // piu' pagine: /acquista apre acquista.html (anche con vite preview); un indirizzo sconosciuto da' 404
+  plugins: [partials, seo, modelVersions, shopFunctions()],
+  // piu' pagine: /integratori apre integratori.html, /integratori/collagene integratori/collagene.html
+  // (anche con vite preview); un indirizzo sconosciuto da' 404
   appType: 'mpa',
   server: {
     host: '127.0.0.1',
@@ -145,12 +172,19 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         main: resolve('index.html'),
-        acquista: resolve('acquista.html'),
+        // negozio: tutti i prodotti e le categorie (/acquista porta qui, vercel.json)
+        integratori: resolve('integratori.html'),
+        'integratori/collagene': resolve('integratori/collagene.html'),
+        'integratori/vitamine-e-minerali': resolve('integratori/vitamine-e-minerali.html'),
+        'integratori/estratti-vegetali': resolve('integratori/estratti-vegetali.html'),
         prodotto: resolve('prodotto.html'),
         carrello: resolve('carrello.html'),
         pagamenti: resolve('pagamenti.html'),
         ordine: resolve('ordine.html'),
         contatti: resolve('contatti.html'),
+        'chi-siamo': resolve('chi-siamo.html'),
+        // pagina d'errore (Vercel la serve con lo stato 404)
+        404: resolve('404.html'),
         // pagine legali (link nel footer)
         'note-legali': resolve('note-legali.html'),
         'privacy-policy': resolve('privacy-policy.html'),

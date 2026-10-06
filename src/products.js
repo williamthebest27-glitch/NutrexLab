@@ -1,4 +1,4 @@
-import MODEL_VERSIONS from './model-versions.json'
+import MODEL_VERSIONS from './model-versions.json' with { type: 'json' }
 
 /*
   Linea prodotti: voci del menu della hero, modello 3D e tema colori di ognuno.

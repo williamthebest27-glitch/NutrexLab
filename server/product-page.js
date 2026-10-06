@@ -1,16 +1,17 @@
+import { ORIGIN, BRAND, SHOP, productBySlug, categoryFor, productTrail, siblings, productPath, categoryPath } from '../src/seo/catalog.js'
+import { headTags } from '../src/seo/head.js'
+import { crumbsHtml, faqHtml, esc } from '../src/seo/render.js'
+import { graph, webPage, breadcrumbs, faqPage, returnPolicy, IDS, safeJson } from '../src/seo/schema.js'
+
 /*
   Pagina prodotto (/prodotto/<slug>) preparata sul server per motori di ricerca e anteprime social:
-  titolo e descrizione dinamici, canonical, Open Graph, Twitter, dati strutturati Product (prezzo,
-  disponibilita', immagini, SKU) e i dati del prodotto gia' nella pagina (niente attesa al primo disegno).
-  Tutto arriva da WooCommerce. Il modello e' prodotto.html (lo stesso stile delle altre pagine).
+  titolo e descrizione (curati in src/seo/catalog.js, altrimenti dal nome e dalla descrizione breve),
+  canonical sul dominio principale, Open Graph, Twitter, dati strutturati (Product con prezzo,
+  disponibilita', SKU, immagini, politica di reso e voto medio solo se ci sono recensioni vere;
+  BreadcrumbList; FAQPage) e un primo contenuto della pagina per chi non esegue JavaScript (breadcrumb,
+  nome, prezzo, descrizioni, caratteristiche, domande frequenti, prodotti della stessa linea).
+  Tutti i dati commerciali arrivano da WooCommerce. Il modello e' prodotto.html.
 */
-
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
-
-/** JSON dentro <script>: niente chiusure di tag ne' caratteri che rompono l'HTML. */
-const safeJson = (data) =>
-  JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
 
 const money = (minor, cur) => (minor ?? 0) / 10 ** (cur?.minorUnit ?? 2)
 
@@ -29,116 +30,175 @@ function lowestPrice(product) {
   return prices.length ? Math.min(...prices) : null
 }
 
-function jsonLd(product, url) {
-  const cur = product.prices.currency
-  const variations = (product.variations ?? []).filter(priced)
-  const base = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    description: product.summary || undefined,
-    image: product.images.map((i) => i.src),
-    sku: product.sku || undefined,
-    brand: { '@type': 'Brand', name: 'Nutrex Lab' },
-    category: product.categories[0]?.name,
-    url,
-  }
-  // senza prezzo niente offerta: Google non deve vedere un prodotto "a 0 euro"
-  if (product.variations?.length) {
-    if (!variations.length) return base
-    const prices = variations.map((v) => v.prices.price)
-    base.offers = {
-      '@type': 'AggregateOffer',
-      priceCurrency: cur.code,
-      lowPrice: money(Math.min(...prices), cur).toFixed(cur.minorUnit),
-      highPrice: money(Math.max(...prices), cur).toFixed(cur.minorUnit),
-      offerCount: variations.length,
-      availability: availability({ inStock: variations.some((v) => v.stock.inStock), backorder: variations.some((v) => v.stock.backorder) }),
-      offers: variations.map((v) => ({
-        '@type': 'Offer',
-        sku: v.sku || undefined,
-        price: money(v.prices.price, cur).toFixed(cur.minorUnit),
-        priceCurrency: cur.code,
-        availability: availability(v.stock),
-        itemCondition: 'https://schema.org/NewCondition',
-        url,
-      })),
-    }
-  } else if (priced(product)) {
-    base.offers = {
-      '@type': 'Offer',
-      price: money(product.prices.price, cur).toFixed(cur.minorUnit),
-      priceCurrency: cur.code,
-      availability: availability(product.stock),
-      itemCondition: 'https://schema.org/NewCondition',
-      url,
-    }
-  }
-  return base
+/** Testo tagliato a una parola intera (descrizioni di riserva). */
+function clip(text, max = 158) {
+  const t = String(text ?? '').trim()
+  if (t.length <= max) return t
+  return `${t.slice(0, max).replace(/\s+\S*$/, '')}…`
 }
 
-/** Blocco di testo per chi legge la pagina senza JavaScript (motori di ricerca); il negozio lo sostituisce. */
-function seoBlock(product) {
+/** Voto medio di WooCommerce, solo se ci sono recensioni approvate (mai valori inventati). */
+const rated = (product) => product.rating?.count > 0 && product.rating.average > 0
+
+function productSchema(product, url) {
+  const cur = product.prices.currency
+  const cat = categoryFor(product.slug, product.categories)
+  const variations = (product.variations ?? []).filter(priced)
+  const seller = { '@type': 'OnlineStore', '@id': IDS.org, name: BRAND }
+  const offer = (item) => ({
+    '@type': 'Offer',
+    url,
+    sku: item.sku || undefined,
+    price: money(item.prices.price, cur).toFixed(cur.minorUnit),
+    priceCurrency: cur.code,
+    availability: availability(item.stock),
+    itemCondition: 'https://schema.org/NewCondition',
+    seller,
+    hasMerchantReturnPolicy: returnPolicy(),
+  })
+  const node = {
+    '@type': 'Product',
+    '@id': `${url}#prodotto`,
+    name: product.name,
+    description: product.summary || undefined,
+    url,
+    image: product.images.map((i) => i.src),
+    sku: product.sku || undefined,
+    brand: { '@type': 'Brand', name: BRAND },
+    category: cat ? `Integratori alimentari > ${cat.name}` : 'Integratori alimentari',
+    mainEntityOfPage: { '@id': `${url}#pagina` },
+  }
+  const props = product.attributes.filter((a) => !a.variation && a.values.length)
+  if (props.length) node.additionalProperty = props.map((a) => ({ '@type': 'PropertyValue', name: a.name, value: a.values.join(', ') }))
+  // senza prezzo niente offerta: Google non deve vedere un prodotto "a 0 euro"
+  if (product.variations?.length) {
+    if (variations.length) {
+      const prices = variations.map((v) => v.prices.price)
+      node.offers = {
+        '@type': 'AggregateOffer',
+        priceCurrency: cur.code,
+        lowPrice: money(Math.min(...prices), cur).toFixed(cur.minorUnit),
+        highPrice: money(Math.max(...prices), cur).toFixed(cur.minorUnit),
+        offerCount: variations.length,
+        availability: availability({ inStock: variations.some((v) => v.stock.inStock), backorder: variations.some((v) => v.stock.backorder) }),
+        offers: variations.map(offer),
+      }
+    }
+  } else if (priced(product)) {
+    node.offers = offer(product)
+  }
+  if (rated(product)) {
+    node.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: product.rating.average.toFixed(1),
+      reviewCount: product.rating.count,
+      bestRating: 5,
+      worstRating: 1,
+    }
+  }
+  return node
+}
+
+function priceText(product) {
   const cur = product.prices.currency
   const low = lowestPrice(product)
-  const price = low === null ? 'Prezzo in arrivo' : `${cur.prefix || ''}${money(low, cur).toFixed(cur.minorUnit).replace('.', cur.decimalSep || ',')}${cur.suffix || ''}`
+  if (low === null) return 'Prezzo in arrivo'
+  const amount = `${cur.prefix || ''}${money(low, cur).toFixed(cur.minorUnit).replace('.', cur.decimalSep || ',')}${cur.suffix || ''}`
+  return product.variations?.length && product.prices.range ? `da ${amount}` : amount
+}
+
+/**
+ * Primo contenuto della pagina (per chi legge senza JavaScript: motori di ricerca, assistenti AI,
+ * anteprime): lo sostituisce la pagina interattiva (src/pages/prodotto.js), con gli stessi testi.
+ */
+function seoBlock(product, trail) {
   const img = product.images[0]
+  const seo = productBySlug(product.slug)
+  const cat = categoryFor(product.slug, product.categories)
+  const specs = product.attributes.filter((a) => !a.variation && a.values.length)
+  const rows = specs.map((a) => `<tr><th scope="row">${esc(a.name)}</th><td>${esc(a.values.join(', '))}</td></tr>`).join('')
+  const more = siblings(product.slug, 4, product.categories)
   return (
     `<article class="pseo">` +
-    (img ? `<img src="${esc(img.src)}" alt="${esc(img.alt || product.name)}" width="800" height="1000" />` : '') +
+    crumbsHtml(trail) +
+    (img ? `<img src="${esc(img.src)}" alt="${esc(img.alt || product.name)}" width="800" height="1000" fetchpriority="high" />` : '') +
     `<h1>${esc(product.name)}</h1>` +
-    `<p>${esc(price)}</p>` +
+    `<p>${esc(priceText(product))}</p>` +
+    (rated(product)
+      ? `<p>Voto medio ${product.rating.average.toFixed(1).replace('.', ',')} su 5 (${product.rating.count} ${product.rating.count === 1 ? 'recensione' : 'recensioni'})</p>`
+      : '') +
     (product.shortDescription || '') +
-    (product.description || '') +
+    (product.description ? `<h2>Descrizione</h2>${product.description}` : '') +
+    (rows ? `<h2>Caratteristiche</h2><table><tbody>${rows}</tbody></table>` : '') +
+    (seo?.faq?.length ? faqHtml(seo.faq, { id: 'domande', title: 'Domande frequenti' }) : '') +
+    (more.length
+      ? `<nav aria-label="Della stessa linea"><h2>Della stessa linea</h2><ul>${more
+          .map((p) => `<li><a href="${productPath(p.slug)}">${esc(p.name)}</a></li>`)
+          .join('')}</ul></nav>`
+      : '') +
+    `<p><a href="${cat ? categoryPath(cat.slug) : SHOP.path}">${esc(cat ? `Tutti gli integratori: ${cat.name.toLowerCase()}` : 'Tutti gli integratori Nutrex Lab')}</a></p>` +
     `</article>`
   )
 }
 
 /**
  * template: HTML di prodotto.html. product: dal catalogo (null = non trovato o negozio non raggiungibile).
- * status: 200, 404 o 503.
+ * status: 200, 404 o 503. Canonical e indirizzi sempre sul dominio principale (ORIGIN).
  */
-export function renderProductPage(template, { product, site, slug, status = 200 }) {
-  const url = `${site}/prodotto/${encodeURIComponent(slug)}`
+export function renderProductPage(template, { product, slug, status = 200 }) {
+  const path = productPath(slug)
+  const url = `${ORIGIN}${path}`
   let head = ''
-  let title = 'Prodotto | Nutrex Lab'
   let body = ''
   if (product) {
-    const description = (product.summary || `${product.name}, integratore Nutrex Lab prodotto in Italia.`).slice(0, 160)
-    const img = product.images[0]?.src
+    const seo = productBySlug(product.slug)
+    const title = seo?.title ?? `${product.name} | ${BRAND}`
+    const description = seo?.description ?? clip(product.summary || `${product.name}, integratore alimentare Nutrex Lab prodotto in Italia.`)
+    const img = product.images[0]
     const cur = product.prices.currency
     const low = lowestPrice(product)
-    title = `${product.name} | Nutrex Lab`
-    head = [
-      `<meta name="description" content="${esc(description)}" />`,
-      `<link rel="canonical" href="${esc(url)}" />`,
-      `<meta property="og:type" content="product" />`,
-      `<meta property="og:locale" content="it_IT" />`,
-      `<meta property="og:site_name" content="Nutrex Lab" />`,
-      `<meta property="og:title" content="${esc(title)}" />`,
-      `<meta property="og:description" content="${esc(description)}" />`,
-      `<meta property="og:url" content="${esc(url)}" />`,
-      img ? `<meta property="og:image" content="${esc(img)}" />` : '',
-      low !== null ? `<meta property="product:price:amount" content="${money(low, cur).toFixed(cur.minorUnit)}" />` : '',
-      low !== null ? `<meta property="product:price:currency" content="${esc(cur.code)}" />` : '',
-      low !== null ? `<meta property="product:availability" content="${product.stock.inStock ? 'in stock' : 'out of stock'}" />` : '',
-      `<meta name="twitter:card" content="summary_large_image" />`,
-      `<meta name="twitter:title" content="${esc(title)}" />`,
-      `<meta name="twitter:description" content="${esc(description)}" />`,
-      img ? `<meta name="twitter:image" content="${esc(img)}" />` : '',
-      `<script type="application/ld+json">${safeJson(jsonLd(product, url))}</script>`,
-    ]
-      .filter(Boolean)
-      .join('\n    ')
-    body = seoBlock(product)
+    const trail = productTrail(product.slug, product.name, product.categories)
+    let imageOrigin = null
+    try {
+      imageOrigin = img ? new URL(img.src).origin : null
+    } catch {
+      // indirizzo della foto non assoluto: niente preconnect
+    }
+    head = headTags({
+      title,
+      socialTitle: `${product.name} | ${BRAND}`,
+      description,
+      path,
+      type: 'product',
+      image: img ? { src: img.src, width: 800, height: 1000, alt: img.alt || product.name } : null,
+      extra: [
+        // le foto arrivano dal WooCommerce: connessione aperta subito (immagine principale = LCP)
+        imageOrigin && imageOrigin !== ORIGIN ? `<link rel="preconnect" href="${esc(imageOrigin)}" />` : '',
+        low !== null ? `<meta property="product:price:amount" content="${money(low, cur).toFixed(cur.minorUnit)}" />` : '',
+        low !== null ? `<meta property="product:price:currency" content="${esc(cur.code)}" />` : '',
+        low !== null ? `<meta property="product:availability" content="${product.stock.inStock ? 'in stock' : 'out of stock'}" />` : '',
+        `<meta property="product:brand" content="${esc(BRAND)}" />`,
+      ],
+      jsonld: graph(
+        webPage({ path, name: title, description, type: 'ItemPage', breadcrumb: true, image: img?.src }),
+        breadcrumbs(trail, path),
+        productSchema(product, url),
+        seo?.faq?.length ? faqPage(seo.faq, path) : null,
+      ),
+    })
+    body = seoBlock(product, trail)
   } else {
-    title = status === 404 ? 'Prodotto non trovato | Nutrex Lab' : 'Nutrex Lab'
-    head = `<meta name="robots" content="noindex" />`
+    head = headTags({
+      title: status === 404 ? `Prodotto non trovato | ${BRAND}` : BRAND,
+      description: '',
+      path,
+      robots: 'noindex',
+    })
   }
   const data = `<script id="product-data" type="application/json">${safeJson({ slug, status, product })}</script>`
   // sostituzioni con funzione: i testi di WooCommerce possono contenere "$&", "$'"... che replace interpreterebbe
   return template
-    .replace(/<title>[\s\S]*?<\/title>/, () => `<title>${esc(title)}</title>`)
+    .replace(/<title>[\s\S]*?<\/title>\s*/, () => '')
     .replace('</head>', () => `    ${head}\n    ${data}\n  </head>`)
     .replace(/<!--\s*ssr:prodotto\s*-->/, () => body)
 }
