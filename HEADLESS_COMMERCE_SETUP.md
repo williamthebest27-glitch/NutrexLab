@@ -13,7 +13,7 @@ Store API pubblica di WooCommerce (la stessa che usa il carrello di qualunque ne
 ```
 sito Nutrex (Vercel)                        WooCommerce di thedoubletwenty
   /integratori, /prodotto/<slug> -legge->    Store API: prodotti, prezzi, varianti, disponibilita'
-  /carrello, /pagamenti        --carrello-> Store API: carrello del cliente (sessione)
+  /carrello                    --carrello-> Store API: carrello del cliente (sessione)
   "Procedi al pagamento"       --porta-->   /?nutrex-checkout=1&items=...  ->  pagina di pagamento Nutrex
   /ordine?numero=N             <--torna--   pagina "Ordine ricevuto" (plugin Nutrex Headless)
   /contatti, recensioni        --invia-->   plugin: email a info@nutrexlab.it, recensioni WooCommerce

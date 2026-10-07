@@ -4,7 +4,7 @@ import { composeLogo } from './logo.js'
 
 /**
  * Menu mobile (hamburger accanto ad "Acquista ora"): pannello a tutto schermo con le pagine
- * (Homepage, Acquista, Carrello, Pagamenti, Contatti) e il logo in fondo.
+ * (Homepage, Acquista, Carrello, Contatti, Account) e il logo in fondo.
  *
  * Apertura: il pannello scende dall'alto con il bordo curvo del sipario, le voci salgono dalla
  * maschera una alla volta mentre i filetti si disegnano, poi il logo si compone.

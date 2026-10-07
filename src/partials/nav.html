@@ -7,12 +7,12 @@
   </a>
   <nav class="nav__links" aria-label="Principale">
     <a class="nav-link" href="/" data-goto="top" data-nav-link>Homepage</a>
-    <!-- Acquista: passando con il mouse (o con la freccia) si apre il sottomenu Negozio / Carrello /
-         Pagamenti (src/ui/navMenu.js); il numero e' quello dei prodotti nel carrello -->
+    <!-- Acquista: passando con il mouse (o con la freccia) si apre il sottomenu Negozio / Carrello
+         (src/ui/navMenu.js); il numero e' quello dei prodotti nel carrello -->
     <div class="nav-item" data-nav-sub>
       <a class="nav-link" href="/integratori" data-nav-link>Acquista</a>
       <span class="nav-badge mono" data-cart-count hidden>0</span>
-      <button class="nav-item__more" type="button" aria-expanded="false" aria-controls="nav-sub-acquista" aria-label="Apri il sottomenu: negozio, carrello e pagamenti">
+      <button class="nav-item__more" type="button" aria-expanded="false" aria-controls="nav-sub-acquista" aria-label="Apri il sottomenu: negozio e carrello">
         <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.75 6 6.25l4.5-4.5" /></svg>
       </button>
       <div class="nav-sub" id="nav-sub-acquista">
@@ -30,13 +30,6 @@
             </span>
             <span class="nav-sub__text"><span class="nav-sub__t">Carrello</span><span class="nav-sub__d">I prodotti che hai scelto</span></span>
             <span class="nav-sub__count mono" data-cart-count="always">0</span>
-          </a>
-          <a class="nav-sub__link" href="/pagamenti">
-            <span class="nav-sub__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.6" /><path d="M3 10.2h18M6.8 14.8h4.4" /></svg>
-            </span>
-            <span class="nav-sub__text"><span class="nav-sub__t">Pagamenti</span><span class="nav-sub__d">Dati, spedizione e pagamento</span></span>
-            <span class="nav-sub__arrow" aria-hidden="true">&rarr;</span>
           </a>
         </div>
       </div>

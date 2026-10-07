@@ -13,7 +13,9 @@
       "permanent": true
     },
     { "source": "/acquista", "destination": "/integratori", "permanent": true },
-    { "source": "/acquista.html", "destination": "/integratori", "permanent": true }
+    { "source": "/acquista.html", "destination": "/integratori", "permanent": true },
+    { "source": "/pagamenti", "destination": "/carrello", "permanent": true },
+    { "source": "/pagamenti.html", "destination": "/carrello", "permanent": true }
   ],
   "rewrites": [
     { "source": "/prodotto/:slug", "destination": "/api/product-page?slug=:slug" },

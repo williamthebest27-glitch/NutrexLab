@@ -21,7 +21,7 @@ import { initCookieNotice } from '../ui/cookieNotice.js'
 gsap.registerPlugin(SplitText)
 
 /*
-  Struttura comune delle pagine (Acquista, Carrello, Pagamenti, Contatti): stessa navbar della
+  Struttura comune delle pagine (Acquista, Carrello, Contatti...): stessa navbar della
   homepage con il sottomenu di Acquista, menu mobile, footer con il logo che si compone,
   scroll morbido e testi che salgono dalla maschera entrando in scena (come nella homepage).
 */

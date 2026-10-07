@@ -1037,7 +1037,7 @@ ul {
 
 /* --------------------------------------------------------------------------
    Pagina corrente nel menu: un punto nel colore accento sotto la voce (Acquista resta segnata
-   anche in Carrello e Pagamenti). Lo imposta src/ui/navMenu.js (aria-current / .is-section)
+   in tutto il negozio: categorie, prodotti e carrello). Lo imposta src/ui/navMenu.js (aria-current / .is-section)
    -------------------------------------------------------------------------- */
 .nav-link[aria-current='page']::after,
 .nav-link.is-section::after {
@@ -1053,7 +1053,7 @@ ul {
 }
 
 /* --------------------------------------------------------------------------
-   Sottomenu di "Acquista" (desktop): Carrello e Pagamenti. Si apre passando con il mouse, con il
+   Sottomenu di "Acquista" (desktop): Negozio e Carrello. Si apre passando con il mouse, con il
    fuoco da tastiera o toccando la freccia (src/ui/navMenu.js aggiunge .is-open alla voce).
    I colori seguono la navbar (anche quella chiara sulle scene scure della homepage).
    -------------------------------------------------------------------------- */

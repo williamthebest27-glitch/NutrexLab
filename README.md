@@ -2,7 +2,7 @@
 
 Landing page con storytelling guidato dallo scroll attorno al barattolo 3D, con il menu dei
 prodotti nella hero (cambia barattolo, colori e testi di tutto il sito), piu' il negozio: Acquista,
-pagina di ogni prodotto, Carrello, Pagamenti, Grazie e Contatti.
+pagina di ogni prodotto, Carrello, Grazie e Contatti.
 Three.js + GSAP/ScrollTrigger/SplitText + Lenis, costruita con Vite.
 
 Il negozio e' collegato al WooCommerce di thedoubletwenty: prodotti, prezzi, varianti, magazzino,
@@ -62,7 +62,7 @@ produce in `dist/` le pagine; su un hosting solo statico il sito si vede ma il n
 | Prodotti, prezzi, offerte, varianti, magazzino, foto, descrizioni, coupon, spedizioni, IVA | nel pannello di WooCommerce (vedi [HEADLESS_COMMERCE_SETUP.md](HEADLESS_COMMERCE_SETUP.md)) |
 | Recapiti della pagina Contatti | `src/shop/config.js` (`null` = non mostrato) |
 | Foto dei barattoli da caricare in WooCommerce | `public/images/prodotti/<id>.webp`: si rifanno da `/tools/foto-prodotti.html` (con `npm run dev`) |
-| Pagine del negozio | `integratori.html` (+ categorie in `integratori/`), `prodotto.html`, `carrello.html`, `pagamenti.html`, `ordine.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
+| Pagine del negozio | `integratori.html` (+ categorie in `integratori/`), `prodotto.html`, `carrello.html`, `ordine.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
 | Collegamento a WooCommerce (catalogo, carrello, checkout, pagina prodotto per Google) | `api/` + `server/` |
 | Plugin da installare su WooCommerce | `wordpress/nutrex-headless/` |
 | Movimenti del barattolo, camera e luci per ogni scena | `src/choreography.js` (keyframe per desktop e mobile) |
@@ -126,7 +126,7 @@ uguale per tutti i prodotti).
 - `src/ui/logo.js` + `logo-paths.js` logo vettoriale (estratto dal PDF) e la sua animazione di composizione
 - `src/components/ProductExperience/` sezione 3D del bicchiere: componente riutilizzabile (anche
   in React), con il suo README
-- `src/ui/navMenu.js` pagina corrente nel menu e sottomenu di Acquista (Carrello, Pagamenti)
+- `src/ui/navMenu.js` pagina corrente nel menu e sottomenu di Acquista (Negozio, Carrello)
 - `src/shop/` negozio nel browser: `api.js` (chiamate alle funzioni del negozio), `cart.js` (carrello
   di WooCommerce, uguale in tutte le pagine e le schede), `money.js` (prezzi), `themes.js` (colori del
   sito per ogni prodotto, dallo slug), `config.js` (recapiti)
@@ -145,10 +145,10 @@ diventa una dissolvenza).
 ## Menu e pagine
 
 Navbar e piè di pagina sono gli stessi in tutte le pagine (`src/partials/`): Homepage, Acquista
-(con il sottomenu Negozio / Carrello / Pagamenti e il numero dei prodotti nel carrello), Contatti;
-"Acquista ora" porta al negozio e il pulsante rotondo accanto (desktop) all'area clienti. Su mobile
-il menu hamburger ha le sei pagine (Homepage, Acquista, Carrello, Pagamenti, Contatti, Account) con
-il numero dei prodotti accanto a Carrello.
+(con il sottomenu Negozio / Carrello e il numero dei prodotti nel carrello), Contatti; "Acquista
+ora" porta al negozio e il pulsante rotondo accanto (desktop) all'area clienti. Su mobile il menu
+hamburger ha le cinque pagine (Homepage, Acquista, Carrello, Contatti, Account) con il numero dei
+prodotti accanto a Carrello.
 
 | Pagina | Indirizzo | Cosa fa |
 | --- | --- | --- |
@@ -157,8 +157,7 @@ il numero dei prodotti accanto a Carrello.
 | Categorie | `/integratori/collagene`, `/integratori/vitamine-e-minerali`, `/integratori/estratti-vegetali` | i prodotti della categoria, testi e domande frequenti (`src/seo/catalog.js`) |
 | Chi siamo | `/chi-siamo` | il marchio, la linea, l'azienda (solo dati veri) |
 | Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita', varianti, quantita', "Aggiungi al carrello", offerte quantita' (le stesse di WooCommerce), metodi di pagamento, descrizione e caratteristiche, recensioni (lettura e invio) e prodotti correlati; titolo e dati strutturati per Google preparati sul server |
-| Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento"; vuoto: invito al negozio |
-| Pagamenti | `/pagamenti` | come funziona il pagamento, riepilogo, coupon, "Vai al pagamento sicuro" (checkout di WooCommerce) |
+| Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento" (porta dritto al pagamento sicuro di WooCommerce); vuoto: invito al negozio. `/pagamenti` (la vecchia pagina di riepilogo, tolta) porta qui |
 | Grazie | `/ordine?numero=N` | dopo il pagamento: numero dell'ordine WooCommerce; svuota il carrello del sito |
 | Contatti | `/contatti` | recapiti e modulo che invia il messaggio a info@nutrexlab.it (`/api/contatto` -> plugin su WooCommerce) |
 | Account | `/account` | porta all'area clienti Nutrex sul WooCommerce (`/account-nutrex-lab/`, cornice Nutrex): accesso, registrazione, ordini Nutrex, indirizzi, sconto del 5% sul primo ordine, invita un amico; `?ref=` porta con se' l'invito, `?torna=carrello` riporta al carrello |

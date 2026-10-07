@@ -1,5 +1,5 @@
 /* ==========================================================================
-   NUTREX LAB / Pagine: Acquista, Carrello, Pagamenti, Contatti
+   NUTREX LAB / Pagine: Acquista, Carrello, Contatti
    Stessi token e componenti della homepage (base.css): carta e inchiostro, titoli Archivo
    maiuscoli e stretti, etichette IBM Plex Mono, pillole, schede di vetro, esagono del logo,
    sipario scuro con il bordo curvo. Ogni prodotto porta i suoi colori (--c-*, da products.js).
@@ -1164,68 +1164,6 @@ ins.amount--sale {
   font-size: 10.5px;
 }
 
-/* righe del riepilogo nella pagina Pagamenti */
-.mini {
-  display: grid;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.mini__line {
-  --accent: var(--c-a);
-  display: grid;
-  grid-template-columns: 54px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-}
-
-.mini__line .thumb {
-  border-radius: 12px;
-}
-
-.mini__qty {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  display: grid;
-  place-items: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--fg);
-  color: var(--bg);
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  line-height: 1;
-}
-
-.mini__name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-stretch: 100%;
-  font-size: 13.5px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.1;
-}
-
-.mini__name small {
-  display: block;
-  margin-top: 4px;
-  font-family: var(--font-body);
-  font-size: 12.5px;
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--fg-soft);
-}
-
-.mini__price {
-  font-size: 14px;
-  text-align: right;
-}
-
 /* carrello vuoto */
 .empty {
   display: grid;
@@ -1319,183 +1257,8 @@ ins.amount--sale {
 }
 
 /* --------------------------------------------------------------------------
-   PAGAMENTI: passaggi, avviso, modulo, metodi di pagamento
+   MODULI: campi con l'etichetta che sale, caselle (Contatti, recensioni nella pagina prodotto)
    -------------------------------------------------------------------------- */
-.steps {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 12px;
-}
-
-.step {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--fg-faint);
-  font-size: 11px;
-}
-
-.step__n {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  font-size: 10px;
-  letter-spacing: 0;
-}
-
-.step__n svg {
-  width: 13px;
-  height: 13px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.step.is-done {
-  color: var(--fg);
-}
-
-.step.is-done .step__n {
-  border-color: var(--fg);
-  background: var(--fg);
-  color: var(--bg);
-}
-
-.step.is-active {
-  color: var(--accent);
-}
-
-.step.is-active .step__n {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--paper);
-}
-
-.step__line {
-  width: clamp(18px, 3vw, 40px);
-  height: 1px;
-  background: color-mix(in srgb, var(--fg) 22%, transparent);
-}
-
-.notice {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: 16px;
-  margin-bottom: clamp(32px, 5vh, 52px);
-  padding: 20px 22px;
-  border-radius: 22px;
-  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
-  background: color-mix(in srgb, var(--accent) 8%, color-mix(in srgb, #fff 45%, transparent));
-}
-
-.notice__icon {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--paper);
-}
-
-/* un'onda che si allarga piano: "in arrivo" */
-.notice__icon::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid var(--accent);
-  animation: ping 2.6s var(--ease-out) infinite;
-}
-
-@keyframes ping {
-  from {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  to {
-    transform: scale(1.7);
-    opacity: 0;
-  }
-}
-
-.notice__icon svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.notice__title {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-stretch: 100%;
-  font-size: 14px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  line-height: 1.2;
-}
-
-.notice__text {
-  margin-top: 6px;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--fg-soft);
-}
-
-.notice__text a {
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.checkout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 410px);
-  align-items: start;
-  gap: clamp(32px, 5vw, 96px);
-  padding-bottom: clamp(80px, 14vh, 160px);
-}
-
-.fset {
-  min-width: 0;
-  margin: 0 0 clamp(36px, 5.5vh, 60px);
-  padding: 0;
-  border: 0;
-}
-
-.fset__legend {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 20px;
-  padding: 0;
-}
-
-.fset__legend .mono {
-  color: var(--accent);
-}
-
-.fset__legend b {
-  font-family: var(--font-display);
-  font-size: clamp(24px, 2.2vw, 34px);
-  font-weight: 600;
-  font-stretch: 112%;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-  line-height: 0.9;
-}
-
 .fgrid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -2013,7 +1776,6 @@ a.shop:hover {
 
 @media (max-width: 1080px) {
   .cart,
-  .checkout,
   .contact {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2207,33 +1969,6 @@ a.shop:hover {
 
   .pick__name small {
     font-size: 9px;
-  }
-
-  .steps {
-    gap: 8px;
-  }
-
-  .step {
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-  }
-
-  .step__t {
-    display: none;
-  }
-
-  .step.is-active .step__t {
-    display: inline;
-  }
-
-  .notice {
-    padding: 16px;
-    gap: 14px;
-  }
-
-  .notice__icon {
-    width: 40px;
-    height: 40px;
   }
 
   .field--2,
@@ -2624,53 +2359,8 @@ a.shop:hover {
 }
 
 /* --------------------------------------------------------------------------
-   PAGAMENTI: riepilogo prima del checkout di WooCommerce
+   Codice sconto (carrello)
    -------------------------------------------------------------------------- */
-.howto {
-  display: grid;
-  gap: 18px;
-  counter-reset: howto;
-}
-
-.howto li {
-  display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-
-.howto li::before {
-  counter-increment: howto;
-  content: counter(howto, decimal-leading-zero);
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.howto b {
-  display: block;
-  font-family: var(--font-display);
-  font-size: clamp(18px, 1.5vw, 22px);
-  font-weight: 700;
-  font-stretch: 105%;
-  text-transform: uppercase;
-  line-height: 1.1;
-}
-
-.howto span {
-  display: block;
-  margin-top: 6px;
-  color: var(--fg-soft);
-}
-
-/* codice sconto (carrello e pagamenti) */
 .coupon {
   display: flex;
   gap: 8px;
@@ -2821,8 +2511,7 @@ a.shop:hover {
   .page-sky::before,
   .page-sky::after,
   .seal__ring,
-  .empty__hex,
-  .notice__icon::after {
+  .empty__hex {
     animation: none;
   }
 

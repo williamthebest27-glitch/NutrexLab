@@ -356,7 +356,7 @@ describe('sitemap', () => {
     assert.ok(locs.every((u) => u.startsWith('https://www.nutrexlab.it/')), 'sempre sul dominio principale')
     const paths = ['/', '/integratori', '/integratori/collagene', '/integratori/vitamine-e-minerali', '/integratori/estratti-vegetali', '/chi-siamo', '/prodotto/collagene', '/prodotto/magnesio']
     for (const path of paths) assert.ok(locs.includes(`https://www.nutrexlab.it${path}`), path)
-    for (const path of ['/carrello', '/pagamenti', '/ordine', '/account', '/prodotto/nascosto', '/prodotto/altro-prodotto']) {
+    for (const path of ['/carrello', '/ordine', '/account', '/prodotto/nascosto', '/prodotto/altro-prodotto']) {
       assert.ok(!locs.includes(`https://www.nutrexlab.it${path}`), path)
     }
     assert.match(xml, /<image:loc>https:\/\/woo\.test\/img\/magnesio\.webp<\/image:loc>/)

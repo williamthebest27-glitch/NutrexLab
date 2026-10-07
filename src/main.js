@@ -47,7 +47,7 @@ window.scrollTo(0, 0)
 // Il preload parte subito: il logo vettoriale si compone mentre il resto carica
 mountLogos()
 initNavLinks()
-initNavMenu() // pagina corrente e sottomenu di Acquista (Carrello, Pagamenti)
+initNavMenu() // pagina corrente e sottomenu di Acquista (Negozio, Carrello)
 bindCartCount()
 const loaderLogo = document.querySelector('.loader .logo')
 // il preload (il logo si compone, poi la camera ci entra) solo alla prima apertura della homepage in

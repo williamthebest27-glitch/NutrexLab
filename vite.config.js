@@ -179,7 +179,6 @@ export default defineConfig({
         'integratori/estratti-vegetali': resolve('integratori/estratti-vegetali.html'),
         prodotto: resolve('prodotto.html'),
         carrello: resolve('carrello.html'),
-        pagamenti: resolve('pagamenti.html'),
         ordine: resolve('ordine.html'),
         contatti: resolve('contatti.html'),
         'chi-siamo': resolve('chi-siamo.html'),

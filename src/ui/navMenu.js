@@ -1,6 +1,6 @@
 /**
  * Navbar (tutte le pagine):
- * - la voce della pagina aperta e' segnata (aria-current; Acquista anche in Carrello e Pagamenti)
+ * - la voce della pagina aperta e' segnata (aria-current; Acquista anche in categorie, prodotti e carrello)
  * - sottomenu di "Acquista" sul desktop: si apre passando con il mouse, con il fuoco da tastiera
  *   o toccando la freccia; si chiude uscendo (con un attimo di tolleranza), con Esc o toccando fuori.
  * L'animazione e' in CSS (base.css, .nav-sub): qui si gestisce solo lo stato .is-open.
@@ -22,8 +22,8 @@ function markCurrent() {
     if (a.classList.contains('nav__logo') || a.classList.contains('nav__cta')) return
     if (cleanPath(a.getAttribute('href')) === here) a.setAttribute('aria-current', 'page')
   })
-  // Acquista resta segnata in tutto il negozio: categorie, prodotti, carrello e pagamenti
-  if (here === '/carrello' || here === '/pagamenti' || here.startsWith('/integratori/') || here.startsWith('/prodotto/')) {
+  // Acquista resta segnata in tutto il negozio: categorie, prodotti e carrello
+  if (here === '/carrello' || here.startsWith('/integratori/') || here.startsWith('/prodotto/')) {
     document.querySelector('[data-nav-sub] > .nav-link')?.classList.add('is-section')
   }
 }
