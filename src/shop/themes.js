@@ -42,13 +42,14 @@ export const pieces = (n) => `${n} ${n === 1 ? 'prodotto' : 'prodotti'}`
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
-/** Disponibilita' in italiano dai dati di WooCommerce. */
-export function availability(stock) {
+/** Disponibilita' in italiano dai dati di WooCommerce. quantity: anche i pezzi in magazzino (pagina prodotto). */
+export function availability(stock, { quantity = false } = {}) {
   if (!stock) return { text: '', tone: '' }
   if (!stock.inStock) return { text: 'Esaurito', tone: 'out' }
   // in WooCommerce ma non ancora acquistabile (per esempio senza prezzo)
   if (stock.purchasable === false) return { text: 'Presto disponibile', tone: 'back' }
   if (stock.backorder) return { text: 'Disponibile su ordinazione', tone: 'back' }
   if (stock.low) return { text: stock.low === 1 ? 'Ultimo pezzo' : `Solo ${stock.low} disponibili`, tone: 'low' }
+  if (quantity && stock.quantity) return { text: stock.quantity === 1 ? '1 disponibile' : `${stock.quantity} disponibili`, tone: 'in' }
   return { text: 'Disponibile', tone: 'in' }
 }

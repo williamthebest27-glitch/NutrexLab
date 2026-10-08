@@ -247,7 +247,7 @@ function update() {
     : '<span class="amount amount--soon">Prezzo in arrivo</span>'
   root.querySelector('.pp__vat').hidden = !hasPrice
 
-  const stock = availability(item.stock)
+  const stock = availability(item.stock, { quantity: true })
   const stockEl = root.querySelector('[data-stock]')
   stockEl.className = `mono stock stock--${stock.tone}`
   stockEl.textContent = stock.text

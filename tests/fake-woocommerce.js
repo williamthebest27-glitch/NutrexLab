@@ -83,7 +83,7 @@ export const PRODUCTS = [
   }),
   product(101, 'collagene-1', 'Collagene - 1 confezione', 0, { _variation: true, type: 'variation', parent: 100, sku: 'COLL-1', on_sale: true, prices: prices(4490, 4990) }),
   product(102, 'collagene-2', 'Collagene - 2 confezioni', 0, { _variation: true, type: 'variation', parent: 100, sku: 'COLL-2', prices: prices(8990), is_in_stock: false, is_purchasable: false }),
-  product(110, 'magnesio', 'Magnesio', 12, { _order: 2, on_sale: true, prices: prices(1690, 1990), low_stock_remaining: 3, average_rating: '4.50', review_count: 2 }),
+  product(110, 'magnesio', 'Magnesio', 12, { _order: 2, on_sale: true, prices: prices(1690, 1990), low_stock_remaining: 3, stock_availability: { text: '3 disponibili', class: 'in-stock' }, average_rating: '4.50', review_count: 2 }),
   product(120, 'nascosto', 'Prodotto nascosto', 12, { _order: 3, _hidden: true }),
   product(200, 'altro-prodotto', 'Prodotto di un altro negozio', 20, { _order: 0 }),
 ]

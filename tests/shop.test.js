@@ -74,6 +74,8 @@ describe('catalogo: solo la categoria Nutrex', () => {
     assert.deepEqual(magn.prices.price, 1690)
     assert.deepEqual(magn.prices.regular, 1990)
     assert.equal(magn.stock.low, 3)
+    assert.equal(magn.stock.quantity, 3, 'pezzi in magazzino dal testo di WooCommerce')
+    assert.equal(coll.stock.quantity, null, 'senza numero nel testo: null')
   })
 
   test('categorie per i filtri: le sottocategorie con prodotti (lette da piu\' pagine)', async () => {
@@ -181,7 +183,7 @@ describe('funzioni Vercel', () => {
   test('/api/products: in cache sul CDN', async () => {
     const res = await productsApi.GET(new Request('https://negozio.test/api/products?per_page=12'))
     assert.equal(res.status, 200)
-    assert.match(res.headers.get('cache-control'), /s-maxage=60/)
+    assert.match(res.headers.get('cache-control'), /s-maxage=10/)
     const body = await res.json()
     assert.equal(body.products.length, 2)
     assert.equal(body.categories.length, 2)

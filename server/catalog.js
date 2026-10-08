@@ -74,12 +74,26 @@ function prices(p) {
   }
 }
 
+/*
+  Pezzi in magazzino: la Store API non da' il numero, solo il testo di WooCommerce ("820 disponibili",
+  con "Formato visualizzazione scorte" su "sempre"). Senza numero (scorte non gestite o formato che non
+  lo mostra): null.
+*/
+function quantity(p) {
+  const a = p.stock_availability
+  if (!p.is_in_stock || a?.class !== 'in-stock') return null
+  const m = /\d[\d.\s]*/.exec(decode(a.text))
+  const n = m ? Number.parseInt(m[0].replace(/\D/g, ''), 10) : NaN
+  return n > 0 ? n : null
+}
+
 function stock(p) {
   return {
     inStock: !!p.is_in_stock,
     purchasable: !!p.is_purchasable,
     backorder: !!p.is_on_backorder,
     low: p.low_stock_remaining ?? null,
+    quantity: quantity(p),
     soldIndividually: !!p.sold_individually,
   }
 }
@@ -233,7 +247,7 @@ export async function listProducts({ page = 1, perPage = 24, category, search } 
     category: String(categoryId),
     search,
   }
-  return cached(`list:${JSON.stringify(query)}`, 30_000, async () => {
+  return cached(`list:${JSON.stringify(query)}`, 10_000, async () => {
     const res = await store('/products', { query })
     return {
       // nell'elenco bastano i dati della scheda: niente descrizione lunga, solo quante variazioni ci sono
@@ -256,7 +270,7 @@ export function getProduct(slug) {
   if (!/^[a-z0-9][a-z0-9-]{0,190}$/i.test(String(slug ?? ''))) {
     return Promise.reject(new ShopError(404, 'not_found', 'Prodotto non trovato.'))
   }
-  return cached(`product:${slug}`, 30_000, async () => {
+  return cached(`product:${slug}`, 10_000, async () => {
     const res = await store('/products', { query: { slug, per_page: 1 } })
     const raw = res.data?.[0]
     if (!raw || !inScope(await shopScope(), raw.categories ?? [])) throw new ShopError(404, 'not_found', 'Prodotto non trovato.')
@@ -289,7 +303,7 @@ export async function listCategories() {
  */
 export async function relatedProducts(product, limit = 4) {
   if (!product) return []
-  return cached(`related:${product.id}`, 60_000, async () => {
+  return cached(`related:${product.id}`, 10_000, async () => {
     const scope = await shopScope()
     const res = await store('/products', {
       query: { per_page: 100, category: String(scope.root.id), exclude: String(product.id), catalog_visibility: 'catalog', orderby: 'menu_order', order: 'asc' },

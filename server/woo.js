@@ -26,6 +26,12 @@ export async function store(path, { method = 'GET', query, body, cartToken, time
   // anche la categoria: senza, il negozio mostrerebbe tutti i prodotti del WooCommerce condiviso
   const c = requireConfig('wooUrl', 'category')
   const url = withQuery(new URL(`${c.wooUrl}/wp-json/wc/store/v1${path}`), query)
+  /*
+    La cache dell'hosting di WooCommerce (SiteGround) tiene le letture dei prodotti per ore, anche dopo
+    una modifica nel pannello (prezzi, scorte): un parametro sempre diverso la salta. La freschezza la
+    decidono le cache del negozio (catalog.js e CDN di Vercel, pochi secondi).
+  */
+  if (method === 'GET') url.searchParams.set('_nx', String(Date.now()))
   const headers = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (cartToken) headers['Cart-Token'] = cartToken

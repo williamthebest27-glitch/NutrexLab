@@ -4,8 +4,8 @@ import { listProducts, getProduct, listCategories, relatedProducts } from '../se
 /*
   GET /api/products                 prodotti pubblicati (?page=&per_page=&category=)
   GET /api/products?slug=<slug>     un prodotto con le sue variazioni e i prodotti correlati
-  Dati pubblici della Store API di WooCommerce, in cache sul CDN per un minuto: prezzi e stock
-  restano aggiornati e WooCommerce non riceve una richiesta per ogni visita.
+  Dati pubblici della Store API di WooCommerce, in cache sul CDN per 10 secondi: prezzi e scorte
+  arrivano sul sito entro pochi secondi e WooCommerce non riceve una richiesta per ogni visita.
 */
 export const GET = route('products', async (request) => {
   const q = new URL(request.url).searchParams
@@ -13,10 +13,10 @@ export const GET = route('products', async (request) => {
   if (slug) {
     const product = await getProduct(slug)
     const related = await relatedProducts(product).catch(() => [])
-    return json({ product, related }, { cache: 60, swr: 600 })
+    return json({ product, related }, { cache: 10, swr: 30 })
   }
   const page = Math.max(1, Number.parseInt(q.get('page') ?? '1', 10) || 1)
   const perPage = Math.min(100, Math.max(1, Number.parseInt(q.get('per_page') ?? '24', 10) || 24))
   const [list, categories] = await Promise.all([listProducts({ page, perPage, category: q.get('category') ?? undefined }), listCategories()])
-  return json({ ...list, categories }, { cache: 60, swr: 600 })
+  return json({ ...list, categories }, { cache: 10, swr: 30 })
 })

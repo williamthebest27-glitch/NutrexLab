@@ -156,7 +156,7 @@ prodotti accanto a Carrello.
 | Acquista | `/integratori` (`/acquista` ci porta) | i prodotti Nutrex di WooCommerce (nell'ordinamento del pannello), 4 per riga su desktop, senza prezzo; filtri dalle sottocategorie; "Scopri" apre la pagina del prodotto; domande frequenti |
 | Categorie | `/integratori/collagene`, `/integratori/vitamine-e-minerali`, `/integratori/estratti-vegetali` | i prodotti della categoria, testi e domande frequenti (`src/seo/catalog.js`) |
 | Chi siamo | `/chi-siamo` | il marchio, la linea, l'azienda (solo dati veri) |
-| Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita', varianti, quantita', "Aggiungi al carrello", offerte quantita' (le stesse di WooCommerce), metodi di pagamento, descrizione e caratteristiche, recensioni (lettura e invio) e prodotti correlati; titolo e dati strutturati per Google preparati sul server |
+| Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita' con i pezzi in magazzino ("820 disponibili", dal testo delle scorte di WooCommerce), varianti, quantita', "Aggiungi al carrello", offerte quantita' (le stesse di WooCommerce), metodi di pagamento, descrizione e caratteristiche, recensioni (lettura e invio) e prodotti correlati; titolo e dati strutturati per Google preparati sul server |
 | Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento" (porta dritto al pagamento sicuro di WooCommerce); vuoto: invito al negozio. `/pagamenti` (la vecchia pagina di riepilogo, tolta) porta qui |
 | Grazie | `/ordine?numero=N` | dopo il pagamento: numero dell'ordine WooCommerce; svuota il carrello del sito |
 | Contatti | `/contatti` | recapiti e modulo che invia il messaggio a info@nutrexlab.it (`/api/contatto` -> plugin su WooCommerce) |
@@ -187,8 +187,8 @@ browser: `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png`. Le funzion
 (`regions` in `vercel.json`), vicino al WooCommerce (Paesi Bassi) e ai clienti italiani.
 
 Sincronizzazione con WooCommerce: prezzi, offerte, disponibilita', varianti, SKU, foto, nomi e descrizioni
-arrivano da WooCommerce e si aggiornano da soli (un paio di minuti di cache; carrello e pagamento sempre
-esatti). Un prodotto nuovo pubblicato nella categoria Nutrex Lab ha subito la sua pagina, e' nella pagina
+arrivano da WooCommerce e si aggiornano da soli (qualche secondo di cache, al massimo un minuto; carrello e
+pagamento sempre esatti; la cache di SiteGround sulle letture dei prodotti viene saltata, `server/woo.js`). Un prodotto nuovo pubblicato nella categoria Nutrex Lab ha subito la sua pagina, e' nella pagina
 Integratori, nella sitemap e nei dati per Google; per farlo entrare in una categoria del sito mettilo in
 WooCommerce in una sottocategoria di Nutrex Lab con slug `collagene`, `vitamine-e-minerali` o
 `estratti-vegetali`. Solo titolo per Google, FAQ e la riga nella sezione "La linea" della homepage si

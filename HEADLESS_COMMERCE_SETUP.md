@@ -201,8 +201,9 @@ thedoubletwenty.
   bonus di thedoubletwenty non valgono sui carrelli Nutrex e viceversa. Le email di account (benvenuto, nuova
   password) dei clienti registrati da Nutrex Lab hanno il design Nutrex e portano all'area Nutrex. In bacheca:
   WooCommerce > Nutrex Lab: inviti.
-- **Prezzi e disponibilita'**: il sito li mostra con al massimo un paio di minuti di ritardo (cache); carrello e
-  checkout usano sempre i dati attuali di WooCommerce.
+- **Prezzi e disponibilita'**: il sito li mostra dopo pochi secondi (al massimo un minuto); carrello e
+  checkout usano sempre i dati attuali di WooCommerce. La pagina prodotto mostra i pezzi in magazzino se in
+  WooCommerce > Impostazioni > Prodotti > Magazzino il formato di visualizzazione delle scorte e' "Mostra sempre".
 - **Spedizione e IVA**: le calcola WooCommerce nel checkout (zone di spedizione e aliquote come oggi).
 - **Amazon MCF**: nessuna modifica. Gli SKU dei prodotti Nutrex devono corrispondere a quelli
   dell'inventario Amazon e i prodotti devono essere abilitati nelle impostazioni del plugin MCF.
@@ -228,7 +229,7 @@ thedoubletwenty.
 | Le email Nutrex finiscono nello spam o partono da thedoubletwenty | manca la password di info@nutrexlab.it nelle impostazioni, o il server di posta l'ha rifiutata (vedi "Stato") |
 | Il modulo contatti dice "Invio non riuscito" | plugin non aggiornato, oppure la posta non parte (vedi "Stato" nelle impostazioni) |
 | Nell'importazione la colonna "Slug" non e' abbinata | plugin precedente alla 2.1: aggiornalo e ripeti l'importazione (senza, lo slug viene dal nome e il prodotto perde colori e link 3D del sito) |
-| Un prezzo cambiato non si vede subito | cache di un paio di minuti: nel carrello e nel checkout e' gia' quello nuovo |
+| Un prezzo cambiato non si vede subito | cache di qualche secondo (al massimo un minuto): nel carrello e nel checkout e' gia' quello nuovo |
 | Su Google compaiono pagine di thedoubletwenty per i prodotti o le categorie Nutrex | plugin precedente alla 2.3.2 (passaggio temporaneo 302): aggiornalo; Google sposta le pagine su nutrexlab.it in qualche settimana |
 
 ## Sviluppo in locale
@@ -284,8 +285,10 @@ automatiche del codice del server (senza WooCommerce).
 | Prove automatiche | `tests/` (`npm test`) |
 
 Carrello: la sessione della Store API (Cart-Token) sta nel cookie `nx_cart` (httpOnly, 48 ore); il cookie
-`nx_count` serve solo al numero sul pulsante del carrello. Cache: prodotti 60 s sul CDN (poi aggiornati in
-background), pagina prodotto 120 s, sitemap 1 ora, carrello mai.
+`nx_count` serve solo al numero sul pulsante del carrello. Cache: prodotti 10 s sul CDN (poi aggiornati in
+background) e 10 s in memoria nella funzione, pagina prodotto 120 s (prezzi e scorte poi riletti dal browser),
+sitemap 1 ora, carrello mai. La cache di SiteGround su thedoubletwenty teneva le letture dei prodotti per ore:
+le richieste del negozio hanno un parametro `_nx` sempre diverso che la salta (`server/woo.js`).
 
 Il passaggio al pagamento porta a `WOOCOMMERCE_URL/?nutrex-checkout=1&items=<id>:<quantita>,...&coupons=...`:
 il plugin mette da parte l'eventuale carrello di thedoubletwenty del visitatore (torna com'era alla sua
