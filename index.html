@@ -41,7 +41,8 @@
     <div class="aura" aria-hidden="true"></div>
     <div class="spot" aria-hidden="true"></div>
     <canvas class="webgl" aria-hidden="true"></canvas>
-    <img class="fallback" src="/og.jpg" alt="Collagene marino Nutrex Lab, barattolo da 500 g" width="1200" height="1200" hidden />
+    <!-- solo senza WebGL o senza JavaScript: lazy, cosi' con il 3D la foto non viene scaricata -->
+    <img class="fallback" src="/og.jpg" alt="Collagene marino Nutrex Lab, barattolo da 500 g" width="1200" height="1200" loading="lazy" decoding="async" hidden />
 
     <!-- @nav -->
 

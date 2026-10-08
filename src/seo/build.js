@@ -9,6 +9,7 @@ import { crumbsHtml, faqHtml, esc } from './render.js'
                                    delle schede di sempre: le leggono anche i motori di ricerca senza
                                    JavaScript; il browser le aggiorna con i dati di WooCommerce)
   - <!-- faq:integratori -->      domande frequenti della pagina Integratori
+  - <!-- categorie:tutti -->      link alle categorie nella pagina Integratori (come nelle pagine categoria)
   - <!-- catalogo:<categoria> --> contenuto delle pagine categoria (/integratori/<categoria>): testata con
                                    breadcrumb, categorie, griglia, testi e domande frequenti
   - <!-- seo:linea -->            sezione "La linea Nutrex Lab" della homepage, prima del footer
@@ -94,6 +95,9 @@ ${staticGrid(cat.slug)}
 
 /** Domande frequenti della pagina Integratori, sotto la griglia. */
 export const shopFaq = () => faqHtml(SHOP.faq, { attrs: 'data-rise' })
+
+/** Link alle categorie nella pagina Integratori: gli stessi delle pagine categoria, con "Tutti" attivo. */
+export const shopCategories = () => categoryNav(null)
 
 /** Sezione "La linea Nutrex Lab" della homepage: chi e' Nutrex Lab, categorie e i 12 prodotti. */
 export function lineSection() {

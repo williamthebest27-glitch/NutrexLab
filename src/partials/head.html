@@ -1,6 +1,10 @@
 <!-- intestazione comune a tutte le pagine (src/partials/head.html) -->
 <meta name="theme-color" content="#f1f0f3" />
+<!-- icone: SVG per i browser attuali (e Google), .ico per chi lo chiede alla radice, PNG per iOS.
+     sizes="32x32" sull'.ico: cosi' Chrome continua a scegliere l'SVG -->
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <style>
   /* passaggio tra le pagine: dissolvenza incrociata (nei browser che la supportano). Qui e non nel CSS
      del sito: la pagina nuova deve aderire gia' dal primo disegno */

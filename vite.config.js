@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { defineConfig } from 'vite'
 import { PAGES } from './src/seo/pages.js'
 import { headTags } from './src/seo/head.js'
-import { catalogMain, staticGrid, shopFaq, lineSection } from './src/seo/build.js'
+import { catalogMain, staticGrid, shopFaq, shopCategories, lineSection } from './src/seo/build.js'
 
 // versioni dei modelli 3D (scripts/sync-model.mjs) nello script di precaricamento di index.html
 const modelVersions = {
@@ -41,6 +41,7 @@ const partials = {
   - <!-- seo:linea -->       -> sezione "La linea Nutrex Lab" della homepage (prima del footer)
   - <!-- griglia:tutti -->   -> le schede dei prodotti della pagina Integratori, gia' nell'HTML
   - <!-- faq:integratori --> -> domande frequenti della pagina Integratori
+  - <!-- categorie:tutti --> -> link alle categorie nella pagina Integratori
   - <!-- catalogo:chiave --> -> contenuto delle pagine categoria (src/seo/build.js)
   Cambiando i dati in src/seo/ il server di sviluppo si riavvia da solo (sono dipendenze di questo file).
 */
@@ -52,6 +53,7 @@ const seo = {
       html
         .replace(/<!--\s*seo:linea\s*-->/g, () => lineSection())
         .replace(/<!--\s*faq:integratori\s*-->/g, () => shopFaq())
+        .replace(/<!--\s*categorie:tutti\s*-->/g, () => shopCategories())
         .replace(/<!--\s*seo:([a-z0-9-]+)\s*-->/g, (_, key) => {
           if (!PAGES[key]) throw new Error(`SEO: nessuna pagina "${key}" in src/seo/pages.js (${ctx.filename})`)
           return headTags(PAGES[key])

@@ -24,6 +24,7 @@
     { "source": "/googlef1435490fd6eb828", "destination": "/api/google-verify" },
     { "source": "/account", "destination": "/api/account" }
   ],
+  "regions": ["fra1"],
   "functions": {
     "api/product-page.js": { "includeFiles": "dist/prodotto.html" }
   },
@@ -58,7 +59,7 @@
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000, stale-while-revalidate=86400" }]
     },
     {
-      "source": "/(og.jpg|favicon.svg|apple-touch-icon.png)",
+      "source": "/(og.jpg|favicon.svg|favicon.ico|apple-touch-icon.png|logo.png)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }]
     }
   ]

@@ -182,6 +182,9 @@ prodotti con titolo/descrizione/FAQ, categorie), `pages.js` (`<head>` di ogni pa
 `<!-- seo:chiave -->`), `schema.js` (dati strutturati), `build.js` (griglie gia' pronte, categorie, sezione
 "La linea" della homepage). La pagina prodotto la prepara il server (`server/product-page.js`), la sitemap
 `api/sitemap.js`, `public/robots.txt`. Canonical e indirizzi sempre su `https://www.nutrexlab.it`.
+Logo per Google (dati strutturati): `public/logo.png` (512 x 512, il marchio di `nutrex-logo.svg`); icone del
+browser: `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png`. Le funzioni di Vercel girano a Francoforte
+(`regions` in `vercel.json`), vicino al WooCommerce (Paesi Bassi) e ai clienti italiani.
 
 Sincronizzazione con WooCommerce: prezzi, offerte, disponibilita', varianti, SKU, foto, nomi e descrizioni
 arrivano da WooCommerce e si aggiornano da soli (un paio di minuti di cache; carrello e pagamento sempre

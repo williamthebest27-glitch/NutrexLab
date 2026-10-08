@@ -109,7 +109,8 @@ export const PAGES = {
   'spedizioni-e-resi': plainPage({
     path: '/spedizioni-e-resi',
     title: 'Spedizioni e Resi: Consegna in 2-4 Giorni | Nutrex Lab',
-    description: 'Spedizioni e resi Nutrex Lab: consegna in 2-4 giorni lavorativi in tutta Italia e 14 giorni per il reso.',
+    description:
+      'Spedizioni e resi Nutrex Lab: ordini preparati entro 48 ore lavorative, consegna in 2-4 giorni in tutta Italia, isole comprese, e 14 giorni per il reso.',
   }),
   'termini-e-condizioni': plainPage({
     path: '/termini-e-condizioni',

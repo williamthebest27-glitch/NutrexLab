@@ -7,7 +7,9 @@ import { renderProductPage } from '../server/product-page.js'
 /*
   GET /prodotto/<slug>  (vercel.json la riscrive qui con ?slug=<slug>)
   La pagina del prodotto con titolo, descrizione e dati strutturati presi da WooCommerce, in cache
-  sul CDN per due minuti (prezzi e disponibilita' poi si aggiornano anche nel browser).
+  sul CDN per due minuti (prezzi e disponibilita' poi si aggiornano anche nel browser). Scaduti i due
+  minuti il CDN serve subito la copia precedente e intanto la rifa' (stale-while-revalidate, fino a un
+  giorno): dopo ore senza visite ne' i clienti ne' Googlebot aspettano l'avvio della funzione e WooCommerce.
   Prodotto inesistente: 404 (noindex). Negozio non raggiungibile: 503 con Retry-After, cosi' Google
   riprova piu' tardi senza togliere la pagina dall'indice. HEAD come GET, senza corpo (strumenti SEO).
 */
@@ -48,7 +50,7 @@ export const GET = route('product-page', async (request) => {
   const page = renderProductPage(html, { product, slug, status })
   const headers = {
     'Content-Type': 'text/html; charset=utf-8',
-    'Cache-Control': status === 200 ? 'public, max-age=0, s-maxage=120, stale-while-revalidate=600' : 'public, max-age=0, s-maxage=15',
+    'Cache-Control': status === 200 ? 'public, max-age=0, s-maxage=120, stale-while-revalidate=86400' : 'public, max-age=0, s-maxage=15',
   }
   if (status === 503) headers['Retry-After'] = '120'
   return new Response(request.method === 'HEAD' ? null : page, { status, headers })

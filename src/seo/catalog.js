@@ -25,8 +25,9 @@ export const COMPANY = {
   address: { street: 'via Iblea 97', postalCode: '96010', locality: 'Melilli', region: 'SR', country: 'IT' },
   // profili ufficiali del marchio (social, marketplace): solo quelli che esistono davvero
   sameAs: ['https://www.amazon.it/stores/page/E1F09FA2-E05D-49B3-AD2A-0B2F35D69BDF'],
-  // logo per Google (dati strutturati): da sostituire con un PNG quadrato di almeno 512 x 512
-  logo: { src: '/email/nutrex-logo.png', width: 300, height: 78 },
+  // logo per Google (dati strutturati, almeno 112 x 112): il marchio esagonale del logo ufficiale
+  // (wordpress/nutrex-headless/assets/nutrex-logo.svg) su fondo bianco, quadrato
+  logo: { src: '/logo.png', width: 512, height: 512 },
 }
 
 /** Politica di reso (pagina Spedizioni e resi): 14 giorni, per posta, spese di reso a carico del cliente. */
