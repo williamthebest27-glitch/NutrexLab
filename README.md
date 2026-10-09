@@ -96,6 +96,11 @@ agganciati al barattolo (tappo, etichetta, tabella nutrizionale) si orientano su
 nuovo prodotto. Le linee dalla lista degli ingredienti alla tabella restano solo sul collagene,
 su cui sono tarate.
 
+Il cambio prodotto riparte sempre dalla hero: scegliendo un prodotto da qualsiasi sezione della
+homepage (pulsante PRODOTTI) la pagina torna in cima (scorrendo se si e' appena scesi, altrimenti
+con una dissolvenza), li' il barattolo di prima gira e lascia il posto a quello scelto, e la
+storia riparte dalla hero (`backToHero` in `src/main.js`).
+
 Il menu prodotti resta sempre a portata di mano:
 - desktop: nella hero e' la scheda a destra; appena si scorre si chiude nel pulsante PRODOTTI in alto
   a destra (accanto ad "Acquista ora"), che apre la stessa lista come tendina;
