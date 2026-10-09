@@ -5,6 +5,8 @@
   marketing, qui servira' un vero consenso (Accetta / Rifiuta) prima di caricarli.
 */
 
+import { translateDom } from '../i18n/index.js'
+
 const KEY = 'nx_cookie_notice'
 
 function seen() {
@@ -21,10 +23,13 @@ export function initCookieNotice() {
   box.className = 'cookie'
   box.setAttribute('role', 'region')
   box.setAttribute('aria-label', 'Informativa sui cookie')
+  box.setAttribute('data-i18n-attr', 'aria-label')
+  // testi in italiano con data-i18n: li traduce translateDom (anche cambiando lingua con l'avviso aperto)
   box.innerHTML =
-    '<p class="cookie__text"><strong>Cookie.</strong> Usiamo solo cookie tecnici, necessari per il carrello e per il ' +
+    '<p class="cookie__text" data-i18n><strong>Cookie.</strong> Usiamo solo cookie tecnici, necessari per il carrello e per il ' +
     'funzionamento del sito: nessuna profilazione, nessuna pubblicit&agrave;. <a href="/cookie-policy">Cookie Policy</a></p>' +
-    '<button class="btn btn--sm cookie__ok" type="button"><span class="btn__label">Ho capito</span></button>'
+    '<button class="btn btn--sm cookie__ok" type="button"><span class="btn__label" data-i18n>Ho capito</span></button>'
+  translateDom(box)
   document.body.appendChild(box)
   requestAnimationFrame(() => requestAnimationFrame(() => box.classList.add('is-in')))
 

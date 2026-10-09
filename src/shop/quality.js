@@ -1,4 +1,6 @@
-import { QUALITY, qualityFor, productBySlug } from '../seo/catalog.js'
+import { qualityFor } from '../seo/catalog.js'
+import { t } from '../i18n/index.js'
+import { catalogProduct, quality } from '../i18n/data.js'
 import { esc } from './themes.js'
 
 /*
@@ -75,7 +77,7 @@ const BENEFIT = {
 }
 
 function sealHtml(key) {
-  const q = QUALITY[key]
+  const q = quality(key)
   const s = SEAL[key]
   return `<li class="qseal" role="img" aria-label="${esc(`${q.name}: ${q.note}`)}">
     <svg viewBox="0 0 120 120" aria-hidden="true">
@@ -88,11 +90,11 @@ function sealHtml(key) {
 }
 
 const claimHtml = (key) =>
-  `<li class="qclaim"><span class="qclaim__icon" aria-hidden="true"><svg viewBox="0 0 24 24">${ICON[key] ?? ''}</svg></span><span><b>${esc(QUALITY[key].name)}</b><small>${esc(QUALITY[key].note)}</small></span></li>`
+  `<li class="qclaim"><span class="qclaim__icon" aria-hidden="true"><svg viewBox="0 0 24 24">${ICON[key] ?? ''}</svg></span><span><b>${esc(quality(key).name)}</b><small>${esc(quality(key).note)}</small></span></li>`
 
 /** Il riquadro "Benefici" di un prodotto (stringa vuota per i prodotti senza testi in catalog.js). */
 export function benefitsHtml(slug) {
-  const list = productBySlug(slug)?.benefits ?? []
+  const list = catalogProduct(slug)?.benefits ?? []
   if (!list.length) return ''
   const items = list
     .map(
@@ -101,7 +103,7 @@ export function benefitsHtml(slug) {
     )
     .join('')
   return `<section class="pp__quality pp__benefits" aria-labelledby="benefici-prodotto">
-    <h3 class="mono pp__quality-k" id="benefici-prodotto">Benefici</h3>
+    <h3 class="mono pp__quality-k" id="benefici-prodotto">${t('Benefici')}</h3>
     <ul class="pp__bens" role="list">${items}</ul>
   </section>`
 }
@@ -113,7 +115,7 @@ export function qualityHtml(slug) {
   const seals = keys.filter((k) => SEAL[k])
   const claims = keys.filter((k) => !SEAL[k])
   return `<section class="pp__quality pp__guarantees" aria-labelledby="qualita-prodotto">
-    <h3 class="mono pp__quality-k" id="qualita-prodotto">Qualit&agrave; e garanzie</h3>
+    <h3 class="mono pp__quality-k" id="qualita-prodotto">${t('Qualità e garanzie')}</h3>
     ${seals.length ? `<ul class="pp__seals" role="list">${seals.map(sealHtml).join('')}</ul>` : ''}
     ${claims.length ? `<ul class="pp__claims" role="list">${claims.map(claimHtml).join('')}</ul>` : ''}
   </section>`

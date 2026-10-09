@@ -42,7 +42,7 @@
     <div class="spot" aria-hidden="true"></div>
     <canvas class="webgl" aria-hidden="true"></canvas>
     <!-- solo senza WebGL o senza JavaScript: lazy, cosi' con il 3D la foto non viene scaricata -->
-    <img class="fallback" src="/og.jpg" alt="Collagene marino Nutrex Lab, barattolo da 500 g" width="1200" height="1200" loading="lazy" decoding="async" hidden />
+    <img class="fallback" src="/og.jpg" alt="Collagene marino Nutrex Lab, barattolo da 500 g" data-i18n-attr="alt" width="1200" height="1200" loading="lazy" decoding="async" hidden />
 
     <!-- @nav -->
 
@@ -59,13 +59,13 @@
       <!-- ============ STORIA: hero + scene 1-5 ============ -->
       <section class="section story" id="top" data-section="story" data-steps="6" data-chapter="Il rituale">
         <div class="stage stage--front">
-          <h1 class="hero-title" aria-label="Il tuo rituale quotidiano.">
-            <span class="hero-il hero-x" data-split="chars" aria-hidden="true">Il tuo</span>
+          <h1 class="hero-title" aria-label="Il tuo rituale quotidiano." data-i18n-attr="aria-label">
+            <span class="hero-il hero-x" data-split="chars" aria-hidden="true" data-i18n>Il tuo</span>
             <span class="hero-ritual" aria-hidden="true">
-              <span class="hero-ritual__word" data-split="chars" data-mask="none">Rituale</span>
+              <span class="hero-ritual__word" data-split="chars" data-mask="none" data-i18n>Rituale</span>
             </span>
             <span class="hero-quot" aria-hidden="true">
-              <span class="hero-quot__word hero-x" data-split="chars" data-mask="none">Quotidiano</span>
+              <span class="hero-quot__word hero-x" data-split="chars" data-mask="none" data-i18n>Quotidiano</span>
               <svg class="hero-quot__dot" viewBox="0 0 26 24" aria-hidden="true">
                 <path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" />
               </svg>
@@ -83,7 +83,7 @@
 
           <div class="hero-cue" data-hero-ui aria-hidden="true">
             <span class="hero-cue__dot"></span><span class="hero-cue__line"></span>
-            <span class="mono hero-cue__text">Scroll<br />per scoprire</span>
+            <span class="mono hero-cue__text" data-i18n>Scroll<br />per scoprire</span>
           </div>
 
           <a class="hero-down" href="#about" data-goto="about" data-hero-ui aria-label="Scopri il collagene marino">
@@ -115,14 +115,14 @@
                   <defs>
                     <path id="cert-arc" d="M60 60m-47.5 0a47.5 47.5 0 1 1 95 0a47.5 47.5 0 1 1-95 0" />
                   </defs>
-                  <text class="cert__arc"><textPath href="#cert-arc" textLength="292" lengthAdjust="spacing">MADE IN ITALY &#8226; PRODOTTO IN ITALIA &#8226;</textPath></text>
+                  <text class="cert__arc"><textPath href="#cert-arc" textLength="292" lengthAdjust="spacing" data-i18n>MADE IN ITALY &#8226; PRODOTTO IN ITALIA &#8226;</textPath></text>
                 </svg>
               </span>
             </span>
             <p class="cert__text">
               <span class="cert__flag" aria-hidden="true"><i></i><i></i><i></i></span>
               <b>Made in Italy</b>
-              <span class="mono">Prodotto in Italia</span>
+              <span class="mono" data-i18n>Prodotto in Italia</span>
             </p>
           </div>
 
@@ -163,9 +163,9 @@
         </div>
 
         <div class="stage stage--back">
-          <p class="display s3__w s3__w--1" data-split="chars" data-reveal="s3a">Puro.</p>
-          <p class="display s3__w s3__w--2" data-split="chars" data-reveal="s3b">Semplice.</p>
-          <p class="display s3__w s3__w--3" data-split="chars" data-reveal="s3c">Efficace.</p>
+          <p class="display s3__w s3__w--1" data-split="chars" data-reveal="s3a" data-i18n>Puro.</p>
+          <p class="display s3__w s3__w--2" data-split="chars" data-reveal="s3b" data-i18n>Semplice.</p>
+          <p class="display s3__w s3__w--3" data-split="chars" data-reveal="s3c" data-i18n>Efficace.</p>
 
           <h2 class="display s4__title" data-split="chars" data-reveal="s4">La bellezza<br />nasce<br />da dentro.</h2>
 
@@ -195,7 +195,7 @@
       <!-- ============ INGREDIENTI ============ -->
       <section class="section ingredients" id="ingredients" data-section="ingredients" data-steps="3" data-chapter="Formula">
         <div class="stage stage--back">
-          <h2 class="display ing__title" data-split="chars" data-reveal="ing-title">Cosa c'&egrave;<br />dentro?</h2>
+          <h2 class="display ing__title" data-split="chars" data-reveal="ing-title" data-i18n>Cosa c'&egrave;<br />dentro?</h2>
         </div>
 
         <div class="stage stage--front">
@@ -310,7 +310,7 @@
            compaiono appena il bicchiere esce di scena, il barattolo e' gia' a sinistra -->
       <section class="section daily" id="daily" data-section="daily" data-steps="1.6" data-chapter="Durata">
         <div class="stage stage--back">
-          <h2 class="display daily__title" data-split="chars" data-reveal="daily-title">La durata<br />effettiva.</h2>
+          <h2 class="display daily__title" data-split="chars" data-reveal="daily-title" data-i18n>La durata<br />effettiva.</h2>
         </div>
 
         <div class="stage stage--front">
@@ -323,9 +323,9 @@
       <!-- ============ ACQUISTA ============ -->
       <section class="section shop" id="shop" data-section="shop" data-steps="1.2" data-chapter="Acquista">
         <div class="stage stage--back">
-          <h2 class="display shop__title" aria-label="Il benessere che scegli ogni giorno.">
-            <span class="shop__a" data-split="chars" data-reveal="shop-a" aria-hidden="true">Il benessere che scegli</span>
-            <span class="shop__b" data-split="chars" data-reveal="shop-b" aria-hidden="true">ogni giorno.</span>
+          <h2 class="display shop__title" aria-label="Il benessere che scegli ogni giorno." data-i18n-attr="aria-label">
+            <span class="shop__a" data-split="chars" data-reveal="shop-a" aria-hidden="true" data-i18n>Il benessere che scegli</span>
+            <span class="shop__b" data-split="chars" data-reveal="shop-b" aria-hidden="true" data-i18n>ogni giorno.</span>
           </h2>
         </div>
 

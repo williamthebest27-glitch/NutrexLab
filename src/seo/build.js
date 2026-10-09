@@ -37,11 +37,11 @@ export function staticGrid(key) {
 function displayTitle(lines) {
   const rows = lines
     .map((line, i) => {
-      const text = `<span data-split="chars"${i ? ` data-delay="${(0.12 * i).toFixed(2)}"` : ''} aria-hidden="true">${esc(line)}</span>`
+      const text = `<span data-split="chars"${i ? ` data-delay="${(0.12 * i).toFixed(2)}"` : ''} aria-hidden="true" data-i18n>${esc(line)}</span>`
       return `<span>${text}${i === lines.length - 1 ? hex('hexdot') : ''}</span>`
     })
     .join('\n            ')
-  return `<h1 class="display phead__title" aria-label="${esc(lines.join(' '))}">
+  return `<h1 class="display phead__title" aria-label="${esc(lines.join(' '))}" data-i18n-attr="aria-label">
             ${rows}
           </h1>`
 }
@@ -51,15 +51,15 @@ function categoryNav(active) {
     ['Tutti', SHOP.path, PRODUCTS.length, !active],
     ...CATEGORIES.map((c) => [c.name, categoryPath(c.slug), productsIn(c.slug).length, active === c.slug]),
   ]
-  return `<nav class="cats" aria-label="Categorie di integratori">${links
-    .map(([name, href, n, on]) => `<a class="chip mono" href="${href}"${on ? ' aria-current="page"' : ''}>${esc(name)}<span class="chip__n">${pad(n)}</span></a>`)
+  return `<nav class="cats" aria-label="Categorie di integratori" data-i18n-attr="aria-label">${links
+    .map(([name, href, n, on]) => `<a class="chip mono" href="${href}"${on ? ' aria-current="page"' : ''}><span data-i18n>${esc(name)}</span><span class="chip__n">${pad(n)}</span></a>`)
     .join('')}</nav>`
 }
 
 function copyBlocks(sections) {
   if (!sections?.length) return ''
-  return `<section class="seo-copy" aria-label="Guida alla scelta">${sections
-    .map(([title, html]) => `<div class="seo-copy__block" data-rise><h2 class="display seo-copy__h">${esc(title)}</h2>${html}</div>`)
+  return `<section class="seo-copy" aria-label="Guida alla scelta" data-i18n-attr="aria-label">${sections
+    .map(([title, html]) => `<div class="seo-copy__block" data-rise><h2 class="display seo-copy__h" data-i18n>${esc(title)}</h2><div data-i18n>${html}</div></div>`)
     .join('')}</section>`
 }
 
@@ -73,7 +73,7 @@ export function catalogMain(key) {
           ${crumbsHtml(trail, { className: 'mono eyebrow', hex: true, attrs: 'data-reveal' })}
           ${displayTitle(cat.display)}
           <div class="phead__row">
-            <p class="phead__lead" data-reveal data-delay="0.3">${cat.lead}</p>
+            <p class="phead__lead" data-reveal data-delay="0.3" data-i18n>${cat.lead}</p>
           </div>
         </header>
 
@@ -82,10 +82,10 @@ export function catalogMain(key) {
         <div class="toolbar">
           ${categoryNav(cat.slug)}
           <p class="mono toolbar__count" aria-live="polite" data-count>${pad(products.length)} prodotti</p>
-          <div class="filters" role="group" aria-label="Filtra per formato" data-filters></div>
+          <div class="filters" role="group" aria-label="Filtra per formato" data-i18n-attr="aria-label" data-filters></div>
         </div>
 
-        <ul class="pgrid" data-grid aria-label="Prodotti" aria-busy="true">
+        <ul class="pgrid" data-grid aria-label="Prodotti" data-i18n-attr="aria-label" aria-busy="true">
 ${staticGrid(cat.slug)}
         </ul>
 
@@ -105,12 +105,12 @@ export function lineSection() {
     const items = productsIn(c.slug)
       .map(
         (p) =>
-          `<li><a class="linea__item" href="${productPath(p.slug)}" style="--sw:${swatch(p.slug)}">${hex('linea__hex')}<span class="linea__name">${esc(p.label)}</span><span class="mono linea__note">${esc(p.note)}</span><span class="linea__arrow" aria-hidden="true">&rarr;</span></a></li>`,
+          `<li><a class="linea__item" href="${productPath(p.slug)}" style="--sw:${swatch(p.slug)}">${hex('linea__hex')}<span class="linea__name" data-i18n>${esc(p.label)}</span><span class="mono linea__note" data-i18n>${esc(p.note)}</span><span class="linea__arrow" aria-hidden="true">&rarr;</span></a></li>`,
       )
       .join('')
     return `<div class="linea__group">
-            <h3 class="linea__cat"><a href="${categoryPath(c.slug)}"><span class="mono linea__num">${pad(i + 1)}</span>${esc(c.name)}</a></h3>
-            <p class="linea__catline">${esc(c.line)}</p>
+            <h3 class="linea__cat"><a href="${categoryPath(c.slug)}"><span class="mono linea__num">${pad(i + 1)}</span><span data-i18n>${esc(c.name)}</span></a></h3>
+            <p class="linea__catline" data-i18n>${esc(c.line)}</p>
             <ul class="linea__list">${items}</ul>
           </div>`
   }).join('\n          ')
@@ -118,9 +118,9 @@ export function lineSection() {
         <svg class="linea__cap" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0Q50 20 100 0V10.6H0z" /></svg>
         <div class="linea__body">
           <div class="linea__head">
-            <p class="mono linea__eyebrow">${hex('linea__eyehex')}La linea Nutrex Lab &middot; ${PRODUCTS.length} integratori</p>
-            <h2 class="display linea__title" id="linea-titolo">Integratori alimentari<br /><em>made in Italy.</em></h2>
-            <p class="linea__lead">
+            <p class="mono linea__eyebrow">${hex('linea__eyehex')}<span data-i18n>La linea Nutrex Lab &middot; ${PRODUCTS.length} integratori</span></p>
+            <h2 class="display linea__title" id="linea-titolo" data-i18n>Integratori alimentari<br /><em>made in Italy.</em></h2>
+            <p class="linea__lead" data-i18n>
               Nutrex Lab è una linea di integratori alimentari prodotti in Italia: collagene idrolizzato, vitamine e
               minerali, estratti vegetali titolati. Formule chiare, con dosi e valori di riferimento dichiarati in etichetta,
               standard di qualità GMP / ISO 9001 e il sigillo di garanzia su ogni confezione.
@@ -130,9 +130,9 @@ export function lineSection() {
           ${groups}
           </div>
           <div class="linea__foot">
-            <a class="btn btn--xl linea__cta" href="${SHOP.path}" data-magnetic><span class="btn__label">Tutti gli integratori</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>
-            <a class="link mono linea__link" href="/chi-siamo">Chi siamo</a>
-            <a class="link mono linea__link" href="/spedizioni-e-resi">Spedizioni e resi</a>
+            <a class="btn btn--xl linea__cta" href="${SHOP.path}" data-magnetic><span class="btn__label" data-i18n>Tutti gli integratori</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>
+            <a class="link mono linea__link" href="/chi-siamo" data-i18n>Chi siamo</a>
+            <a class="link mono linea__link" href="/spedizioni-e-resi" data-i18n>Spedizioni e resi</a>
           </div>
         </div>
       </section>`

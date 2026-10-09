@@ -2,11 +2,14 @@ import { initPage, rise, esc } from './common.js'
 import { api } from '../shop/api.js'
 import { SHOP } from '../shop/config.js'
 import { LOGO } from '../ui/logo-paths.js'
+import { t, translateDom } from '../i18n/index.js'
 
 /*
   Contatti: recapiti da src/shop/config.js (quelli non ancora inseriti non compaiono; senza
   nessun recapito restano i tre principali con "Presto disponibile"), pulsante WhatsApp, negozi
   online ("Dove vendiamo") e modulo che invia il messaggio a info@nutrexlab.it (/api/contatto, poi il plugin su WooCommerce).
+  Lingua del sito: le parti scritte qui hanno il testo italiano con data-i18n (le traduce translateDom, anche
+  cambiando lingua); argomento e prodotto arrivano al negozio in italiano, qualunque sia la lingua.
 */
 
 const { ready } = initPage()
@@ -47,8 +50,8 @@ document.querySelector('[data-channels]').innerHTML = list
   .map((c) => {
     const inner =
       `<span class="channel__icon" aria-hidden="true">${ICONS[c.key]}</span>` +
-      `<span class="channel__text"><span class="mono channel__label">${c.label}</span>` +
-      `<span class="channel__value">${c.value ? esc(c.value) : 'Presto disponibile'}</span></span>`
+      `<span class="channel__text"><span class="mono channel__label" data-i18n>${c.label}</span>` +
+      (c.value ? `<span class="channel__value">${esc(c.value)}</span></span>` : '<span class="channel__value" data-i18n>Presto disponibile</span></span>')
     if (!c.href) return `<div class="channel${c.value ? '' : ' is-soon'}">${inner}</div>`
     const ext = c.href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''
     return `<a class="channel" href="${esc(c.href)}"${ext}>${inner}<span class="channel__arrow" aria-hidden="true">&rarr;</span></a>`
@@ -60,7 +63,7 @@ if (C.whatsapp) {
   document.querySelector('[data-wa]').innerHTML =
     `<a class="btn btn--xl btn--block wa-btn" href="https://wa.me/${esc(C.whatsapp)}" target="_blank" rel="noopener" data-magnetic>` +
     `<span class="wa-btn__icon" aria-hidden="true">${ICONS.whatsapp}</span>` +
-    `<span class="btn__label">Scrivici su WhatsApp</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>`
+    `<span class="btn__label" data-i18n>Scrivici su WhatsApp</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>`
 }
 
 // Dove vendiamo: i negozi online con il loro marchio (link se c'e' l'indirizzo del negozio)
@@ -92,9 +95,10 @@ const shop = ({ key, label, logo }) =>
     : `<span class="shop" role="img" aria-label="${label}"><span class="shop__in" aria-hidden="true">${logo}</span></span>`
 document.querySelector('[data-shops]').innerHTML =
   '<p class="mono shops-card__k"><span class="shops-card__ic" aria-hidden="true"><svg viewBox="0 0 24 24">' +
-  '<path d="M4.4 8h15.2l-1.1 11.4a1.6 1.6 0 0 1-1.6 1.4H7.1a1.6 1.6 0 0 1-1.6-1.4Z"/><path d="M8.7 8V6.3a3.3 3.3 0 0 1 6.6 0V8"/></svg></span>Dove vendiamo</p>' +
+  '<path d="M4.4 8h15.2l-1.1 11.4a1.6 1.6 0 0 1-1.6 1.4H7.1a1.6 1.6 0 0 1-1.6-1.4Z"/><path d="M8.7 8V6.3a3.3 3.3 0 0 1 6.6 0V8"/></svg></span><span data-i18n>Dove vendiamo</span></p>' +
   `<ul class="shops">${SHOPS.map((s) => `<li>${shop(s)}</li>`).join('')}</ul>` +
-  '<p class="shops-card__n">Spedizioni in tutta Italia</p>'
+  '<p class="shops-card__n" data-i18n>Spedizioni in tutta Italia</p>'
+translateDom(document.querySelector('.contact'))
 
 // ---------------------------------------------------------------------------
 // Modulo
@@ -104,9 +108,11 @@ const consentErr = form.querySelector('[data-consent-err]')
 // prodotti del negozio (da WooCommerce) per la scelta nel modulo
 api
   .products({ per_page: 48 })
-  .then(({ products }) =>
-    form.querySelector('[data-products]').insertAdjacentHTML('beforeend', products.map((p) => `<option>${esc(p.name)}</option>`).join('')),
-  )
+  .then(({ products }) => {
+    const select = form.querySelector('[data-products]')
+    select.insertAdjacentHTML('beforeend', products.map((p) => `<option value="${esc(p.name)}" data-i18n>${esc(p.name)}</option>`).join(''))
+    translateDom(select)
+  })
   .catch(() => {})
 
 const RULES = {
@@ -140,7 +146,7 @@ form.addEventListener('submit', async (e) => {
   const label = btn.querySelector('.btn__label') || btn
   const text = label.textContent
   btn.disabled = true
-  label.textContent = 'Invio…'
+  label.textContent = t('Invio…')
   status.classList.remove('is-error')
   status.textContent = ''
   try {
@@ -153,11 +159,12 @@ form.addEventListener('submit', async (e) => {
       sito: f.sito ? f.sito.value : '', // trappola per i robot: resta vuota
     })
     form.reset()
-    status.textContent = "Messaggio inviato: ti rispondiamo appena possibile all'indirizzo che ci hai lasciato."
+    status.textContent = t("Messaggio inviato: ti rispondiamo appena possibile all'indirizzo che ci hai lasciato.")
   } catch (err) {
     status.classList.add('is-error')
-    const fallback = C.email ? ` Puoi scriverci direttamente a <a class="link" href="mailto:${esc(C.email)}">${esc(C.email)}</a>.` : ''
-    status.innerHTML = esc(err.message || 'Invio non riuscito.') + fallback
+    const link = C.email ? `<a class="link" href="mailto:${esc(C.email)}">${esc(C.email)}</a>` : ''
+    const fallback = link ? ` ${t('Puoi scriverci direttamente a {email}.', { email: link })}` : ''
+    status.innerHTML = esc(t(err.message || 'Invio non riuscito.')) + fallback
   } finally {
     btn.disabled = false
     label.textContent = text

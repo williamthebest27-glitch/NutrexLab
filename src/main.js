@@ -33,7 +33,8 @@ import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
 import { createProductExperience, themeFromSite } from './components/ProductExperience/index.js'
-import { ready as i18nReady } from './i18n/index.js'
+import { ready as i18nReady, localize, t, formatNumber, onLang, translateDom } from './i18n/index.js'
+import { DEFAULT_COPY, stepsFor } from './components/ProductExperience/copy.js'
 import { initLangPicker } from './i18n/picker.js'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
@@ -130,9 +131,11 @@ try {
 
 // menu prodotti della hero (le voci entrano con l'intro)
 const menuRoot = document.querySelector('[data-pmenu]')
+/** Le voci del menu prodotti con nome e nota nella lingua del sito. */
+const menuProducts = () => PRODUCTS.map((p) => ({ ...p, name: t(p.name), note: t(p.note) }))
 const menu =
   menuRoot &&
-  createProductMenu(menuRoot, PRODUCTS, {
+  createProductMenu(menuRoot, menuProducts(), {
     activeId: product.id,
     onSelect: (id) => switchProduct(id),
     onIntent: (id) => preloadProduct(id),
@@ -206,8 +209,7 @@ import('./seo/catalog.js')
   })
   .catch(() => {}) // senza catalogo resta il dettaglio della dose
 
-const numberIt = new Intl.NumberFormat('it-IT', { useGrouping: 'always' })
-const fact = (f) => (f ? [`${numberIt.format(f.value)} ${f.unit}`.trim(), f.text] : null)
+const fact = (f) => (f ? [`${formatNumber(f.value)} ${f.unit}`.trim(), f.text] : null)
 
 /**
  * Testi della sezione per un prodotto: dai dati gia' nel sito (dosi dell'etichetta in content.js),
@@ -217,25 +219,29 @@ const fact = (f) => (f ? [`${numberIt.format(f.value)} ${f.unit}`.trim(), f.text
  * products.js; con maintenance anche quelle del mantenimento, a parte, con la loro etichetta).
  */
 function ritualOptions(p) {
-  const c = COPY[p.id] ?? {}
+  // testi nella lingua del sito (src/i18n): quelli del prodotto e quelli di default della sezione
+  const c = localize(COPY[p.id] ?? {})
+  const base = localize(DEFAULT_COPY[p.form] ?? DEFAULT_COPY.powder)
   const facts = c.daily?.facts ?? []
   const pins =
     p.form === 'powder'
       ? { dose: fact(facts[0]), water: fact(facts[1]) }
       : { dose: c.pins?.dose, water: fact(facts[0]), aside: p.maintenance ? fact(facts[1]) : null }
   for (const k of Object.keys(pins)) if (!pins[k]) delete pins[k]
-  const benefits = p.form === 'powder' ? null : benefitsOf(p.id)
+  const benefits = p.form === 'powder' ? null : benefitsOf(p.id)?.map(([title, text]) => [t(title), t(text)])
   const own = c.experience ?? {}
   return {
     type: p.form,
     shape: p.shape ?? null,
     count: p.perDay ?? 1,
     aside: p.maintenance ?? 0,
-    productName: p.name,
-    productNote: p.note,
+    productName: t(p.name),
+    productNote: t(p.note),
+    stepNames: (type) => stepsFor(type).map((name) => t(name)),
+    posterAlt: (name) => t("{nome}: bicchiere d'acqua", { nome: name }),
     // studio scuro: il bicchiere e' il render di Blender (sezione bicchiere/blender/bicchiere_3d.py)
     theme: themeFromSite(p.theme, { studio: 'scuro' }),
-    copy: { ...own, ...(benefits ? { benefits } : {}), pins: { ...pins, ...(own.pins ?? {}) } },
+    copy: { ...base, ...own, ...(benefits ? { benefits } : {}), pins: { ...base.pins, ...pins, ...(own.pins ?? {}) } },
     // immagine statica con i colori del prodotto (senza WebGL e mentre la scena 3D si carica),
     // versionata come i modelli: rifatte le immagini, la cache non mostra quelle vecchie
     poster: (layout) =>
@@ -375,6 +381,19 @@ async function boot() {
   initFooterLogo()
   initSeal()
   ritual = createRitual()
+  if (ritualEl) translateDom(ritualEl) // (etichette accessibili della sezione nella lingua del sito)
+  // cambio lingua (src/i18n): testi del prodotto, menu prodotti e sezione del bicchiere nella nuova lingua
+  onLang(() => {
+    applyCopy(product.id)
+    menu?.relabel(menuProducts())
+    ui?.setProduct()
+    if (ritual) {
+      ritual.setProduct(ritualOptions(product))
+      translateDom(ritualEl)
+    }
+    fitIngredients()
+    fitScience()
+  })
   ScrollTrigger.refresh()
   gsap.ticker.add(tick)
 

@@ -6,6 +6,8 @@
  * Su mobile il pannello non c'e': il pulsante PRODOTTI (sotto "Acquista ora") lo apre
  * come tendina, che si chiude scegliendo un prodotto, toccando fuori, con Esc o scorrendo.
  */
+import { t } from '../i18n/index.js'
+
 const HEX = 'M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z' // stesso esagono del logo e del punto di QUOTIDIANO
 
 const pad = (n) => String(n).padStart(2, '0')
@@ -14,12 +16,12 @@ const hex = (cls) => `<svg class="${cls}" viewBox="0 0 26 24" aria-hidden="true"
 export function createProductMenu(root, products, { activeId, onSelect, onIntent }) {
   root.innerHTML =
     `<button type="button" class="pmenu__toggle" aria-expanded="false" aria-controls="pmenu-panel">` +
-    `${hex('pmenu__toggle-hex')}<span class="pmenu__toggle-label">Prodotti</span>` +
+    `${hex('pmenu__toggle-hex')}<span class="pmenu__toggle-label">${t('Prodotti')}</span>` +
     `<svg class="pmenu__chev" viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.75 6 6.25l4.5-4.5"/></svg>` +
     `</button>` +
     `<div class="pmenu__panel" id="pmenu-panel">` +
     `<div class="pmenu__card">` +
-    `<p class="pmenu__head" aria-hidden="true">${hex('pmenu__icon')}<span class="pmenu__title">Prodotti</span>` +
+    `<p class="pmenu__head" aria-hidden="true">${hex('pmenu__icon')}<span class="pmenu__title">${t('Prodotti')}</span>` +
     `<span class="pmenu__count mono">${pad(products.length)}</span></p>` +
     `<ul class="pmenu__list" data-lenis-prevent>${products
       .map(
@@ -99,6 +101,18 @@ export function createProductMenu(root, products, { activeId, onSelect, onIntent
   }
   setActive(activeId)
 
+  /** Nomi nella lingua del sito (products: le stesse voci, con nome e nota tradotti). */
+  function relabel(list) {
+    root.querySelector('.pmenu__toggle-label').textContent = t('Prodotti')
+    root.querySelector('.pmenu__title').textContent = t('Prodotti')
+    for (const btn of items) {
+      const p = list.find((x) => x.id === btn.dataset.product)
+      if (!p) continue
+      btn.setAttribute('aria-label', [p.name, p.note].filter(Boolean).join(', '))
+      btn.querySelector('.pmenu__name').innerHTML = `${p.name}${p.note ? `<small class="pmenu__note">${p.note}</small>` : ''}`
+    }
+  }
+
   return {
     root,
     toggle,
@@ -107,6 +121,7 @@ export function createProductMenu(root, products, { activeId, onSelect, onIntent
     items,
     setActive,
     reveal,
+    relabel,
     close: () => setOpen(false),
   }
 }

@@ -1,6 +1,8 @@
 import { colorVars, productUrl, pad, esc, availability } from './themes.js'
 import { discountPercent } from './money.js'
-import { productImage, productAlt, isSitePhoto } from '../seo/catalog.js'
+import { productImage, isSitePhoto } from '../seo/catalog.js'
+import { t } from '../i18n/index.js'
+import { productAlt } from '../i18n/data.js'
 
 /*
   Scheda di un prodotto, la stessa nella griglia Acquista e tra i prodotti correlati della pagina
@@ -16,11 +18,11 @@ function badges(p, categories) {
   const out = []
   const cat = p.categories.find((c) => categories.some((k) => k.id === c.id))
   if (cat) out.push(`<span class="mono badge">${esc(cat.name)}</span>`)
-  if (p.stock && !p.stock.inStock) out.push('<span class="mono badge badge--out">Esaurito</span>')
+  if (p.stock && !p.stock.inStock) out.push(`<span class="mono badge badge--out">${t('Esaurito')}</span>`)
   else if (p.onSale) {
     const off = p.type === 'variable' ? 0 : discountPercent(p.prices)
-    out.push(`<span class="mono badge badge--sale">${off ? `−${off}%` : 'Offerta'}</span>`)
-  } else if (p.stock?.low) out.push('<span class="mono badge badge--low">Ultimi pezzi</span>')
+    out.push(`<span class="mono badge badge--sale">${off ? `−${off}%` : t('Offerta')}</span>`)
+  } else if (p.stock?.low) out.push(`<span class="mono badge badge--low">${t('Ultimi pezzi')}</span>`)
   return `<span class="badges">${out.join('')}</span>`
 }
 
@@ -64,8 +66,8 @@ export function productCard(p, i, categories = [], { heading = 'h2', sizes = '(m
       ${p.summary ? `<p class="pcard__line">${esc(p.summary)}</p>` : ''}
       <div class="pcard__foot">
         <p class="mono stock${stock.tone ? ` stock--${stock.tone}` : ''}">${esc(stock.text)}</p>
-        <a class="btn btn--sm pcard__cta" href="${url}" aria-label="Scopri ${name}">
-          <span class="btn__label">Scopri</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+        <a class="btn btn--sm pcard__cta" href="${url}" aria-label="${esc(t('Scopri {nome}', { nome: p.name }))}">
+          <span class="btn__label">${t('Scopri')}</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
         </a>
       </div>
     </div>

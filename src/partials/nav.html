@@ -2,17 +2,17 @@
      scorrono fino alla scena (main.js), nelle altre pagine sono link normali -->
 <header class="nav" data-nav>
   <span class="nav__bg" aria-hidden="true"></span>
-  <a class="nav__logo" href="/" data-goto="top" aria-label="Nutrex Lab, homepage" data-i18n-attr="aria-label:nav.logo">
+  <a class="nav__logo" href="/" data-goto="top" aria-label="Nutrex Lab, homepage" data-i18n-attr="aria-label">
     <span data-logo>NUTREX LAB</span>
   </a>
-  <nav class="nav__links" aria-label="Principale" data-i18n-attr="aria-label:nav.main">
-    <a class="nav-link" href="/" data-goto="top" data-nav-link data-i18n-text="nav.home">Homepage</a>
+  <nav class="nav__links" aria-label="Principale" data-i18n-attr="aria-label">
+    <a class="nav-link" href="/" data-goto="top" data-nav-link data-i18n-text>Homepage</a>
     <!-- Acquista: passando con il mouse (o con la freccia) si apre il sottomenu Negozio / Carrello
          (src/ui/navMenu.js); il numero e' quello dei prodotti nel carrello -->
     <div class="nav-item" data-nav-sub>
-      <a class="nav-link" href="/integratori" data-nav-link data-i18n-text="nav.shop">Acquista</a>
+      <a class="nav-link" href="/integratori" data-nav-link data-i18n-text>Acquista</a>
       <span class="nav-badge mono" data-cart-count hidden>0</span>
-      <button class="nav-item__more" type="button" aria-expanded="false" aria-controls="nav-sub-acquista" aria-label="Apri il sottomenu: negozio e carrello" data-i18n-attr="aria-label:nav.sub">
+      <button class="nav-item__more" type="button" aria-expanded="false" aria-controls="nav-sub-acquista" aria-label="Apri il sottomenu: negozio e carrello" data-i18n-attr="aria-label">
         <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.75 6 6.25l4.5-4.5" /></svg>
       </button>
       <div class="nav-sub" id="nav-sub-acquista">
@@ -21,20 +21,20 @@
             <span class="nav-sub__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M4.2 9.4 5.8 4.6h12.4l1.6 4.8" /><path d="M4.2 9.4h15.6a2.6 2.6 0 0 1-5.2 0 2.6 2.6 0 0 1-5.2 0 2.6 2.6 0 0 1-5.2 0z" /><path d="M5.6 12.4v7.2h12.8v-7.2M10.2 19.6v-4.4h3.6v4.4" /></svg>
             </span>
-            <span class="nav-sub__text"><span class="nav-sub__t" data-i18n="nav.store">Negozio</span><span class="nav-sub__d" data-i18n="nav.store.d">Tutti i prodotti Nutrex Lab</span></span>
+            <span class="nav-sub__text"><span class="nav-sub__t" data-i18n>Negozio</span><span class="nav-sub__d" data-i18n>Tutti i prodotti Nutrex Lab</span></span>
             <span class="nav-sub__arrow" aria-hidden="true">&rarr;</span>
           </a>
           <a class="nav-sub__link" href="/carrello">
             <span class="nav-sub__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M5.6 8.6h12.8l-1.05 10.9a1.6 1.6 0 0 1-1.6 1.45H8.25a1.6 1.6 0 0 1-1.6-1.45z" /><path d="M9 8.6V7.2a3 3 0 0 1 6 0v1.4" /></svg>
             </span>
-            <span class="nav-sub__text"><span class="nav-sub__t" data-i18n="nav.cart">Carrello</span><span class="nav-sub__d" data-i18n="nav.cart.d">I prodotti che hai scelto</span></span>
+            <span class="nav-sub__text"><span class="nav-sub__t" data-i18n>Carrello</span><span class="nav-sub__d" data-i18n>I prodotti che hai scelto</span></span>
             <span class="nav-sub__count mono" data-cart-count="always">0</span>
           </a>
         </div>
       </div>
     </div>
-    <a class="nav-link" href="/contatti" data-nav-link data-i18n-text="nav.contacts">Contatti</a>
+    <a class="nav-link" href="/contatti" data-nav-link data-i18n-text>Contatti</a>
   </nav>
   <div class="nav__right">
     <!-- lingua del sito (src/i18n/picker.js): bandiera e sigla, si apre l'elenco delle lingue -->
@@ -64,15 +64,15 @@
       </svg>
     </div>
     <a class="btn btn--sm nav__cta" href="/integratori" data-magnetic>
-      <span class="btn__label" data-i18n="nav.cta">Acquista ora</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+      <span class="btn__label" data-i18n>Acquista ora</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
     </a>
     <!-- solo desktop: il pulsante rotondo dell'area clienti (su mobile Account sta nel menu hamburger) -->
-    <a class="nav__account" href="/account" aria-label="Il tuo account" data-i18n-attr="aria-label:nav.account">
+    <a class="nav__account" href="/account" aria-label="Il tuo account" data-i18n-attr="aria-label">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.6" /><path d="M5 20.2c.7-3.6 3.5-5.6 7-5.6s6.3 2 7 5.6" /></svg>
     </a>
   </div>
   <!-- solo mobile: apre il menu con le pagine (src/ui/mobileMenu.js) -->
-  <button class="nav__burger" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="mnav" data-mnav-toggle data-i18n-attr="aria-label:nav.burger">
+  <button class="nav__burger" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="mnav" data-mnav-toggle data-i18n-attr="aria-label">
     <span class="nav__burger-box" aria-hidden="true"><i></i><i></i></span>
   </button>
 </header>

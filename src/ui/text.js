@@ -1,25 +1,14 @@
 import gsap from 'gsap'
 import { SplitText } from 'gsap/SplitText'
 import { MEDIA } from '../config.js'
+import { formatNumber } from '../i18n/index.js'
 
 // sul telefono le comparse non sfocano: un filtro blur animato va ridisegnato a ogni fotogramma
 const phone = matchMedia(MEDIA.mobile)
 const soft = (px) => (phone.matches ? 'none' : `blur(${px}px)`)
 
-const numberFormats = new Map()
-function format(value, decimals) {
-  if (!numberFormats.has(decimals)) {
-    numberFormats.set(
-      decimals,
-      new Intl.NumberFormat('it-IT', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-        useGrouping: 'always', // 10.000 anche con 4-5 cifre
-      }),
-    )
-  }
-  return numberFormats.get(decimals).format(value)
-}
+// numeri nel formato della lingua del sito (10.000 / 10,000 / 10 000), raggruppati anche con 4-5 cifre
+const format = (value, decimals) => formatNumber(value, { decimals })
 
 /** Divide i testi [data-split] in righe/lettere mascherate, nascoste fino alla rivelazione. */
 export function prepareText(reduced) {

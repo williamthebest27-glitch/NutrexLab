@@ -28,12 +28,12 @@
         <header class="phead">
           <p class="mono eyebrow" data-reveal>
             <svg viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
-            Carrello &middot; <span data-cart-pieces>0 prodotti</span>
+            <span data-i18n>Carrello</span> &middot; <span data-cart-pieces>0 prodotti</span>
           </p>
-          <h1 class="display phead__title" aria-label="Il tuo carrello.">
-            <span><span data-split="chars" aria-hidden="true">Il tuo</span></span>
+          <h1 class="display phead__title" aria-label="Il tuo carrello." data-i18n-attr="aria-label">
+            <span><span data-split="chars" aria-hidden="true" data-i18n>Il tuo</span></span>
             <span>
-              <span data-split="chars" data-delay="0.12" aria-hidden="true">carrello</span>
+              <span data-split="chars" data-delay="0.12" aria-hidden="true" data-i18n>carrello</span>
               <svg class="hexdot" viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
             </span>
           </h1>
@@ -48,44 +48,44 @@
 
         <!-- carrello con i prodotti -->
         <div class="cart" data-cart hidden>
-          <section class="clist" aria-label="Prodotti nel carrello" data-lines></section>
+          <section class="clist" aria-label="Prodotti nel carrello" data-i18n-attr="aria-label" data-lines></section>
 
           <aside class="summary glass" aria-labelledby="riepilogo">
             <h2 class="card-title" id="riepilogo">
               <svg viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
-              Riepilogo
+              <span data-i18n>Riepilogo</span>
               <span class="pill-count mono" data-cart-count="always">0</span>
             </h2>
             <dl class="summary__rows" data-totals></dl>
             <form class="coupon" data-coupon>
-              <label class="sr-only" for="coupon">Codice sconto</label>
-              <input id="coupon" name="code" autocomplete="off" placeholder="Codice sconto" />
-              <button class="btn btn--sm btn--ghost" type="submit"><span class="btn__label">Applica</span></button>
+              <label class="sr-only" for="coupon" data-i18n>Codice sconto</label>
+              <input id="coupon" name="code" autocomplete="off" placeholder="Codice sconto" data-i18n-attr="placeholder" />
+              <button class="btn btn--sm btn--ghost" type="submit"><span class="btn__label" data-i18n>Applica</span></button>
             </form>
             <p class="coupon__msg" role="status" data-coupon-msg></p>
             <div class="coupons" data-coupons></div>
-            <p class="summary__note">Spedizione e IVA definitive, indirizzo e pagamento nel prossimo passaggio: il checkout sicuro del negozio.</p>
+            <p class="summary__note" data-i18n>Spedizione e IVA definitive, indirizzo e pagamento nel prossimo passaggio: il checkout sicuro del negozio.</p>
             <button class="btn btn--xl btn--block" type="button" data-checkout data-magnetic>
-              <span class="btn__label">Procedi al pagamento</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+              <span class="btn__label" data-i18n>Procedi al pagamento</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
             </button>
             <p class="coupon__msg" role="alert" data-checkout-msg></p>
             <!-- l'area clienti sta sul WooCommerce (plugin): il 5% sul primo ordine e i bonus amici entrano al pagamento -->
-            <aside class="nudge" aria-label="Account Nutrex Lab">
+            <aside class="nudge" aria-label="Account Nutrex Lab" data-i18n-attr="aria-label">
               <strong class="nudge__num">&minus;5%</strong>
               <div class="nudge__text">
-                <span class="mono nudge__label">Con un account Nutrex Lab</span>
-                <p>Il 5% sul primo ordine e un bonus del 5% per ogni amico che inviti: si applicano al pagamento.</p>
+                <span class="mono nudge__label" data-i18n>Con un account Nutrex Lab</span>
+                <p data-i18n>Il 5% sul primo ordine e un bonus del 5% per ogni amico che inviti: si applicano al pagamento.</p>
               </div>
               <div class="nudge__actions">
-                <a class="btn btn--sm" href="/account?vista=registrati&amp;torna=carrello"><span class="btn__label">Crea il tuo account</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>
-                <a class="link mono" href="/account?torna=carrello">Hai gi&agrave; un account? Accedi</a>
+                <a class="btn btn--sm" href="/account?vista=registrati&amp;torna=carrello"><span class="btn__label" data-i18n>Crea il tuo account</span><span class="btn__icon" aria-hidden="true">&rarr;</span></a>
+                <a class="link mono" href="/account?torna=carrello" data-i18n>Hai gi&agrave; un account? Accedi</a>
               </div>
             </aside>
-            <a class="link mono summary__back" href="/integratori">Continua gli acquisti</a>
+            <a class="link mono summary__back" href="/integratori" data-i18n>Continua gli acquisti</a>
             <ul class="ticks mono">
-              <li>Prodotti in Italia</li>
-              <li>Standard GMP / ISO 9001</li>
-              <li>Sigillo di garanzia su ogni barattolo</li>
+              <li data-i18n>Prodotti in Italia</li>
+              <li data-i18n>Standard GMP / ISO 9001</li>
+              <li data-i18n>Sigillo di garanzia su ogni barattolo</li>
             </ul>
           </aside>
         </div>
@@ -96,10 +96,10 @@
             <svg viewBox="0 0 26 24"><path class="empty__hex" d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
             <svg viewBox="-24 -24 72 72"><path class="empty__bag" d="M5.6 8.6h12.8l-1.05 10.9a1.6 1.6 0 0 1-1.6 1.45H8.25a1.6 1.6 0 0 1-1.6-1.45z" /><path class="empty__bag" d="M9 8.6V7.2a3 3 0 0 1 6 0v1.4" /></svg>
           </div>
-          <h2 class="display empty__title" id="vuoto">Ancora<br />vuoto.</h2>
-          <p class="body-copy empty__text">Scegli il tuo prodotto tra gli integratori Nutrex Lab, prodotti in Italia.</p>
+          <h2 class="display empty__title" id="vuoto" data-i18n>Ancora<br />vuoto.</h2>
+          <p class="body-copy empty__text" data-i18n>Scegli il tuo prodotto tra gli integratori Nutrex Lab, prodotti in Italia.</p>
           <a class="btn btn--xl" href="/integratori" data-magnetic>
-            <span class="btn__label">Scopri i prodotti</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
+            <span class="btn__label" data-i18n>Scopri i prodotti</span><span class="btn__icon" aria-hidden="true">&rarr;</span>
           </a>
           <div class="empty__picks" data-picks></div>
         </section>

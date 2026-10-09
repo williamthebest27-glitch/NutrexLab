@@ -1,19 +1,23 @@
-import { LANGS, LANG_INFO, DEFAULT_LANG, isLang, initialLang, saveLang } from './langs.js'
+import { LANG_INFO, DEFAULT_LANG, isLang, initialLang, saveLang } from './langs.js'
 
 /*
   Traduzioni del sito, applicate nel browser senza ricaricare la pagina.
 
-  - Testi dell'HTML (pagine e parti comuni): l'elemento ha data-i18n="chiave" e dentro il testo
-    italiano; data-i18n-attr="aria-label:chiave, alt:chiave2" per gli attributi. Le traduzioni stanno
-    in src/i18n/locales/<lingua>.js (html), l'italiano resta quello dell'HTML.
-  - Testi scritti dal JavaScript: t('Testo italiano') o t('Con {n} pezzi', { n }); la chiave e' il testo
-    italiano stesso (locales/<lingua>.js, ui). tp(n, 'singolare', 'plurale') per i numeri.
-  - Dati dei prodotti (testi della homepage, catalogo, schede del negozio): section('copy'),
-    section('catalog')... con gli stessi campi dei file italiani, solo quelli tradotti.
+  La chiave di ogni traduzione e' il testo italiano stesso (src/i18n/locales/<lingua>/*.js):
+  - testi dell'HTML: l'elemento ha l'attributo data-i18n e dentro il testo italiano (anche con <b>, <br>,
+    link...); data-i18n-attr="aria-label alt" traduce gli attributi elencati;
+  - testi scritti dal JavaScript: t('Testo italiano') o t('Con {n} pezzi', { n }); tp(n, 'singolare',
+    'plurale') per i numeri;
+  - dati dei prodotti (testi della homepage, catalogo, schede di WooCommerce): localize(oggetto) traduce
+    tutti i testi dell'oggetto con lo stesso dizionario.
+  Spazi e a capo non contano. Un testo senza traduzione resta in italiano (in sviluppo lo segnala la
+  console): cambiando un testo italiano va aggiornata anche la sua traduzione (npm test lo controlla).
 
   Ogni lingua e' un file a parte, scaricato solo quando serve. Cambiando lingua: setLang('de') carica il
   file, traduce l'HTML della pagina e avvisa le pagine (onLang) che ridisegnano le loro parti.
-  Una traduzione mancante lascia il testo italiano (in sviluppo lo segnala la console).
+
+  Fuori dal browser (build di Vite, src/seo/build.js che usa le schede di src/shop/card.js) non c'e' il
+  DOM: la lingua resta l'italiano e t() restituisce il testo com'e'.
 */
 
 const LOADERS = {
@@ -23,40 +27,69 @@ const LOADERS = {
   es: () => import('./locales/es.js'),
 }
 
-const html = document.documentElement
+const browser = typeof document !== 'undefined'
+const html = browser ? document.documentElement : null
 let current = DEFAULT_LANG
-let dict = null
+let dict = null // Map: testo italiano normalizzato -> traduzione
 const cache = new Map()
 const listeners = new Set()
 
-export { LANGS, LANG_INFO, isLang }
+export { LANG_INFO, isLang }
+export { LANGS } from './langs.js'
 export const lang = () => current
 export const locale = () => LANG_INFO[current].locale
 
+/** Chiave di un testo: spazi e a capo non contano (anche l'HTML: <br /> e <br> sono la stessa cosa). */
+const tpl = browser ? document.createElement('template') : null
+const squeeze = (s) => String(s).replace(/\s+/g, ' ').trim()
+export function norm(s) {
+  const str = String(s ?? '')
+  if (!tpl || !/[<&]/.test(str)) return squeeze(str)
+  tpl.innerHTML = str
+  return squeeze(tpl.innerHTML)
+}
+
 async function load(l) {
   if (l === DEFAULT_LANG) return null
-  if (!cache.has(l)) cache.set(l, LOADERS[l]().then((m) => m.default))
+  if (!cache.has(l)) {
+    cache.set(
+      l,
+      LOADERS[l]().then((m) => {
+        const map = new Map()
+        for (const part of Object.values(m.default)) for (const [it, tr] of Object.entries(part)) map.set(norm(it), tr)
+        return map
+      }),
+    )
+  }
   return cache.get(l)
 }
 
 // ---------------------------------------------------------------------------
-// testi del JavaScript
+// testi
 
-const missing = import.meta.env?.DEV ? new Set() : null
-function warn(kind, key) {
-  if (!missing || missing.has(`${current}|${kind}|${key}`)) return
-  missing.add(`${current}|${kind}|${key}`)
-  console.warn(`[i18n] ${current}: manca ${kind}`, key)
+const missing = browser && import.meta.env?.DEV ? new Set() : null
+function warn(key) {
+  if (!missing || missing.has(`${current}|${key}`)) return
+  missing.add(`${current}|${key}`)
+  console.warn(`[i18n] ${current}: manca la traduzione di`, JSON.stringify(key))
 }
+
+/** In sviluppo: i testi senza traduzione visti finora (window.__i18nMissing()). */
+if (missing) window.__i18nMissing = () => [...missing]
 
 const fill = (s, vars) => (vars ? String(s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] ?? m)) : s)
 
+/** Traduzione di un testo italiano (null se non c'e'). */
+function lookup(it) {
+  if (current === DEFAULT_LANG || it == null || it === '' || !/[A-Za-zÀ-ÿ]/.test(it)) return null
+  const s = dict?.get(norm(it))
+  if (s == null && it.length > 3) warn(it) // unita' (mg, g...) uguali in tutte le lingue
+  return s ?? null
+}
+
 /** Testo tradotto (la chiave e' il testo italiano). vars: { n: 3 } per i segnaposto {n}. */
 export function t(it, vars) {
-  if (current === DEFAULT_LANG || it == null || it === '') return fill(it, vars)
-  const s = dict?.ui?.[it]
-  if (s == null) warn('ui', it)
-  return fill(s ?? it, vars)
+  return fill(lookup(it) ?? it, vars)
 }
 
 /** Forma singolare/plurale secondo la lingua (in francese anche lo 0 e' singolare). */
@@ -65,18 +98,25 @@ export function tp(n, one, other, vars) {
   return t(single ? one : other, { n, ...vars })
 }
 
-/** Testo di una chiave dell'HTML (src/i18n/locales/<lingua>.js, html) per chi lo scrive da se'. */
-export function htmlText(key, it) {
-  if (current === DEFAULT_LANG || !key) return it
-  const s = dict?.html?.[key]
-  if (s == null) warn('html', key)
-  return s ?? it
+/**
+ * Copia di un dato con tutti i testi tradotti (oggetti e liste, anche annidati). skip: nomi dei campi da
+ * non tradurre (slug, simboli...). In italiano ritorna il dato stesso.
+ */
+export function localize(value, skip = LOCALIZE_SKIP) {
+  if (current === DEFAULT_LANG) return value
+  const walk = (v, key) => {
+    if (typeof v === 'string') return skip.has(key) ? v : (lookup(v) ?? v)
+    if (Array.isArray(v)) return v.map((x) => walk(x, key))
+    if (v && typeof v === 'object' && Object.getPrototypeOf(v) === Object.prototype) {
+      const out = {}
+      for (const [k, x] of Object.entries(v)) out[k] = walk(x, k)
+      return out
+    }
+    return v
+  }
+  return walk(value, '')
 }
-
-/** Parte tradotta dei dati (copy, catalog, woo, products...): undefined in italiano o se manca. */
-export function section(name) {
-  return current === DEFAULT_LANG ? undefined : dict?.[name]
-}
+const LOCALIZE_SKIP = new Set(['id', 'slug', 'category', 'quality', 'icon', 'model', 'form', 'shape', 'swatch', 'src', 'srcset', 'thumbnail', 'href', 'url', 'path', 'sku', 'type', 'code'])
 
 /** Numeri nel formato della lingua (10.000 / 10,000 / 10 000). */
 const numberFormats = new Map()
@@ -99,7 +139,7 @@ export const formatDate = (date) => new Intl.DateTimeFormat(locale(), { day: 'nu
 
 const ORIGINAL = new WeakMap()
 
-/** HTML italiano di un elemento (preso la prima volta, prima di ogni traduzione). */
+/** HTML e attributi italiani di un elemento (presi la prima volta, prima di ogni traduzione). */
 function original(el) {
   let o = ORIGINAL.get(el)
   if (!o) {
@@ -124,36 +164,24 @@ function setInner(el, value) {
   }
 }
 
-/** Traduce gli elementi [data-i18n] e gli attributi [data-i18n-attr] dentro root. */
+/** Traduce gli elementi [data-i18n] e gli attributi [data-i18n-attr] dentro root (anche root stesso). */
 export function translateDom(root = document) {
-  const table = current === DEFAULT_LANG ? null : dict?.html
-  const nodes = root.querySelectorAll ? root.querySelectorAll('[data-i18n], [data-i18n-attr]') : []
-  const all = root.matches?.('[data-i18n], [data-i18n-attr]') ? [root, ...nodes] : [...nodes]
+  const sel = '[data-i18n], [data-i18n-attr]'
+  const all = [...(root.matches?.(sel) ? [root] : []), ...(root.querySelectorAll?.(sel) ?? [])]
   for (const el of all) {
     if (el._i18nLang === current) continue
     const o = original(el)
-    const key = el.dataset.i18n
-    if (key) {
-      let value = o.html
-      if (table) {
-        if (table[key] == null) warn('html', key)
-        else value = table[key]
-      }
-      setInner(el, value)
+    if (el.hasAttribute('data-i18n')) {
+      const value = lookup(o.html) ?? o.html
+      if (el.innerHTML !== value || el._i18nLang) setInner(el, value)
     }
-    const spec = el.dataset.i18nAttr
-    if (spec) {
-      for (const pair of spec.split(',')) {
-        const [attr, k] = pair.split(':').map((s) => s.trim())
-        if (!attr || !k) continue
+    const names = el.dataset.i18nAttr
+    if (names) {
+      for (const attr of names.split(/[\s,]+/).filter(Boolean)) {
         if (!(attr in o.attrs)) o.attrs[attr] = el.getAttribute(attr)
-        let value = o.attrs[attr]
-        if (table) {
-          if (table[k] == null) warn('html', k)
-          else value = table[k]
-        }
-        if (value == null) el.removeAttribute(attr)
-        else el.setAttribute(attr, value)
+        const it = o.attrs[attr]
+        if (it == null) continue
+        el.setAttribute(attr, lookup(it) ?? it)
       }
     }
     el._i18nLang = current
@@ -163,16 +191,16 @@ export function translateDom(root = document) {
 // ---------------------------------------------------------------------------
 // titolo e descrizione della pagina
 
-const META = { title: document.title, description: document.querySelector('meta[name="description"]')?.getAttribute('content') ?? '' }
+const META = browser
+  ? { title: document.title, description: document.querySelector('meta[name="description"]')?.getAttribute('content') ?? '' }
+  : { title: '', description: '' }
 
-/** Titolo della scheda e descrizione nella lingua (testi italiani come chiavi, sezione meta). */
+/** Titolo della scheda e descrizione nella lingua (le pagine che li cambiano passano quelli italiani). */
 export function setMeta({ title, description } = {}) {
   if (title !== undefined) META.title = title
   if (description !== undefined) META.description = description
-  const table = section('meta')
-  document.title = (table && table[META.title]) || META.title
-  const desc = document.querySelector('meta[name="description"]')
-  if (desc) desc.setAttribute('content', (table && table[META.description]) || META.description)
+  document.title = t(META.title)
+  document.querySelector('meta[name="description"]')?.setAttribute('content', t(META.description))
 }
 
 // ---------------------------------------------------------------------------
@@ -182,6 +210,17 @@ export function setMeta({ title, description } = {}) {
 export function onLang(fn) {
   listeners.add(fn)
   return () => listeners.delete(fn)
+}
+
+function notify() {
+  for (const fn of listeners) {
+    try {
+      fn(current)
+    } catch (err) {
+      console.error('[i18n]', err)
+    }
+  }
+  html.dispatchEvent(new CustomEvent('nx:lang', { detail: { lang: current } }))
 }
 
 function mark() {
@@ -202,14 +241,7 @@ export async function setLang(l) {
   mark()
   translateDom(document)
   setMeta()
-  for (const fn of listeners) {
-    try {
-      fn(l)
-    } catch (err) {
-      console.error('[i18n]', err)
-    }
-  }
-  html.dispatchEvent(new CustomEvent('nx:lang', { detail: { lang: l } }))
+  notify()
 }
 
 /*
@@ -218,6 +250,7 @@ export async function setLang(l) {
   (classe i18n-wait). ready si risolve con la lingua pronta: le pagine lo aspettano prima di disegnare.
 */
 export const ready = (async () => {
+  if (!browser) return DEFAULT_LANG
   const l = initialLang()
   try {
     if (l !== DEFAULT_LANG) {
@@ -235,6 +268,6 @@ export const ready = (async () => {
   setMeta()
   html.classList.remove('i18n-wait')
   // chi si e' gia' iscritto (prima che la lingua fosse pronta) ridisegna nella lingua scelta
-  if (current !== DEFAULT_LANG) for (const fn of listeners) fn(current)
+  if (current !== DEFAULT_LANG) notify()
   return current
 })()

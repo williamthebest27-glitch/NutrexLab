@@ -1,6 +1,7 @@
 import gsap from 'gsap'
 import { MEDIA } from '../config.js'
 import { composeLogo } from './logo.js'
+import { t, onLang } from '../i18n/index.js'
 
 /**
  * Menu mobile (hamburger accanto ad "Acquista ora"): pannello a tutto schermo con le pagine
@@ -37,6 +38,9 @@ export function createMobileMenu({ lenis = null, reduced = false, onOpen = null 
   let closeTl = null
   let open = false
   let covers = false
+  // testo del pulsante nella lingua del sito (anche dopo un cambio di lingua)
+  const label = () => toggle.setAttribute('aria-label', open ? t('Chiudi il menu') : t('Apri il menu'))
+  onLang(label)
 
   /** Timeline di apertura, creata al primo uso (su desktop il menu non esiste). */
   function buildOpen() {
@@ -87,7 +91,7 @@ export function createMobileMenu({ lenis = null, reduced = false, onOpen = null 
     open = next
     openTl ??= buildOpen()
     toggle.setAttribute('aria-expanded', String(open))
-    toggle.setAttribute('aria-label', open ? 'Chiudi il menu' : 'Apri il menu')
+    label()
     root.setAttribute('aria-hidden', String(!open))
     html.classList.toggle('mnav-open', open)
     if (open) {

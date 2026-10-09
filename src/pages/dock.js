@@ -1,5 +1,6 @@
 import { cart } from '../shop/cart.js'
 import { colorVars, pieces, esc } from '../shop/themes.js'
+import { t, onLang } from '../i18n/index.js'
 
 /*
   Carrello sempre a portata (Acquista, pagina prodotto): pillola scura in basso con le foto dei
@@ -21,7 +22,7 @@ export function initDock() {
     const on = n > 0 && !footerIn
     dock.classList.toggle('is-on', on)
     dock.inert = !on
-    label.textContent = flash ? 'Aggiunto al carrello' : 'Carrello'
+    label.textContent = flash ? t('Aggiunto al carrello') : t('Carrello')
     what.textContent = flash ?? pieces(n)
     const items = cart.state?.items ?? []
     thumbs.innerHTML = items
@@ -31,6 +32,7 @@ export function initDock() {
   }
 
   cart.subscribe(render)
+  onLang(render)
   const footer = document.querySelector('[data-footer]')
   if (footer) {
     new IntersectionObserver(([e]) => {

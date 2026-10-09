@@ -1,4 +1,5 @@
 import { PRODUCTS } from '../products.js'
+import { t, tp } from '../i18n/index.js'
 
 /*
   Colori del sito per i prodotti del negozio. I dati commerciali arrivano da WooCommerce; i colori
@@ -35,21 +36,21 @@ export const productUrl = (slug) => `/prodotto/${encodeURIComponent(slug)}`
 
 export const pad = (n) => String(n).padStart(2, '0')
 
-/** "1 prodotto" / "3 prodotti" */
-export const pieces = (n) => `${n} ${n === 1 ? 'prodotto' : 'prodotti'}`
+/** "1 prodotto" / "3 prodotti" (nella lingua del sito) */
+export const pieces = (n) => tp(n, '{n} prodotto', '{n} prodotti')
 
 /** Testo sicuro da inserire in HTML. */
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
-/** Disponibilita' in italiano dai dati di WooCommerce. quantity: anche i pezzi in magazzino (pagina prodotto). */
+/** Disponibilita' (nella lingua del sito) dai dati di WooCommerce. quantity: anche i pezzi in magazzino (pagina prodotto). */
 export function availability(stock, { quantity = false } = {}) {
   if (!stock) return { text: '', tone: '' }
-  if (!stock.inStock) return { text: 'Esaurito', tone: 'out' }
+  if (!stock.inStock) return { text: t('Esaurito'), tone: 'out' }
   // in WooCommerce ma non ancora acquistabile (per esempio senza prezzo)
-  if (stock.purchasable === false) return { text: 'Presto disponibile', tone: 'back' }
-  if (stock.backorder) return { text: 'Disponibile su ordinazione', tone: 'back' }
-  if (stock.low) return { text: stock.low === 1 ? 'Ultimo pezzo' : `Solo ${stock.low} disponibili`, tone: 'low' }
-  if (quantity && stock.quantity) return { text: stock.quantity === 1 ? '1 disponibile' : `${stock.quantity} disponibili`, tone: 'in' }
-  return { text: 'Disponibile', tone: 'in' }
+  if (stock.purchasable === false) return { text: t('Presto disponibile'), tone: 'back' }
+  if (stock.backorder) return { text: t('Disponibile su ordinazione'), tone: 'back' }
+  if (stock.low) return { text: stock.low === 1 ? t('Ultimo pezzo') : t('Solo {n} disponibili', { n: stock.low }), tone: 'low' }
+  if (quantity && stock.quantity) return { text: tp(stock.quantity, '{n} disponibile', '{n} disponibili'), tone: 'in' }
+  return { text: t('Disponibile'), tone: 'in' }
 }

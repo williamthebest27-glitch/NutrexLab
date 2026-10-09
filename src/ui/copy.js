@@ -1,6 +1,7 @@
 import gsap from 'gsap'
 import { COPY } from '../content.js'
 import { PRODUCTS } from '../products.js'
+import { localize, formatNumber, t, setMeta } from '../i18n/index.js'
 
 /*
   Mette nella pagina i testi del prodotto (src/content.js).
@@ -12,16 +13,8 @@ import { PRODUCTS } from '../products.js'
 const $ = (s) => document.querySelector(s)
 const $$ = (s) => [...document.querySelectorAll(s)]
 
-const formats = new Map()
-function fmt(value, decimals = 0) {
-  if (!formats.has(decimals)) {
-    formats.set(
-      decimals,
-      new Intl.NumberFormat('it-IT', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: 'always' }),
-    )
-  }
-  return formats.get(decimals).format(value)
-}
+/** Numeri nel formato della lingua del sito (10.000 in italiano, 10,000 in inglese...). */
+const fmt = (value, decimals = 0) => formatNumber(value, { decimals })
 
 /** Numero che sale fino al valore reale quando l'elemento compare (countUp in text.js). */
 const num = (tag, value, decimals = 0) =>
@@ -44,7 +37,7 @@ const pad = (n) => String(n).padStart(2, '0')
 function ingredientItem(item, index) {
   const nrv =
     item.nrv != null
-      ? `<span class="ing__nrv mono">${num('b', item.nrv)}% VNR</span>`
+      ? `<span class="ing__nrv mono">${num('b', item.nrv)}${t('% VNR')}</span>`
       : item.note
         ? `<span class="ing__nrv mono">${item.note}</span>`
         : ''
@@ -71,7 +64,7 @@ function ingredients(ing) {
     li.innerHTML = item ? ingredientItem(item, k) : ''
   })
   list.classList.toggle('is-long', ing.items.length > 7)
-  list.setAttribute('aria-label', `Ingredienti: ${[h.name, ...ing.items.map((i) => i.name)].join(', ')}`)
+  list.setAttribute('aria-label', t('Ingredienti: {lista}', { lista: [h.name, ...ing.items.map((i) => i.name)].join(', ') }))
   setHTML($('.ing__note'), ing.note)
   fitIngredients()
 }
@@ -125,7 +118,7 @@ function daily(dl) {
   const f = dl.duration
   setHTML(
     $('.daily__facts'),
-    `<li><span class="daily__k">Un barattolo per:</span><span class="daily__v">${num('b', f.value, f.decimals)}<span class="daily__u">${f.unit}</span></span><em>${f.text}</em></li>`,
+    `<li><span class="daily__k">${t('Un barattolo per:')}</span><span class="daily__v">${num('b', f.value, f.decimals)}<span class="daily__u">${f.unit}</span></span><em>${f.text}</em></li>`,
   )
 }
 
@@ -159,8 +152,8 @@ function hero(h, animate) {
  * fotogramma del nuovo barattolo (sul telefono era il fotogramma piu' lungo del cambio).
  */
 export function applyCopy(id, { animate = false, parts = 'all' } = {}) {
-  const c = COPY[id]
-  if (!c) return
+  if (!COPY[id]) return
+  const c = localize(COPY[id]) // testi nella lingua del sito (src/i18n)
   if (parts !== 'rest') applyTop(c, animate, id)
   if (parts !== 'top') applyRest(c, id)
 }
@@ -174,8 +167,8 @@ const HOME_META = { title: document.title, description: $('meta[name="descriptio
 
 function applyTop(c, animate, id) {
   const home = id === PRODUCTS[0].id
-  document.title = home ? HOME_META.title : c.meta.title
-  $('meta[name="description"]')?.setAttribute('content', home ? HOME_META.description : c.meta.description)
+  const it = COPY[id].meta // titolo e descrizione italiani: setMeta li traduce
+  setMeta(home ? HOME_META : { title: it.title, description: it.description })
 
   hero(c.hero, animate)
 

@@ -17,12 +17,12 @@ export function crumbsHtml(trail, { className = '', hex = false, attrs = '' } = 
   const items = trail
     .map(([name, path], i) =>
       i === trail.length - 1
-        ? `<li aria-current="page">${esc(name)}</li>`
-        : `<li><a href="${esc(path)}">${esc(name)}</a></li>`,
+        ? `<li aria-current="page" data-i18n>${esc(name)}</li>`
+        : `<li><a href="${esc(path)}" data-i18n>${esc(name)}</a></li>`,
     )
     .join('')
   const mark = hex ? `<svg viewBox="0 0 26 24" aria-hidden="true"><path d="${HEX}" /></svg>` : ''
-  return `<nav class="crumbs ${className}" aria-label="Percorso"${attrs ? ` ${attrs}` : ''}>${mark}<ol>${items}</ol></nav>`
+  return `<nav class="crumbs ${className}" aria-label="Percorso" data-i18n-attr="aria-label"${attrs ? ` ${attrs}` : ''}>${mark}<ol>${items}</ol></nav>`
 }
 
 /**
@@ -34,8 +34,8 @@ export function faqHtml(faq, { id = 'domande', title = 'Domande frequenti', head
   const items = faq
     .map(
       ([q, a]) =>
-        `<details class="faq__item"><summary class="faq__q"><span>${esc(q)}</span><i class="faq__icon" aria-hidden="true"></i></summary><p class="faq__a">${esc(a)}</p></details>`,
+        `<details class="faq__item"><summary class="faq__q"><span data-i18n>${esc(q)}</span><i class="faq__icon" aria-hidden="true"></i></summary><p class="faq__a" data-i18n>${esc(a)}</p></details>`,
     )
     .join('')
-  return `<section class="faq" aria-labelledby="${id}"${attrs ? ` ${attrs}` : ''}><${heading} class="display faq__title" id="${id}">${esc(title)}</${heading}><div class="faq__list">${items}</div></section>`
+  return `<section class="faq" aria-labelledby="${id}"${attrs ? ` ${attrs}` : ''}><${heading} class="display faq__title" id="${id}" data-i18n>${esc(title)}</${heading}><div class="faq__list">${items}</div></section>`
 }

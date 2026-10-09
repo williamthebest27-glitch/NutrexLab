@@ -1,5 +1,6 @@
 import { initPage, rise } from './common.js'
 import { cart } from '../shop/cart.js'
+import { t, onLang } from '../i18n/index.js'
 
 /*
   Grazie: dopo il pagamento nel checkout di WooCommerce il cliente torna qui (plugin Nutrex Headless,
@@ -12,7 +13,9 @@ const number = new URLSearchParams(location.search).get('numero')
 if (number && /^[\w-]{1,40}$/.test(number)) {
   document.querySelector('[data-number-value]').textContent = number
   document.querySelector('[data-number]').hidden = false
-  document.title = `Grazie, ordine ${number} | Nutrex Lab`
+  const title = () => (document.title = t('Grazie, ordine {numero} | Nutrex Lab', { numero: number }))
+  title()
+  onLang(title)
   // i prodotti sono stati ordinati: il carrello del negozio riparte vuoto
   if (cart.count > 0) cart.clear().catch(() => {})
 }

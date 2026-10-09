@@ -258,11 +258,12 @@ describe('pagina prodotto per Google e social', () => {
     // breadcrumb: Home / Integratori / Collagene / prodotto, lo stesso della barra visibile
     const crumbs = node(graph, 'BreadcrumbList').itemListElement.map((i) => i.name)
     assert.deepEqual(crumbs, ['Home', 'Integratori', 'Collagene', 'Collagene & vitamina C'])
-    assert.match(html, /<nav class="crumbs[^"]*" aria-label="Percorso">/)
+    assert.match(html, /<nav class="crumbs[^"]*" aria-label="Percorso"[^>]*>/)
     // domande frequenti: le stesse nella pagina e nei dati strutturati
     const faq = node(graph, 'FAQPage').mainEntity
     assert.ok(faq.length >= 3)
-    for (const q of faq) assert.ok(html.includes(`<span>${q.name.replace(/'/g, '&#39;')}</span>`), q.name)
+    // (data-i18n: nelle altre lingue la pagina traduce questi testi nel browser)
+    for (const q of faq) assert.ok(html.includes(`<span data-i18n>${q.name.replace(/'/g, '&#39;')}</span>`), q.name)
     // prodotti della stessa categoria e categoria, linkati anche senza JavaScript
     assert.match(html, /href="\/prodotto\/collagene-marino-compresse"/)
     assert.match(html, /href="\/integratori\/collagene"/)

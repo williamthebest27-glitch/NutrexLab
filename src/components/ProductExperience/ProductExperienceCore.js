@@ -170,7 +170,7 @@ export class ProductExperience {
           <h2 class="pe__title pe__title--a"></h2>
         </div>
         <div class="pe__copy pe__copy--b"><h2 class="pe__title pe__title--b"></h2></div>
-        <ol class="pe__steps" aria-label="Sequenza"><span class="pe__steps-track" aria-hidden="true"><span class="pe__steps-bar"></span></span></ol>
+        <ol class="pe__steps" aria-label="Sequenza" data-i18n-attr="aria-label"><span class="pe__steps-track" aria-hidden="true"><span class="pe__steps-bar"></span></span></ol>
         <p class="pe__product"></p>
         ${PINS.map(
           ([key, cls]) => `<div class="pe__pin${cls ? ` ${cls}` : ''}" data-pin="${key}" aria-hidden="true"><div class="pe__pin-body">
@@ -245,7 +245,8 @@ export class ProductExperience {
       pin.textW = 0 // testo nuovo: larghezza da rimisurare
       pin.fixed = null
     }
-    stepsFor(this.type).forEach((name, i) => {
+    // nomi dei passi: quelli del sito (nella sua lingua) se li passa, altrimenti quelli di copy.js
+    ;(this.o.stepNames?.(this.type) ?? stepsFor(this.type)).forEach((name, i) => {
       this.steps[i].querySelector('.pe__step-t').textContent = name
     })
     this.fitTitles()
@@ -254,7 +255,7 @@ export class ProductExperience {
     const byType = `${this.o.postersPath}${POSTERS[this.type]}${this.layout === 'mobile' ? '-mobile' : ''}.webp`
     this.poster.onerror = own ? () => this.poster.getAttribute('src') !== byType && this.poster.setAttribute('src', byType) : null
     this.poster.setAttribute('src', own || byType)
-    this.poster.alt = this.o.productName ? `${this.o.productName}: bicchiere d'acqua` : ''
+    this.poster.alt = this.o.productName ? (this.o.posterAlt?.(this.o.productName) ?? `${this.o.productName}: bicchiere d'acqua`) : ''
   }
 
   /**

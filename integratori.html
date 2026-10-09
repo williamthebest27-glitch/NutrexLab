@@ -27,17 +27,17 @@
         <header class="phead">
           <p class="mono eyebrow" data-reveal>
             <svg viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
-            Acquista &middot; La linea Nutrex Lab
+            <span data-i18n>Acquista &middot; La linea Nutrex Lab</span>
           </p>
-          <h1 class="display phead__title" aria-label="Scegli il tuo prodotto.">
-            <span><span data-split="chars" aria-hidden="true">Scegli il tuo</span></span>
+          <h1 class="display phead__title" aria-label="Scegli il tuo prodotto." data-i18n-attr="aria-label">
+            <span><span data-split="chars" aria-hidden="true" data-i18n>Scegli il tuo</span></span>
             <span>
-              <span data-split="chars" data-delay="0.12" aria-hidden="true">prodotto</span>
+              <span data-split="chars" data-delay="0.12" aria-hidden="true" data-i18n>prodotto</span>
               <svg class="hexdot" viewBox="0 0 26 24" aria-hidden="true"><path d="M7.2 2.5h11.6l5.6 9.5-5.6 9.5H7.2L1.6 12z" /></svg>
             </span>
           </h1>
           <div class="phead__row">
-            <p class="phead__lead" data-reveal data-delay="0.3">
+            <p class="phead__lead" data-reveal data-delay="0.3" data-i18n>
               <strong>Integratori prodotti in Italia.</strong> Polvere, compresse e capsule: ognuno con la sua formula,
               per il tuo benessere di ogni giorno.
             </p>
@@ -50,12 +50,12 @@
         <div class="toolbar">
           <!-- categorie:tutti -->
           <p class="mono toolbar__count" aria-live="polite" data-count></p>
-          <div class="filters" role="group" aria-label="Filtra per formato" data-filters></div>
+          <div class="filters" role="group" aria-label="Filtra per formato" data-i18n-attr="aria-label" data-filters></div>
         </div>
 
         <!-- schede gia' nella pagina (nome, descrizione, foto e link: le leggono anche i motori di ricerca),
              aggiornate dal browser con i dati di WooCommerce (src/pages/acquista.js) -->
-        <ul class="pgrid" data-grid aria-label="Prodotti" aria-busy="true">
+        <ul class="pgrid" data-grid aria-label="Prodotti" data-i18n-attr="aria-label" aria-busy="true">
           <!-- griglia:tutti -->
         </ul>
         <noscript><p class="phead__lead">Per usare il carrello attiva JavaScript.</p></noscript>

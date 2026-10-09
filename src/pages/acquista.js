@@ -5,7 +5,9 @@ import { api } from '../shop/api.js'
 import { initDock } from './dock.js'
 import { pad, esc } from '../shop/themes.js'
 import { productCard } from '../shop/card.js'
-import { CATEGORIES, categoryBySlug, productsIn } from '../seo/catalog.js'
+import { CATEGORIES, PRODUCTS as CATALOG, categoryBySlug, productsIn } from '../seo/catalog.js'
+import { lang, t, tp, onLang } from '../i18n/index.js'
+import { localizeProduct, catalogProduct } from '../i18n/data.js'
 
 gsap.registerPlugin(Flip)
 
@@ -39,13 +41,13 @@ const reveal = rise(cards, { stagger: 0.07, after: ready })
 
 function setCount() {
   const n = cards.filter((c) => !c.classList.contains('is-out')).length
-  countEl.textContent = `${pad(n)} / ${pad(cards.length)} ${cards.length === 1 ? 'prodotto' : 'prodotti'}`
+  countEl.textContent = `${pad(n)} / ${pad(cards.length)} ${tp(cards.length, 'prodotto', 'prodotti')}`
 }
 
 // ---------------------------------------------------------------------------
 // Filtri per formato (sottocategorie di WooCommerce, se ci sono): le schede si ridispongono scivolando
 function renderFilters(categories, total) {
-  const options = [['all', 'Tutti', total], ...categories.map((c) => [String(c.id), c.name, c.count])]
+  const options = [['all', t('Tutti'), total], ...categories.map((c) => [String(c.id), t(c.name), c.count])]
   filters.innerHTML = options
     .map(
       ([key, label, n]) =>
@@ -98,34 +100,32 @@ function patch(el, fresh) {
 }
 
 function showEmpty() {
-  grid.innerHTML = `<li class="alert" style="grid-column: 1 / -1"><p class="alert__title">Presto disponibili</p><p class="alert__text">I prodotti saranno pubblicati a breve.</p></li>`
+  grid.innerHTML = `<li class="alert" style="grid-column: 1 / -1"><p class="alert__title">${t('Presto disponibili')}</p><p class="alert__text">${t('I prodotti saranno pubblicati a breve.')}</p></li>`
   cards = []
+}
+
+/*
+  Lingua del sito (src/i18n): le schede si riscrivono nella lingua scelta, con i dati di WooCommerce se
+  sono gia' arrivati, altrimenti con quelli del catalogo del sito (le stesse schede gia' nella pagina).
+*/
+let lastData = null
+
+/** Schede gia' nella pagina (senza i dati di WooCommerce) nella lingua del sito. */
+function renderStatic() {
+  cards.forEach((el, i) => {
+    const slug = el.id.replace(/^p-/, '')
+    const c = catalogProduct(slug)
+    if (!c || !CATALOG.some((p) => p.slug === slug)) return
+    const p = { id: slug, slug, name: c.name, summary: c.summary, type: 'simple', images: [], categories: [], stock: null }
+    patch(el, toElement(productCard(p, i, [])))
+  })
 }
 
 async function load() {
   grid.setAttribute('aria-busy', 'true')
   try {
-    const data = await api.products({ per_page: 48 })
-    const categories = formatFilters(data.categories ?? [])
-    const products = data.products.filter(belongs)
-    if (!products.length) {
-      showEmpty()
-    } else {
-      const next = products.map((p, i) => {
-        const fresh = toElement(productCard(p, i, categories))
-        const old = cards.find((c) => c.id === fresh.id)
-        if (old) {
-          patch(old, fresh)
-          return old
-        }
-        reveal.observe(fresh)
-        return fresh
-      })
-      cards.filter((c) => !next.includes(c)).forEach((c) => c.remove())
-      next.forEach((el) => grid.appendChild(el)) // ordine del pannello di WooCommerce
-      cards = next
-    }
-    renderFilters(categories, cards.length)
+    const data = (lastData = await api.products({ per_page: 48 }))
+    render(data)
   } catch {
     // WooCommerce non risponde: restano le schede della pagina (senza disponibilita'), tutte cliccabili
   } finally {
@@ -133,7 +133,38 @@ async function load() {
     if (cards.length) setCount()
   }
 }
+
+/** Schede e filtri dai dati di WooCommerce, nella lingua del sito. */
+function render(data) {
+  const categories = formatFilters(data.categories ?? []).map((c) => ({ ...c, name: t(c.name) }))
+  const products = data.products.filter(belongs).map(localizeProduct)
+  if (!products.length) {
+    showEmpty()
+  } else {
+    const next = products.map((p, i) => {
+      const fresh = toElement(productCard(p, i, categories))
+      const old = cards.find((c) => c.id === fresh.id)
+      if (old) {
+        patch(old, fresh)
+        return old
+      }
+      reveal.observe(fresh)
+      return fresh
+    })
+    cards.filter((c) => !next.includes(c)).forEach((c) => c.remove())
+    next.forEach((el) => grid.appendChild(el)) // ordine del pannello di WooCommerce
+    cards = next
+  }
+  renderFilters(categories, cards.length)
+}
+
+if (lang() !== 'it') renderStatic()
 load()
+onLang(() => {
+  if (lastData) render(lastData)
+  else renderStatic()
+  if (cards.length) setCount()
+})
 
 // carrello sempre a portata in basso
 initDock()
