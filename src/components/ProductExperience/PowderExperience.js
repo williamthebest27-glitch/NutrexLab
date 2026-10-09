@@ -391,14 +391,16 @@ export class PowderExperience {
     u.uCaustic.value = 0.1 * (1 - 0.6 * cloud)
     u.uGlassRot.value = s.glassRot * DEG
 
-    // punti a cui si agganciano le etichette: bordo del misurino e pelo dell'acqua; le sagome
-    // (coppa del misurino, bicchiere) da cui la linea deve uscire
+    // punti a cui si agganciano le etichette: bordo del misurino e, per l'acqua, il bordo del
+    // bicchiere davanti a destra (non il pelo dell'acqua, piu' basso: la scritta resta staccata dal
+    // beneficio a destra, che non puo' scendere sulla pozza di luce); le sagome (coppa del misurino,
+    // bicchiere) da cui la linea deve uscire
     this.anchors.dose.set(0, 0, -this.dim.riTop).applyMatrix4(this.rig.matrixWorld)
     const g = this.scene.glassInfo
-    this.anchors.water.set(g.rIn * 0.7, g.waterY, g.rIn * 0.55)
+    this.anchors.water.set(g.rIn * 0.7, g.height, g.rIn * 0.55)
     this.bodies.dose.center.set(0, -this.dim.depth * 0.5, 0).applyMatrix4(this.rig.matrixWorld)
     this.bodies.dose.radius = this.dim.riTop * 1.15
-    this.bodies.water.center.set(0, g.waterY, 0)
+    this.bodies.water.center.set(0, g.height, 0)
     this.bodies.water.radius = g.rOut
     // benefici: sopra, dal bordo dietro della bocca (il punto piu' alto del bicchiere sullo schermo;
     // sul telefono dal bordo sinistro, cosi' la linea non attraversa l'etichetta dell'acqua, sopra
