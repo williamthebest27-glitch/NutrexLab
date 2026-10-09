@@ -56,7 +56,7 @@
     <div class="grain" aria-hidden="true"></div>
 
     <main>
-      <!-- ============ STORIA: hero + scene 1-5 ============ -->
+      <!-- ============ STORIA: hero + scene 1-4 ============ -->
       <section class="section story" id="top" data-section="story" data-steps="6" data-chapter="Il rituale">
         <div class="stage stage--front">
           <h1 class="hero-title" aria-label="Il tuo rituale quotidiano." data-i18n-attr="aria-label">
@@ -130,10 +130,6 @@
             <span>Gusto neutro</span><span>Senza glutine</span><span>Senza lattosio</span>
           </p>
 
-          <p class="body-copy s4__claim" data-split="lines" data-reveal="s4claim">
-            Zinco e biotina contribuiscono al mantenimento di una pelle normale.
-          </p>
-
           <div class="pins">
             <div class="pin" data-pin="cap" data-reveal="pins-a" data-reveal-fade>
               <div class="pin__body">
@@ -167,8 +163,6 @@
           <p class="display s3__w s3__w--2" data-split="chars" data-reveal="s3b" data-i18n>Semplice.</p>
           <p class="display s3__w s3__w--3" data-split="chars" data-reveal="s3c" data-i18n>Efficace.</p>
 
-          <h2 class="display s4__title" data-split="chars" data-reveal="s4">La bellezza<br />nasce<br />da dentro.</h2>
-
           <!-- scena 2: sipario scuro con bordo curvo, spunta gia' in fondo alla hero -->
           <div class="curtain" data-curtain>
             <div class="curtain__slide">
@@ -178,10 +172,16 @@
               <div class="curtain__body">
                 <div class="curtain__content" data-curtain-content>
                   <h2 class="curtain__title" id="about">Collagene<br />marino</h2>
-                  <p class="body-copy curtain__copy" data-split="lines" data-reveal="s2copy">
-                    Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico,
-                    coenzima Q10 e biotina.
-                  </p>
+                  <!-- scorrendo il testo esce e al suo posto entra la frase sui benefici (stesso spazio) -->
+                  <div class="curtain__copies">
+                    <p class="body-copy curtain__copy curtain__copy--1" data-split="lines" data-reveal="s2copy">
+                      Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico,
+                      coenzima Q10 e biotina.
+                    </p>
+                    <p class="body-copy curtain__copy curtain__copy--2" data-split="lines" data-reveal="s2claim">
+                      Zinco e biotina contribuiscono al mantenimento di una pelle normale.
+                    </p>
+                  </div>
                 </div>
               </div>
               <div class="curtain__foot" aria-hidden="true">

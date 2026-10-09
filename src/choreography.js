@@ -7,7 +7,7 @@ import { show, hide } from './ui/text.js'
 /*
   Unita' di tempo = "viewport scrollate" (t = scrollY / altezza viewport).
   Mappa (con i passi di index.html):
-    story        0 .. 6   hero, scene 1-5          (sticky)   6 .. 7  transizione
+    story        0 .. 6   hero, scene 1-4          (sticky)   6 .. 7  transizione
     ingredients  7 .. 10                            (sticky)  10 .. 11
     science     11 .. 14                            (sticky)  14 .. 15
     ritual      15 .. 17.4  sezione del bicchiere   (pin)     17.4 .. 18.4
@@ -24,8 +24,10 @@ const BASE = {
 /*
   Sipario scuro della scena 2: a riposo spunta in fondo alla hero con il bordo curvo,
   con lo scroll sale fino a coprire tutto, poi esce verso l'alto scoprendo la scena 3.
+  Resta chiuso per due momenti: il testo dell'ingrediente, poi la frase sui benefici
+  (s2claim) mentre il barattolo si avvicina e si gira di fronte.
 */
-export const CURTAIN = { rise: [0.05, 1.0], exit: [1.92, 2.34] }
+export const CURTAIN = { rise: [0.05, 1.0], exit: [2.9, 3.32] }
 
 // sx/sy: posizione sullo schermo (-1..1), size: altezza del barattolo / altezza viewport
 /*
@@ -38,9 +40,9 @@ const ROT = {
   hero: -0.12, // barattolo inclinato e sospeso, etichetta quasi di fronte
   s2: -0.42, // barattolo a destra sul sipario scuro, fronte verso "Collagene marino"
   s2b: -0.66,
+  s2c: 0.25, // sempre sul sipario, con la frase sui benefici: si avvicina e si gira di fronte
+  s2d: 0.08, // fronte pieno
   s3: 0.45, // barattolo a sinistra, fronte verso le parole a destra
-  s4a: 0.25,
-  s4: 0.08, // fronte pieno nella scena scura
   s5a: -0.45, // macro del tappo: dettagli a destra
   s5b: -0.95, // etichetta: dettagli a sinistra
   s6: -1.7,
@@ -79,10 +81,13 @@ function desktopKeys(T, R) {
     { t: s + 0.06, heroOut: 0 },
     // scena 2: sul sipario scuro, dritto a destra con luce di taglio (lascia spazio ai nomi lunghi)
     { t: s + 1.0, sx: 0.58, sy: -0.01, size: 0.62, rotY: R.s2, rotX: 0, rotZ: 0, elev: 7, key: 0.9, rim: 1.6, env: 0.75, heroOut: 1 },
-    { t: s + 1.95, rotY: R.s2b },
-    { t: s + 3, sx: -0.36, sy: 0.02, size: 0.68, rotY: R.s3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
-    { t: s + 3.6, sx: 0.52, sy: -0.06, size: 0.92, rotY: R.s4a, elev: 8, key: 1.1, rim: 1.7, env: 0.7, shadow: 0, aura: 1 },
-    { t: s + 4.05, sx: 0.58, sy: -0.08, size: 0.95, rotY: R.s4 },
+    { t: s + 1.7, rotY: R.s2b },
+    // il testo lascia il posto alla frase sui benefici: il barattolo si avvicina, grande e di fronte
+    // (l'aura resta spenta: sta dietro al sipario, che ha gia' la sua luce)
+    { t: s + 2.3, sx: 0.52, sy: -0.06, size: 0.92, rotY: R.s2c, elev: 8, key: 1.1, rim: 1.7, env: 0.7 },
+    { t: s + 2.8, sx: 0.58, sy: -0.08, size: 0.95, rotY: R.s2d },
+    // scena 3: il sipario esce e il barattolo passa a sinistra delle parole
+    { t: s + 3.98, sx: -0.36, sy: 0.02, size: 0.68, rotY: R.s3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
     // (a sinistra: a destra c'e' spazio per i dettagli, con le scritte grandi)
     { t: s + 4.7, sx: -0.58, sy: -1.0, size: 1.34, rotY: R.s5a, rotX: 0.04, elev: 24, rim: 1.2, aura: 0.55 },
     { t: s + 5.3, sx: 0.36, sy: R.s5bY ?? S5B.sy, size: S5B.size, rotY: R.s5b, rotX: 0, elev: 11 },
@@ -113,10 +118,10 @@ function mobileKeys(T, R) {
     { t: s, ...BASE, sx: 0.04, sy: -0.17, size: 0.27, heroFit: true, rotY: R.hero, rotX: 0.34, rotZ: -0.3, elev: 2, shadow: 0 },
     { t: s + 0.06, heroOut: 0 },
     { t: s + 1.0, sx: 0, sy: -0.4, size: 0.36, rotY: 0.1, rotX: 0, rotZ: 0, elev: 8, key: 0.9, rim: 1.6, env: 0.75, heroOut: 1 },
-    { t: s + 1.95, rotY: -0.14 },
-    { t: s + 3, sy: -0.32, size: 0.4, rotY: -0.3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
-    { t: s + 3.6, sy: -0.6, size: 0.66, rotY: R.s4a, elev: 8, key: 1.1, rim: 1.7, env: 0.7, shadow: 0, aura: 1 },
-    { t: s + 4.05, sy: -0.64, size: 0.7, rotY: R.s4 },
+    { t: s + 1.7, rotY: -0.14 },
+    { t: s + 2.3, sy: -0.6, size: 0.66, rotY: R.s2c, elev: 8, key: 1.1, rim: 1.7, env: 0.7 },
+    { t: s + 2.8, sy: -0.64, size: 0.7, rotY: R.s2d },
+    { t: s + 3.98, sy: -0.32, size: 0.4, rotY: -0.3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
     { t: s + 4.7, sx: -0.3, sy: -0.9, size: 1.0, rotY: R.s5a, rotX: 0.04, elev: 24, rim: 1.2, aura: 0.55 },
     { t: s + 5.3, sx: 0.3, sy: -0.2, size: 0.8, rotY: R.s5b, rotX: 0, elev: 11 },
     { t: s + 6, sx: 0, sy: 0, size: 0.36, rotY: R.s6, elev: 9, rim: 1.3, aura: 0.7 },
@@ -186,7 +191,7 @@ export function buildMaster(T, layout, palette = COLORS) {
   if (chrome.length) tl.set(chrome, { '--page-bg': prev.bg }, 0) // (il valore di partenza: tornando in cima si rilegge questo)
   const steps = [
     { at: s + 1.1, dur: 0.9, bg: C.mist },
-    { at: s + 3.0, dur: 0.6, bg: C.plum, fg: C.paper, accent: C.berryHi },
+    { at: s + 3.98, dur: 0.6, bg: C.plum, fg: C.paper, accent: C.berryHi },
     { at: i - 0.8, dur: 0.8, bg: C.night },
     { at: c - 0.8, dur: 0.8, bg: C.abyss },
     { at: d - 0.8, dur: 0.8, bg: C.wine },
@@ -230,10 +235,9 @@ export function buildMaster(T, layout, palette = COLORS) {
   }
 
   // --- parallasse leggera dei titoli mentre restano in scena
-  tl.fromTo('.s3__w--1', { y: 30 }, { y: -30, duration: 1.2 }, s + 1.95)
-  tl.fromTo('.s3__w--2', { y: 60 }, { y: -60, duration: 1.2 }, s + 1.95)
-  tl.fromTo('.s3__w--3', { y: 90 }, { y: -90, duration: 1.2 }, s + 1.95)
-  tl.fromTo('.s4__title', { y: 40 }, { y: -40, duration: 1.0 }, s + 3.1)
+  tl.fromTo('.s3__w--1', { y: 30 }, { y: -30, duration: 1.2 }, s + 2.93)
+  tl.fromTo('.s3__w--2', { y: 60 }, { y: -60, duration: 1.2 }, s + 2.93)
+  tl.fromTo('.s3__w--3', { y: 90 }, { y: -90, duration: 1.2 }, s + 2.93)
   tl.fromTo('.sci__a', { x: 40 }, { x: -10, duration: 3.6 }, c - 0.4)
   tl.fromTo('.sci__b', { x: -40 }, { x: 10, duration: 3.6 }, c - 0.4)
 
@@ -274,14 +278,14 @@ export function curtainMetrics(curtain, layout) {
 export function buildReveals(T, { reduced, getVh, hooks = {} }) {
   const s = T.story, i = T.ingredients, c = T.science, d = T.daily, p = T.shop
   const list = [
-    ['s2copy', s + 0.66, s + 1.9],
-    ['s3a', s + 2.24, s + 2.98],
-    ['s3b', s + 2.38, s + 2.98],
-    ['s3c', s + 2.52, s + 2.98],
-    ['s3tags', s + 2.6, s + 2.98],
-    ['s3cert', s + 2.6, s + 2.98],
-    ['s4', s + 3.28, s + 4.0],
-    ['s4claim', s + 3.5, s + 4.0],
+    ['s2copy', s + 0.66, s + 1.7],
+    // sul sipario, al posto del testo: la frase sui benefici del prodotto
+    ['s2claim', s + 1.85, s + 2.85],
+    ['s3a', s + 3.22, s + 3.96],
+    ['s3b', s + 3.36, s + 3.96],
+    ['s3c', s + 3.5, s + 3.96],
+    ['s3tags', s + 3.58, s + 3.96],
+    ['s3cert', s + 3.58, s + 3.96],
     ['pins-a', s + 4.42, s + 5.0],
     ['pins-b', s + 5.04, s + 5.62],
     ['ing-title', i - 0.25, i + 2.95],

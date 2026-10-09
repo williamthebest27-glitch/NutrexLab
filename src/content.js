@@ -7,9 +7,9 @@
   Campi:
   meta      titolo della pagina e descrizione
   hero      nome e frase sotto IL TUO, pulsante, etichetta accessibile della freccia
-  about     sipario "Ingrediente principale": titolo su due righe e testo
+  about     sipario "Ingrediente principale": titolo su due righe, testo e frase sui benefici (claim):
+            scorrendo il testo esce e al suo posto entra la frase, mentre il barattolo si avvicina
   tags      tre caratteristiche sotto "Puro. Semplice. Efficace."
-  inside    scena scura: titolo su tre righe e frase in evidenza
   pins      dettagli agganciati al barattolo: [titolo, testo] (punti in products.js, geo)
   ing       tabella degli ingredienti (value + unit, nrv = % VNR oppure note = testo)
   sci       sezione scienza: titolo in due parti, testo, frase in evidenza, tre dati
@@ -48,12 +48,9 @@ export const COPY = {
     about: {
       title: 'Collagene<br>marino',
       copy: 'Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico, coenzima Q10 e biotina.',
-    },
-    tags: ['Gusto neutro', 'Senza glutine', 'Senza lattosio'],
-    inside: {
-      title: 'La bellezza<br>nasce<br>da dentro.',
       claim: 'Zinco e biotina contribuiscono al mantenimento di una pelle normale.',
     },
+    tags: ['Gusto neutro', 'Senza glutine', 'Senza lattosio'],
     pins: {
       cap: ['Tappo zigrinato', 'HDPE, presa sicura'],
       band: ['Sigillo di garanzia', "Integro fino all'apertura"],
@@ -111,12 +108,9 @@ export const COPY = {
     about: {
       title: "Bromelina<br>dall'ananas",
       copy: 'Due bromeline titolate, a 5000 e 2500&nbsp;GDU/g: 500&nbsp;mg in ogni compressa, protetti da un rivestimento gastroresistente.',
-    },
-    tags: ['Gastroprotetta', 'Senza glutine', 'Senza lattosio'],
-    inside: {
-      title: "Il meglio<br>dell'ananas,<br>protetto.",
       claim: 'Compresse gastroresistenti, con rivestimento a base di alginato e HPMC, da assumere lontano dai pasti.',
     },
+    tags: ['Gastroprotetta', 'Senza glutine', 'Senza lattosio'],
     pins: { ...PILL_PINS, dose: ['Alto dosaggio', '1875 GDU per compressa'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Due bromeline titolate in ogni compressa da 700&nbsp;mg.',
@@ -167,12 +161,9 @@ export const COPY = {
     about: {
       title: 'Ashwagandha<br>KSM-66®',
       copy: 'Estratto secco di radice di <i>Withania somnifera</i>, titolato al 5% in withanolidi: 600&nbsp;mg di KSM-66® in ogni compressa.',
-    },
-    tags: ['KSM-66®', 'Prodotto vegano', 'Senza glutine'],
-    inside: {
-      title: "L'equilibrio<br>nasce<br>da dentro.",
       claim: "L'ashwagandha svolge un'azione tonico-adattogena e favorisce il rilassamento e il benessere mentale.",
     },
+    tags: ['KSM-66®', 'Prodotto vegano', 'Senza glutine'],
     pins: { ...PILL_PINS, dose: ['KSM-66®', 'Estratto di radice certificato'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Un solo attivo, titolato, in ogni compressa.',
@@ -217,12 +208,9 @@ export const COPY = {
     about: {
       title: 'Coenzima<br>Q10',
       copy: '200&nbsp;mg di coenzima Q10 con acetil L-carnitina, biancospino, magnesio e vitamine C, B1 e B12, in due capsule vegetali al giorno.',
-    },
-    tags: ['Capsule vegetali', 'Prodotto vegano', 'Made in Italy'],
-    inside: {
-      title: 'Il cuore<br>del tuo<br>rituale.',
       claim: 'La vitamina B1 contribuisce alla normale funzione cardiaca.',
     },
+    tags: ['Capsule vegetali', 'Prodotto vegano', 'Made in Italy'],
     pins: { ...PILL_PINS, dose: ['Cardio Premium', 'Con acetil L-carnitina'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Sette attivi in ogni dose da due capsule.',
@@ -274,13 +262,9 @@ export const COPY = {
     about: {
       title: 'Collagene<br>bovino',
       copy: 'Collagene idrolizzato di tipo I: 2100&nbsp;mg ogni tre compresse, con acido ialuronico, coenzima Q10, vitamine C ed E, zinco, rame e selenio.',
+      claim: 'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa, delle cartilagini e della pelle.',
     },
     tags: ['Senza glutine', 'Senza lattosio', 'Stabilimento GMP'],
-    inside: {
-      title: 'La forza<br>nasce<br>da dentro.',
-      claim:
-        'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa, delle cartilagini e della pelle.',
-    },
     pins: { ...PILL_PINS, dose: ['Acido ialuronico', '100 mg per dose'], gmp: ['GMP', 'Stabilimento certificato'] },
     ing: {
       intro: 'Dieci attivi in ogni dose da tre compresse.',
@@ -335,12 +319,9 @@ export const COPY = {
     about: {
       title: 'Collagene<br>marino',
       copy: 'Collagene idrolizzato di tipo I da pesce: 3000&nbsp;mg ogni tre compresse, con acido ialuronico, coenzima Q10, zinco e biotina.',
-    },
-    tags: ['Senza glutine', 'Senza lattosio', 'GMP / ISO 9001'],
-    inside: {
-      title: 'La bellezza<br>nasce<br>da dentro.',
       claim: 'Zinco e biotina contribuiscono al mantenimento di una pelle normale.',
     },
+    tags: ['Senza glutine', 'Senza lattosio', 'GMP / ISO 9001'],
     pins: { ...PILL_PINS, dose: ['Acido ialuronico', '100 mg per dose'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Otto attivi in ogni dose da tre compresse.',
@@ -393,12 +374,9 @@ export const COPY = {
     about: {
       title: 'D-Mannosio<br>Uro Care',
       copy: '2400&nbsp;mg di D-mannosio in tre compresse, con cranberry titolato al 30% in PAC, uva ursina, due fermenti lattici vivi e vitamina C.',
-    },
-    tags: ['Con probiotici', 'Senza glutine', 'Senza lattosio'],
-    inside: {
-      title: 'Benessere<br>che scorre,<br>ogni giorno.',
       claim: 'Il cranberry e l’uva ursina favoriscono la funzionalità delle vie urinarie e il drenaggio dei liquidi corporei.',
     },
+    tags: ['Con probiotici', 'Senza glutine', 'Senza lattosio'],
     pins: { ...PILL_PINS, dose: ['Uro Care', 'Con probiotici'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Sei attivi in ogni dose da tre compresse.',
@@ -449,12 +427,9 @@ export const COPY = {
     about: {
       title: 'Diosmina<br>ed esperidina',
       copy: '1000&nbsp;mg di diosmina e 200&nbsp;mg di esperidina in due capsule vegetali, con estratto di semi di vite rossa, rutina e vitamina C.',
-    },
-    tags: ['Capsule vegetali', 'Prodotto vegano', 'GMP / ISO 9001'],
-    inside: {
-      title: 'Gambe<br>leggere,<br>ogni giorno.',
       claim: 'La vite rossa favorisce la funzionalità del microcircolo e contrasta la sensazione di pesantezza alle gambe.',
     },
+    tags: ['Capsule vegetali', 'Prodotto vegano', 'GMP / ISO 9001'],
     pins: { ...PILL_PINS, dose: ['Esperidina', '200 mg per dose'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Cinque attivi in ogni dose da due capsule.',
@@ -504,12 +479,9 @@ export const COPY = {
     about: {
       title: 'Magnesio<br>bisglicinato',
       copy: '375&nbsp;mg di magnesio da bisglicinato, il 100% del valore di riferimento, con le vitamine B1, B6 e B12 in due compresse al giorno.',
-    },
-    tags: ['Prodotto vegano', 'Senza glutine', 'Senza lattosio'],
-    inside: {
-      title: 'Muscoli<br>e mente,<br>ogni giorno.',
       claim: 'Il magnesio contribuisce alla normale funzione muscolare e al normale funzionamento del sistema nervoso.',
     },
+    tags: ['Prodotto vegano', 'Senza glutine', 'Senza lattosio'],
     pins: { ...SCREW_PINS, dose: ['Vitamine B1, B6, B12', '100% VNR per dose'], gmp: ['Prodotto vegano', 'Senza glutine e lattosio'] },
     ing: {
       intro: 'Magnesio e tre vitamine del gruppo B in ogni dose da due compresse.',
@@ -558,12 +530,9 @@ export const COPY = {
     about: {
       title: 'Vitamina<br>B12',
       copy: 'Metilcobalamina, una delle forme naturali della vitamina B12: 1000&nbsp;µg in una piccola compressa al giorno, per oltre un anno.',
-    },
-    tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
-    inside: {
-      title: 'Energia<br>che nasce<br>da dentro.',
       claim: 'La vitamina B12 contribuisce alla riduzione della stanchezza e dell’affaticamento.',
     },
+    tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
     pins: { ...SCREW_PINS, dose: ['Metilcobalamina', '1000 µg per compressa'], gmp: ['Prodotto vegano', 'Senza OGM, glutine e lattosio'] },
     ing: {
       intro: 'Un solo attivo, nella sua forma metilata.',
@@ -611,12 +580,9 @@ export const COPY = {
     about: {
       title: 'Vitamina<br>C',
       copy: '1000&nbsp;mg di vitamina C per compressa: acido L-ascorbico e rosa canina titolata al 70%, con 50&nbsp;mg di bioflavonoidi da agrumi.',
-    },
-    tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
-    inside: {
-      title: 'Le tue<br>difese,<br>ogni giorno.',
       claim: 'La vitamina C contribuisce alla normale funzione del sistema immunitario.',
     },
+    tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
     pins: { ...SCREW_PINS, dose: ['Rosa canina', 'E bioflavonoidi da agrumi'], gmp: ['Prodotto vegano', 'Senza OGM, glutine e lattosio'] },
     ing: {
       intro: 'Vitamina C da due fonti, con i bioflavonoidi degli agrumi.',
@@ -665,12 +631,9 @@ export const COPY = {
     about: {
       title: 'Vitamina<br>D3 + K2',
       copy: 'Colecalciferolo e menachinone-7: 2000&nbsp;UI di vitamina D3 e 100&nbsp;µg di vitamina K2 in una compressa al giorno, per un anno.',
-    },
-    tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
-    inside: {
-      title: 'Il sole<br>in una<br>compressa.',
       claim: 'La vitamina D contribuisce alla normale funzione del sistema immunitario.',
     },
+    tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
     pins: { ...SCREW_PINS, dose: ['Vitamina K2', 'Menachinone-7 (MK-7)'], gmp: ['Prodotto vegano', 'Senza OGM, glutine e lattosio'] },
     ing: {
       intro: 'Due vitamine in ogni compressa.',

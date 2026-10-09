@@ -189,16 +189,15 @@ function applyTop(c, animate, id) {
 
   hero(c.hero, animate)
 
-  // sipario: ingrediente principale
+  // sipario: ingrediente principale, poi (scorrendo) la frase sui benefici al posto del testo
   const title = $('.curtain__title')
   if (title) title.innerHTML = c.about.title
-  setHTML($('.curtain__copy'), c.about.copy)
+  setHTML($('.curtain__copy--1'), c.about.copy)
+  setHTML($('.curtain__copy--2'), c.about.claim)
 
-  // scena 3 e scena scura
+  // scena 3
   const tags = $('.s3__tags')
   if (tags) tags.innerHTML = c.tags.map((t) => `<span>${t}</span>`).join('')
-  setHTML($('.s4__title'), c.inside.title)
-  setHTML($('.s4__claim'), c.inside.claim)
 
   // dettagli agganciati al barattolo
   for (const [key, [b, text]] of Object.entries(c.pins)) {
