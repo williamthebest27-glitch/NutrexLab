@@ -1536,6 +1536,7 @@ html.no-lines .ing__lines {
   display: grid;
   justify-items: center;
   gap: 16px;
+  padding-inline: var(--gutter);
   pointer-events: none;
 }
 
@@ -1543,7 +1544,10 @@ html.no-lines .ing__lines {
   pointer-events: auto;
 }
 
+/* (frasi lunghe, es. in tedesco sul telefono: vanno a capo restando centrate, dentro i margini) */
 .shop__cta p {
+  text-align: center;
+  text-wrap: balance;
   color: var(--fg-soft);
 }
 
