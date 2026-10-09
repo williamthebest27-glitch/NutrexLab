@@ -68,6 +68,7 @@ produce in `dist/` le pagine; su un hosting solo statico il sito si vede ma il n
 | Movimenti del barattolo, camera e luci per ogni scena | `src/choreography.js` (keyframe per desktop e mobile) |
 | Prodotti del menu (nome, modello 3D, colori, misura nella hero, punti dell'etichetta) | `src/products.js` |
 | Impaginazione della hero e delle scene | `src/styles/sections.css` |
+| Titolo della hero nelle altre lingue: ogni riga si allarga da sola (font-stretch) fino alla larghezza della riga italiana, mai oltre | `fitHeroTitle` in `src/ui/copy.js` |
 | Modelli 3D | rigenera con il `barattolo_3d.py` di ogni prodotto; `scripts/sync-model.mjs` li copia in `public/models` da `npm run dev`/`build` e scrive in `src/model-versions.json` la versione di ogni file (l'indirizzo `/models/<id>.glb?v=...` cambia solo quando cambia il barattolo, cosi' nessun browser mostra un modello vecchio rimasto in cache) |
 | Versione compressa di un modello | nel prodotto in `src/products.js` usa il file `*_draco.glb` |
 | Sezione del bicchiere ("Preparazione", tra Scienza e Ogni giorno): animazione di ogni prodotto | `form` nel prodotto in `src/products.js`: `powder` (misurino e polvere nell'acqua), `capsule` o `tablet` (il prodotto ruota accanto al bicchiere, non ci entra mai) |
