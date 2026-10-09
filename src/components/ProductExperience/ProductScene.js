@@ -353,7 +353,12 @@ export class ProductScene {
     this.back.add(this.glassBack, this.water)
     this.front.add(this.lens)
     // bicchiere renderizzato da Blender (studio scuro): inclinazioni e campo delle immagini
-    this.impMeta = g.imp_n ? { e0: g.imp_e0, step: g.imp_step, n: g.imp_n, w: g.imp_w, h: g.imp_h, cy: g.imp_cy } : null
+    // (quote della bollicina piu' bassa e della piu' alta: fuori da li' lo shader non le cerca)
+    const by = b.filter((_, i) => i % 3 === 1)
+    const bubbleY = by.length ? [Math.min(...by), Math.max(...by)] : [1, 0]
+    this.impMeta = g.imp_n
+      ? { e0: g.imp_e0, step: g.imp_step, n: g.imp_n, w: g.imp_w, h: g.imp_h, cy: g.imp_cy, lip: g.rim ?? 0.00125, bubbleY }
+      : null
     this.wantImpostor()
   }
 
@@ -390,16 +395,14 @@ export class ProductScene {
       const deg = Math.PI / 180
       const mat = this.material({
         vertexShader: impostorVertex,
-        fragmentShader: impostorFragment,
+        fragmentShader: impostorFragment(m.n),
         uniforms: {
-          tImp0: { value: this.impTextures[0] },
-          tImp1: { value: this.impTextures[1] },
-          tImp2: { value: this.impTextures[2] },
-          tImp3: { value: this.impTextures[3] },
-          tImp4: { value: this.impTextures[4] },
+          tImp: { value: this.impTextures },
           uImpE0: { value: m.e0 * deg },
           uImpStep: { value: m.step * deg },
           uImpFrame: { value: new THREE.Vector3(m.w, m.h, m.cy) },
+          uImpLip: { value: m.lip },
+          uBubbleY: { value: new THREE.Vector2(m.bubbleY[0], m.bubbleY[1]) },
         },
         transparent: true,
         premultipliedAlpha: true,
@@ -447,16 +450,14 @@ export class ProductScene {
     this.u.uGlassInside.value = on ? 1 : 0
   }
 
-  /** Le 5 immagini attorno all'inclinazione della camera sul centro del bicchiere. */
+  /**
+   * Il quadro del bicchiere renderizzato rivolto alla camera. Le immagini sono tutte nello shader:
+   * ogni pixel prende le due con l'inclinazione del suo raggio, anche nei primi piani in cui dall'alto
+   * al basso del bicchiere l'inclinazione cambia di molti gradi (nessun pixel con un'immagine che
+   * cambia di colpo quando la camera si muove).
+   */
   updateImpostor(cam) {
-    const m = this.impMeta
-    const u = this.impostor.material.uniforms
     this.impostor.quaternion.copy(cam.quaternion)
-    const v = (this._impV ??= new THREE.Vector3()).copy(cam.position).sub(this.impostor.position)
-    const e = (Math.asin(v.y / v.length()) * 180) / Math.PI
-    const k0 = Math.min(Math.max(Math.round((e - m.e0) / m.step) - 2, 0), Math.max(0, m.n - 5))
-    for (let i = 0; i < 5; i++) u[`tImp${i}`].value = this.impTextures[Math.min(k0 + i, m.n - 1)]
-    u.uImpE0.value = ((m.e0 + m.step * k0) * Math.PI) / 180
   }
 
   /**
