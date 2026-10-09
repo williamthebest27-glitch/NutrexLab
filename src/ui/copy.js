@@ -120,15 +120,10 @@ function science(sci) {
   fitScience()
 }
 
+/** La durata: quanto dura davvero una confezione del prodotto (giorni, settimane o mesi). */
 function daily(dl) {
-  const words = $$('.marquee__track span')
-  words.forEach((w, k) => (w.textContent = dl.marquee[k % 2]))
-  const sr = $('.daily .sr-only')
-  if (sr) sr.textContent = dl.marquee.join(' ')
-  setHTML(
-    $('.daily__facts'),
-    dl.facts.map((f) => `<li>${num('b', f.value, f.decimals)}<span>${f.unit}</span><em>${f.text}</em></li>`).join(''),
-  )
+  const f = dl.duration
+  setHTML($('.daily__facts'), `<li>${num('b', f.value, f.decimals)}<span>${f.unit}</span><em>${f.text}</em></li>`)
 }
 
 /** Riga e pulsante della hero: con animate le righe escono verso l'alto e le nuove salgono. */
@@ -156,7 +151,7 @@ function hero(h, animate) {
 
 /**
  * Testi della pagina per il prodotto `id`. parts: 'all', 'top' (hero, sipario, scene 3-5: quello che
- * si vede scorrendo dalla hero) o 'rest' (ingredienti, scienza, ogni giorno, shop). Al cambio
+ * si vede scorrendo dalla hero) o 'rest' (ingredienti, scienza, la durata, shop). Al cambio
  * prodotto dalla hero la parte lontana si aggiorna subito dopo l'animazione, non nello stesso
  * fotogramma del nuovo barattolo (sul telefono era il fotogramma piu' lungo del cambio).
  */

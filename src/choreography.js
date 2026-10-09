@@ -10,9 +10,9 @@ import { show, hide } from './ui/text.js'
     story        0 .. 6   hero, scene 1-5          (sticky)   6 .. 7  transizione
     ingredients  7 .. 10                            (sticky)  10 .. 11
     science     11 .. 14                            (sticky)  14 .. 15
-    ritual      15 .. 19  sezione del bicchiere     (pin)     19 .. 20
-    daily       20 .. 23                            (sticky)  23 .. 24
-    shop        24 .. 25.2                          (sticky)  25.2 .. 26.2 entra il footer
+    ritual      15 .. 17.4  sezione del bicchiere   (pin)     17.4 .. 18.4
+    daily       18.4 .. 20  la durata               (sticky)  20 .. 21
+    shop        21 .. 22.2                          (sticky)  22.2 .. 23.2 entra il footer
 */
 
 const BASE = {
@@ -53,18 +53,16 @@ const ROT = {
   sci0: -5.0,
   sci1: -5.4,
   sci2: -5.8,
-  day0: -TAU, // fronte, marquee dietro
-  day1: -7.2,
-  day2: -TAU + 0.45, // barattolo a sinistra, fronte verso il titolo a destra
+  day2: -TAU + 0.45, // la durata: barattolo a sinistra, fronte verso il titolo a destra
   day3: -TAU + 0.62,
   shop0: -TAU, // fronte, luce da campagna
   shop1: -TAU - 0.2,
 }
 
 /*
-  Sezione del bicchiere (ritual, tra Scienza e Ogni giorno): e' opaca e copre tutto lo schermo mentre
+  Sezione del bicchiere (ritual, tra Scienza e La durata): e' opaca e copre tutto lo schermo mentre
   e' pinnata. L'elica continua a girare piano finche' la sezione la copre (t = ritual), il barattolo si
-  ricompone di nascosto ed e' gia' nella posa di "Ogni giorno" quando la sezione esce (daily - 1).
+  ricompone di nascosto ed e' gia' nella posa della durata (a sinistra) quando la sezione esce (daily - 1).
 */
 function ritualKeys(T, during, after) {
   if (T.ritual == null) return []
@@ -73,7 +71,7 @@ function ritualKeys(T, during, after) {
 
 function desktopKeys(T, R) {
   const s = T.story, i = T.ingredients, c = T.science, d = T.daily, p = T.shop, e = T.end
-  const day = { sx: 0, sy: -0.02, size: 0.56, rotY: R.day0, elev: 8, uP: 0, ambient: 0.12, aura: 0.6, rim: 1.2, key: 1.05, env: 0.85 }
+  const day = { sx: -0.45, sy: -0.03, size: 0.58, rotY: R.day2, elev: 8, uP: 0, ambient: 0, aura: 0.6, rim: 1.2, key: 1.05, env: 0.85 }
   return [
     // hero: barattolo sospeso e inclinato (si vede il tappo), tra la colonna dei titoli a sinistra
     // e il menu prodotti a destra (heroFit: la dimensione segue la composizione, tarata su schermi 3:2)
@@ -85,23 +83,22 @@ function desktopKeys(T, R) {
     { t: s + 3, sx: -0.36, sy: 0.02, size: 0.68, rotY: R.s3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
     { t: s + 3.6, sx: 0.52, sy: -0.06, size: 0.92, rotY: R.s4a, elev: 8, key: 1.1, rim: 1.7, env: 0.7, shadow: 0, aura: 1 },
     { t: s + 4.05, sx: 0.58, sy: -0.08, size: 0.95, rotY: R.s4 },
-    // (un filo a sinistra: a destra c'e' spazio per i dettagli)
-    { t: s + 4.7, sx: -0.42, sy: -1.0, size: 1.5, rotY: R.s5a, rotX: 0.04, elev: 24, rim: 1.2, aura: 0.55 },
-    { t: s + 5.3, sx: 0.3, sy: R.s5bY ?? S5B.sy, size: S5B.size, rotY: R.s5b, rotX: 0, elev: 11 },
+    // (a sinistra: a destra c'e' spazio per i dettagli, con le scritte grandi)
+    { t: s + 4.7, sx: -0.58, sy: -1.0, size: 1.34, rotY: R.s5a, rotX: 0.04, elev: 24, rim: 1.2, aura: 0.55 },
+    { t: s + 5.3, sx: 0.36, sy: R.s5bY ?? S5B.sy, size: S5B.size, rotY: R.s5b, rotX: 0, elev: 11 },
     { t: s + 6, sx: 0, sy: -0.02, size: 0.52, rotY: R.s6, elev: 9, rim: 1.3, aura: 0.7 },
     { t: i, sx: -0.3, sy: -0.03, size: 0.5, rotY: R.ing0, elev: 10, key: 1, rim: 1.4, env: 0.8, aura: 0.55, ambient: 0.3 },
     // la camera entra sull'etichetta: la tabella nutrizionale, intera e leggibile, a sinistra
     { t: i + 0.8, sx: -0.66, sy: 0.8, size: 1.6, rotY: R.ing1, elev: 4, key: 1.05, rim: 0.8, env: 0.85, aura: 0, ambient: 0 },
     { t: i + 2.95, sx: -0.65, sy: 0.8, size: 1.63, rotY: R.ing2 },
-    { t: c, sx: 0.06, sy: 0.02, size: 0.44, rotY: R.sci0, elev: 8, key: 1, rim: 1.4, env: 0.8, aura: 0.25, ambient: 0.7 },
+    // (l'elica un po' a sinistra: a destra i testi grandi si leggono senza particelle sotto)
+    { t: c, sx: -0.16, sy: 0.02, size: 0.44, rotY: R.sci0, elev: 8, key: 1, rim: 1.4, env: 0.8, aura: 0.25, ambient: 0.7 },
     { t: c + 0.2, uP: 0 },
     { t: c + 1.6, uP: 1, size: 0.4, rotY: R.sci1, twist: 0.6 },
     { t: c + 3, size: 0.42, rotY: R.sci2, twist: 2.2 },
     ...ritualKeys(T, { size: 0.42, rotY: R.sci2 - 0.25, twist: 2.6 }, day),
     { t: d, ...day },
-    { t: d + 1.3, size: 0.58, rotY: R.day1, ambient: 0 },
-    { t: d + 1.9, sx: -0.45, sy: -0.03, size: 0.58, rotY: R.day2 },
-    { t: d + 3, sx: -0.42, size: 0.6, rotY: R.day3 },
+    { t: d + 1.6, sx: -0.42, size: 0.6, rotY: R.day3 },
     { t: p, sx: 0, sy: -0.15, size: 0.44, rotY: R.shop0, elev: 7, key: 1.3, rim: 0.7, env: 1.05, shadow: 1, aura: 0, spot: 1 },
     { t: p + 1.2, sy: -0.14, size: 0.46, rotY: R.shop1, lin: true },
     // il footer spinge via la scena: il barattolo sale insieme alla pagina (1 viewport = 2 unita' di sy)
@@ -111,7 +108,7 @@ function desktopKeys(T, R) {
 
 function mobileKeys(T, R) {
   const s = T.story, i = T.ingredients, c = T.science, d = T.daily, p = T.shop, e = T.end
-  const day = { sx: 0, sy: 0.02, size: 0.36, rotY: R.day0, elev: 8, uP: 0, ambient: 0.12, aura: 0.6, rim: 1.2, key: 1.05, env: 0.85 }
+  const day = { sx: 0, sy: 0.46, size: 0.26, rotY: -TAU, elev: 8, uP: 0, ambient: 0, aura: 0.6, rim: 1.2, key: 1.05, env: 0.85 }
   return [
     { t: s, ...BASE, sx: 0.04, sy: -0.17, size: 0.27, heroFit: true, rotY: R.hero, rotX: 0.34, rotZ: -0.3, elev: 2, shadow: 0 },
     { t: s + 0.06, heroOut: 0 },
@@ -133,9 +130,7 @@ function mobileKeys(T, R) {
     { t: c + 3, size: 0.31, rotY: R.sci2, twist: 2.2 },
     ...ritualKeys(T, { size: 0.31, rotY: R.sci2 - 0.25, twist: 2.6 }, day),
     { t: d, ...day },
-    { t: d + 1.3, size: 0.37, rotY: R.day1, ambient: 0 },
-    { t: d + 1.9, sy: 0.46, size: 0.26, rotY: -TAU },
-    { t: d + 3, size: 0.27, rotY: -TAU - 0.3 },
+    { t: d + 1.6, size: 0.27, rotY: -TAU - 0.3 },
     { t: p, sx: 0, sy: -0.05, size: 0.36, rotY: R.shop0, elev: 7, key: 1.3, rim: 0.7, env: 1.05, shadow: 1, aura: 0, spot: 1 },
     { t: p + 1.2, sy: -0.04, size: 0.37, rotY: R.shop1, lin: true },
     { t: e, sy: 1.96 },
@@ -164,7 +159,7 @@ export function buildTrack(T, layout, fit = 1, aspect = 1.5, geo = null) {
 }
 
 /**
- * Timeline DOM guidata dallo scroll: colori di fondo, uscita del titolo, marquee, parallasse.
+ * Timeline DOM guidata dallo scroll: colori di fondo, uscita del titolo, parallasse.
  * palette = colori della narrazione del prodotto attivo (products.js).
  */
 export function buildMaster(T, layout, palette = COLORS) {
@@ -242,11 +237,6 @@ export function buildMaster(T, layout, palette = COLORS) {
   tl.fromTo('.sci__a', { x: 40 }, { x: -10, duration: 3.6 }, c - 0.4)
   tl.fromTo('.sci__b', { x: -40 }, { x: 10, duration: 3.6 }, c - 0.4)
 
-  // --- every day: una sola marquee, dietro al barattolo
-  tl.fromTo('[data-marquee]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, d - 0.7)
-  tl.fromTo('.marquee__track', { xPercent: 0 }, { xPercent: -50, duration: 4.4 }, d - 1)
-  tl.fromTo('[data-marquee]', { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.45, immediateRender: false }, d + 1.35)
-
   // --- shop: luce da campagna, che si spegne quando arriva il footer
   tl.fromTo('.spot', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8 }, p - 0.6)
   tl.fromTo('.spot', { autoAlpha: 1 }, { autoAlpha: 0, duration: e - (p + 1.2), immediateRender: false }, p + 1.2)
@@ -304,8 +294,9 @@ export function buildReveals(T, { reduced, getVh, hooks = {} }) {
     ['sci-copy', c + 1.25, c + 2.95],
     ['sci-claim', c + 1.5, c + 2.95],
     ['sci-data', c + 1.7, c + 2.95],
-    ['daily-title', d + 1.75, d + 2.95],
-    ['daily-facts', d + 2.0, d + 2.95],
+    // la durata: compare subito, mentre il bicchiere finisce di uscire
+    ['daily-title', d - 0.3, d + 1.55],
+    ['daily-facts', d - 0.15, d + 1.55],
     ['shop-a', p - 0.25, null],
     ['shop-b', p - 0.12, null],
     ['shop-cta', p + 0.05, null],

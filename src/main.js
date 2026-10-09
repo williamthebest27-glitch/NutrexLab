@@ -182,7 +182,7 @@ function rebuildMaster() {
 }
 
 // ---------------------------------------------------------------------------
-// Rituale in un bicchiere: sezione 3D pinnata tra Scienza e Ogni giorno
+// Rituale in un bicchiere: sezione 3D pinnata tra Scienza e La durata
 // (src/components/ProductExperience). L'animazione segue il formato del prodotto: misurino e
 // polvere che si scioglie nell'acqua, oppure capsula / compressa che gira attorno al bicchiere.
 const ritualEl = document.querySelector('[data-product-experience]')
@@ -639,7 +639,7 @@ const burstHere = () => !reduced && !!stage?.heroFX && currentT() < 0.35
 let copyJob = 0
 /**
  * Testi del nuovo prodotto. Quello che si vede si aggiorna subito, insieme al barattolo; le sezioni
- * lontane (ingredienti, scienza, ogni giorno, shop e la sezione del bicchiere) appena finita
+ * lontane (ingredienti, scienza, la durata, shop e la sezione del bicchiere) appena finita
  * l'animazione del cambio, ciascuna in un momento libero del browser: tutte nello stesso
  * fotogramma del nuovo barattolo erano il lavoro piu' pesante del cambio, soprattutto sul telefono.
  */

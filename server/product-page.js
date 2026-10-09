@@ -1,4 +1,4 @@
-import { ORIGIN, BRAND, SHOP, productBySlug, categoryFor, productTrail, siblings, productPath, categoryPath } from '../src/seo/catalog.js'
+import { ORIGIN, BRAND, SHOP, QUALITY, productBySlug, categoryFor, productTrail, siblings, productPath, categoryPath, qualityFor } from '../src/seo/catalog.js'
 import { headTags } from '../src/seo/head.js'
 import { crumbsHtml, faqHtml, esc } from '../src/seo/render.js'
 import { graph, webPage, breadcrumbs, faqPage, returnPolicy, IDS, safeJson } from '../src/seo/schema.js'
@@ -9,7 +9,8 @@ import { graph, webPage, breadcrumbs, faqPage, returnPolicy, IDS, safeJson } fro
   canonical sul dominio principale, Open Graph, Twitter, dati strutturati (Product con prezzo,
   disponibilita', SKU, immagini, politica di reso e voto medio solo se ci sono recensioni vere;
   BreadcrumbList; FAQPage) e un primo contenuto della pagina per chi non esegue JavaScript (breadcrumb,
-  nome, prezzo, descrizioni, caratteristiche, domande frequenti, prodotti della stessa linea).
+  nome, prezzo, descrizioni, caratteristiche, benefici, qualita' e garanzie, domande frequenti, prodotti
+  della stessa linea).
   Tutti i dati commerciali arrivano da WooCommerce. Il modello e' prodotto.html.
 */
 
@@ -117,6 +118,8 @@ function seoBlock(product, trail) {
   const cat = categoryFor(product.slug, product.categories)
   const specs = product.attributes.filter((a) => !a.variation && a.values.length)
   const rows = specs.map((a) => `<tr><th scope="row">${esc(a.name)}</th><td>${esc(a.values.join(', '))}</td></tr>`).join('')
+  const quality = qualityFor(product.slug)
+  const benefits = seo?.benefits ?? []
   const more = siblings(product.slug, 4, product.categories)
   return (
     `<article class="pseo">` +
@@ -130,6 +133,8 @@ function seoBlock(product, trail) {
     (product.shortDescription || '') +
     (product.description ? `<h2>Descrizione</h2>${product.description}` : '') +
     (rows ? `<h2>Caratteristiche</h2><table><tbody>${rows}</tbody></table>` : '') +
+    (benefits.length ? `<h2>Benefici</h2><ul>${benefits.map(([, name, text]) => `<li>${esc(name)}: ${esc(text)}</li>`).join('')}</ul>` : '') +
+    (quality.length ? `<h2>Qualità e garanzie</h2><ul>${quality.map((k) => `<li>${esc(QUALITY[k].name)}: ${esc(QUALITY[k].note)}</li>`).join('')}</ul>` : '') +
     (seo?.faq?.length ? faqHtml(seo.faq, { id: 'domande', title: 'Domande frequenti' }) : '') +
     (more.length
       ? `<nav aria-label="Della stessa linea"><h2>Della stessa linea</h2><ul>${more

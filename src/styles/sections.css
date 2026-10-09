@@ -168,8 +168,8 @@
 }
 
 .hero-lead__sub {
-  max-width: 13.6em;
-  font-size: clamp(15px, 1.24vw, 19px);
+  max-width: 14.4em;
+  font-size: clamp(18px, 1.62vw, 26px);
   line-height: 1.26;
   text-wrap: pretty;
   color: color-mix(in srgb, var(--fg) 58%, transparent);
@@ -780,7 +780,7 @@ html.no-lines .ing__lines {
   position: absolute;
   left: calc(var(--hero-x) + 2.5vw);
   top: clamp(24px, 3.6vh, 40px);
-  width: min(580px, 44vw);
+  width: min(660px, 46vw);
   color: var(--curtain-ink);
 }
 
@@ -788,7 +788,7 @@ html.no-lines .ing__lines {
   margin-top: 0;
   font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   font-weight: 300;
-  font-size: min(5.9vw, 8.8vh);
+  font-size: min(6.6vw, 9.8vh);
   line-height: 0.98;
   letter-spacing: 0.005em;
   text-transform: uppercase;
@@ -802,12 +802,13 @@ html.no-lines .ing__lines {
 
 /* nomi lunghi (ASHWAGANDHA, BISGLICINATO): un passo piu' piccolo, restano su una riga */
 .curtain__title--long {
-  font-size: min(4.7vw, 7vh);
+  font-size: min(5.2vw, 7.8vh);
 }
 
 .curtain__copy {
   margin-top: clamp(22px, 3.4vh, 36px);
   max-width: 34ch;
+  font-size: clamp(19px, 1.55vw, 25px);
   color: var(--curtain-copy);
 }
 
@@ -842,9 +843,37 @@ html.no-lines .ing__lines {
   right: var(--gutter);
   bottom: calc(var(--gutter) + 4px);
   display: flex;
-  gap: clamp(18px, 2.4vw, 40px);
-  font-size: clamp(13px, 1vw, 16px);
-  color: var(--fg-soft);
+  gap: 12px;
+  font-size: clamp(14px, 1.08vw, 17px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+/* le caratteristiche del prodotto: pillole chiare con la spunta nel colore del prodotto
+   (le stesse del mobile, piu' grandi) */
+.s3__tags span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px 12px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--ink) 70%, transparent);
+  white-space: nowrap;
+}
+
+.s3__tags span::before {
+  content: '';
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M5 9.3l2.6 2.5L13 6.4' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / 100% no-repeat,
+    var(--accent);
 }
 
 /* Certificazione Made in Italy sotto le tre parole: sigillo con la bandiera (la scritta circolare
@@ -993,7 +1022,11 @@ html.no-lines .ing__lines {
 .s4__claim {
   left: var(--gutter);
   top: calc(50% + var(--fs-s4) * 1.3 + clamp(22px, 3.4vh, 40px));
-  width: min(34ch, 32vw);
+  width: min(30ch, 38vw);
+  max-width: none;
+  font-size: clamp(24px, 2.3vw, 38px);
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--fg) 82%, transparent);
 }
 
 /* --------------------------------------------------------------------------
@@ -1025,44 +1058,48 @@ html.no-lines .ing__lines {
   transform: translate(-100%, -50%);
 }
 
+/* punto sul barattolo: un cerchio nel colore del prodotto (anello, fondo velato e centro pieno),
+   da cui parte la linea, anche lei nel colore del prodotto */
 .pin__dot {
   flex: none;
-  width: 9px;
-  height: 9px;
-  margin: -4.5px;
+  width: 22px;
+  height: 22px;
+  margin: -11px;
+  border: 2px solid var(--accent);
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent);
+  background: radial-gradient(circle, var(--accent) 0 3.5px, color-mix(in srgb, var(--accent) 26%, transparent) 4.5px);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .pin__line {
   flex: none;
   width: var(--line, 64px);
-  height: 1px;
-  margin-left: 4.5px;
-  background: var(--fg-soft);
+  height: 2px;
+  margin-left: 11px;
+  border-radius: 2px;
+  background: var(--accent);
   transform-origin: left center;
 }
 
 .pin__text {
-  padding-left: 14px;
+  padding-left: 16px;
   white-space: nowrap;
 }
 
 .pin__text b {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   font-family: var(--font-display);
   font-weight: 600;
   font-stretch: 112%;
-  font-size: clamp(18px, 1.55vw, 26px);
+  font-size: clamp(22px, 2vw, 34px);
   line-height: 1;
   letter-spacing: -0.01em;
   text-transform: uppercase;
 }
 
 .pin__text span {
-  font-size: clamp(12px, 0.95vw, 15px);
+  font-size: clamp(14px, 1.2vw, 19px);
   color: var(--fg-soft);
 }
 
@@ -1072,13 +1109,13 @@ html.no-lines .ing__lines {
 
 .pin--left .pin__line {
   margin-left: 0;
-  margin-right: 4.5px;
+  margin-right: 11px;
   transform-origin: right center;
 }
 
 .pin--left .pin__text {
   padding-left: 0;
-  padding-right: 14px;
+  padding-right: 16px;
   text-align: right;
 }
 
@@ -1329,9 +1366,9 @@ html.no-lines .ing__lines {
 .sci__text {
   right: var(--gutter);
   top: 15%;
-  width: min(40ch, 32vw);
+  width: min(560px, 37vw);
   display: grid;
-  gap: 22px;
+  gap: 26px;
 }
 
 /* i testi descrivono il prodotto: colore pieno (non attenuato), ben nitidi sopra l'elica luminosa.
@@ -1346,14 +1383,16 @@ html.no-lines .ing__lines {
 }
 
 .sci__text .body-copy {
-  font-size: clamp(19px, 1.5vw, 24px);
+  max-width: none;
+  font-size: clamp(21px, 1.85vw, 30px);
+  line-height: 1.45;
   font-weight: 450;
   color: var(--fg);
   text-shadow: 0 1px 3px color-mix(in srgb, var(--abyss) 90%, transparent);
 }
 
 .sci__claim {
-  font-size: clamp(15px, 1.15vw, 18px);
+  font-size: clamp(16px, 1.32vw, 21px);
   font-weight: 500;
   letter-spacing: 0.08em;
   line-height: 1.6;
@@ -1396,25 +1435,10 @@ html.no-lines .ing__lines {
 }
 
 /* --------------------------------------------------------------------------
-   Every day (prodotto + marquee)
+   La durata (barattolo a sinistra, titolo e durata della confezione a destra)
    -------------------------------------------------------------------------- */
 .daily {
   --fs-daily: min(6.2vw, 11.2vh);
-}
-
-.marquee {
-  left: 0;
-  top: 50%;
-  translate: 0 -50%;
-  white-space: nowrap;
-  will-change: transform;
-}
-
-.marquee__track {
-  display: inline-flex;
-  gap: 0.42em;
-  font-size: min(15vw, 26vh);
-  color: color-mix(in srgb, var(--fg) 92%, transparent);
 }
 
 .daily__title {
@@ -1427,40 +1451,42 @@ html.no-lines .ing__lines {
 .daily__facts {
   right: var(--gutter);
   bottom: 14%;
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  gap: clamp(26px, 4vw, 70px);
+  width: min(480px, 36vw);
+  text-align: right;
 }
 
 .daily__facts li {
-  display: grid;
-  grid-template-columns: auto auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: baseline;
-  column-gap: 8px;
-  row-gap: 10px;
+  column-gap: 14px;
+  row-gap: 20px;
 }
 
 .daily__facts b {
   font-family: var(--font-display);
   font-weight: 500;
   font-stretch: 108%;
-  font-size: min(5vw, 9vh);
+  font-size: min(10.5vw, 18vh);
   line-height: 0.82;
   letter-spacing: -0.04em;
 }
 
 .daily__facts span {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: clamp(15px, 1.25vw, 20px);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-soft);
 }
 
 .daily__facts em {
-  grid-column: 1 / -1;
+  flex-basis: 100%;
+  text-wrap: balance;
   font-style: normal;
-  font-size: 15px;
+  font-size: clamp(16px, 1.3vw, 21px);
+  line-height: 1.45;
   color: var(--fg-soft);
 }
 
@@ -1539,12 +1565,6 @@ html.no-lines .ing__lines {
   .sci__text {
     width: 40vw;
   }
-
-  .daily__facts {
-    left: var(--gutter);
-    right: var(--gutter);
-    justify-content: end;
-  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1583,7 +1603,7 @@ html.no-lines .ing__lines {
 
   .hero-lead__sub {
     max-width: none;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .hero-lead__sub strong {
@@ -1712,7 +1732,7 @@ html.no-lines .ing__lines {
   }
 
   .curtain__copy {
-    font-size: 15.5px;
+    font-size: 17px;
   }
 
   .s3__w--1 {
@@ -1782,15 +1802,8 @@ html.no-lines .ing__lines {
   }
 
   .s3__tags span::before {
-    content: '';
-    flex: none;
     width: 18px;
     height: 18px;
-    border-radius: 50%;
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M5 9.3l2.6 2.5L13 6.4' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-        center / 100% no-repeat,
-      var(--accent);
   }
 
   .s4__title {
@@ -1802,6 +1815,7 @@ html.no-lines .ing__lines {
     top: calc(12% + var(--fs-s4) * 2.58 + 20px);
     width: auto;
     right: var(--gutter);
+    font-size: 20px;
   }
 
   .pins {
@@ -1998,10 +2012,6 @@ html.no-lines .ing__lines {
     --fs-daily: 12.5vw;
   }
 
-  .marquee__track {
-    font-size: 26vw;
-  }
-
   .daily__title {
     left: var(--gutter);
     right: var(--gutter);
@@ -2013,16 +2023,25 @@ html.no-lines .ing__lines {
     left: var(--gutter);
     right: var(--gutter);
     bottom: calc(var(--gutter) + 56px);
-    gap: 14px;
-    grid-template-columns: repeat(3, 1fr);
+    width: auto;
+    text-align: left;
+  }
+
+  .daily__facts li {
+    justify-content: flex-start;
+    row-gap: 12px;
   }
 
   .daily__facts b {
-    font-size: 11vw;
+    font-size: 20vw;
+  }
+
+  .daily__facts span {
+    font-size: 14px;
   }
 
   .daily__facts em {
-    font-size: 12.5px;
+    font-size: 15px;
   }
 
   .shop {

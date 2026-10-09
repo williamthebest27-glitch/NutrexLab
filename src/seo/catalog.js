@@ -40,6 +40,9 @@ export const SOCIAL_IMAGE = { src: '/og.jpg', width: 1200, height: 1200, alt: 'C
    Prodotti: i 12 integratori della linea (slug = slug di WooCommerce = id in src/products.js).
    name e summary sono gli stessi di WooCommerce (nome e breve descrizione): servono alle griglie
    statiche, che il browser aggiorna poi con i dati di WooCommerce.
+   quality: i simboli di "Qualita' e garanzie" del prodotto (chiavi di QUALITY), presi dall'etichetta.
+   benefits: [simbolo, titolo, testo] dei "Benefici" (simboli in src/shop/quality.js); i testi sono solo
+   indicazioni riportate in etichetta o autorizzate (Reg. UE 432/2012, nutrienti almeno al 15% del VNR).
    -------------------------------------------------------------------------- */
 export const PRODUCTS = [
   {
@@ -49,6 +52,13 @@ export const PRODUCTS = [
     note: 'In polvere · 10.000 mg',
     category: 'collagene',
     pack: 'barattolo da 500 g',
+    quality: ['glutine', 'lattosio', 'neutro'],
+    benefits: [
+      ['collagene', 'Collagene', 'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione della pelle e delle ossa.'],
+      ['pelle', 'Pelle', 'Zinco, biotina e riboflavina contribuiscono al mantenimento di una pelle normale.'],
+      ['capelli', 'Capelli e unghie', 'Lo zinco contribuisce al mantenimento di capelli e unghie normali, la biotina di capelli normali.'],
+      ['cellule', 'Protezione cellulare', 'Vitamina C, vitamina E, zinco e riboflavina contribuiscono alla protezione delle cellule dallo stress ossidativo.'],
+    ],
     summary:
       'Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 10.000 mg in ogni misurino. Prodotto in Italia.',
     title: 'Collagene Marino in Polvere 10.000 mg | Nutrex Lab',
@@ -71,6 +81,13 @@ export const PRODUCTS = [
     note: 'Compresse · 3000 mg',
     category: 'collagene',
     pack: 'flacone da 180 compresse',
+    quality: ['glutine', 'lattosio'],
+    benefits: [
+      ['collagene', 'Collagene', 'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione della pelle e delle ossa.'],
+      ['pelle', 'Pelle', 'Zinco, biotina e riboflavina contribuiscono al mantenimento di una pelle normale.'],
+      ['capelli', 'Capelli e unghie', 'Lo zinco contribuisce al mantenimento di capelli e unghie normali, la biotina di capelli normali.'],
+      ['cellule', 'Protezione cellulare', 'Vitamina C, vitamina E, zinco e riboflavina contribuiscono alla protezione delle cellule dallo stress ossidativo.'],
+    ],
     summary:
       'Collagene marino idrolizzato di tipo I in compresse: 3000 mg per dose con acido ialuronico, coenzima Q10, vitamina C, zinco e biotina. 180 compresse.',
     title: 'Collagene Marino in Compresse 3000 mg | Nutrex Lab',
@@ -93,6 +110,13 @@ export const PRODUCTS = [
     note: 'Compresse · 2100 mg',
     category: 'collagene',
     pack: 'flacone da 180 compresse',
+    quality: ['glutine', 'lattosio'],
+    benefits: [
+      ['tessuti', 'Tessuti connettivi', 'Il rame contribuisce al mantenimento di tessuti connettivi normali.'],
+      ['collagene', 'Collagene', 'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione di ossa, cartilagini e pelle.'],
+      ['pelle', 'Pelle', 'Zinco, biotina e riboflavina contribuiscono al mantenimento di una pelle normale.'],
+      ['capelli', 'Capelli e unghie', 'Zinco e selenio contribuiscono al mantenimento di capelli e unghie normali.'],
+    ],
     summary:
       'Collagene bovino idrolizzato di tipo I in compresse: 2100 mg per dose con acido ialuronico, coenzima Q10, vitamine C ed E, zinco, rame e selenio. 180 compresse.',
     title: 'Collagene Bovino Idrolizzato in Compresse | Nutrex Lab',
@@ -118,6 +142,12 @@ export const PRODUCTS = [
     note: 'Alto dosaggio · 1875 GDU',
     category: 'estratti-vegetali',
     pack: 'flacone da 180 compresse gastroresistenti',
+    quality: ['glutine', 'lattosio', 'gastro'],
+    benefits: [
+      ['enzimi', 'Alta attività enzimatica', '1875 GDU in ogni compressa, da due bromeline titolate a 5000 e 2500 GDU/g.'],
+      ['ananas', "Dall'ananas", "La bromelina è un insieme di enzimi proteolitici estratti dall'ananas."],
+      ['gastro', 'Rilascio protetto', 'Compresse gastroresistenti, con rivestimento a base di alginato e HPMC.'],
+    ],
     summary:
       'Bromelina alto dosaggio in compresse gastroresistenti: 500 mg di bromelina e 1875 GDU di attività enzimatica in ogni compressa. 180 compresse, prodotto in Italia.',
     title: 'Bromelina Alto Dosaggio 1875 GDU in Compresse | Nutrex Lab',
@@ -143,6 +173,12 @@ export const PRODUCTS = [
     note: 'KSM-66® · 600 mg',
     category: 'estratti-vegetali',
     pack: 'flacone da 180 compresse',
+    quality: ['vegano', 'glutine', 'lattosio', 'ksm66'],
+    benefits: [
+      ['equilibrio', 'Tonico-adattogena', "L'ashwagandha svolge un'azione tonico-adattogena."],
+      ['relax', 'Rilassamento', "L'ashwagandha favorisce il rilassamento."],
+      ['mente', 'Benessere mentale', "L'ashwagandha favorisce il benessere mentale e psicofisico."],
+    ],
     summary:
       'Ashwagandha certificata KSM-66®: 600 mg di estratto secco di radice titolato al 5% in withanolidi in ogni compressa. 180 compresse, sei mesi di fornitura.',
     title: 'Ashwagandha KSM-66 600 mg in Compresse | Nutrex Lab',
@@ -165,6 +201,13 @@ export const PRODUCTS = [
     note: 'Cardio Premium · 200 mg',
     category: 'estratti-vegetali',
     pack: 'flacone da 180 capsule vegetali',
+    quality: ['vegano', 'capsule'],
+    benefits: [
+      ['cuore', 'Funzione cardiaca', 'La vitamina B1 contribuisce alla normale funzione cardiaca.'],
+      ['battito', 'Apparato cardiovascolare', "Il biancospino favorisce la regolare funzionalità dell'apparato cardiovascolare."],
+      ['energia', 'Energia', 'Le vitamine C e B12 contribuiscono al normale metabolismo energetico.'],
+      ['cellule', 'Protezione cellulare', 'La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo.'],
+    ],
     summary:
       'Coenzima Q10 Cardio Premium: 200 mg di coenzima Q10 con acetil L-carnitina, biancospino, magnesio e vitamine C, B1 e B12. 180 capsule vegetali.',
     title: 'Coenzima Q10 200 mg Cardio Premium | Nutrex Lab',
@@ -187,6 +230,13 @@ export const PRODUCTS = [
     note: 'Uro Care · 2400 mg',
     category: 'estratti-vegetali',
     pack: 'flacone da 180 compresse',
+    quality: ['glutine', 'lattosio', 'probiotici'],
+    benefits: [
+      ['goccia', 'Vie urinarie', 'Cranberry e uva ursina favoriscono la funzionalità delle vie urinarie.'],
+      ['onde', 'Drenaggio', 'Cranberry e uva ursina favoriscono il drenaggio dei liquidi corporei.'],
+      ['difese', 'Sistema immunitario', 'La vitamina C contribuisce alla normale funzione del sistema immunitario.'],
+      ['cellule', 'Protezione cellulare', 'La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo.'],
+    ],
     summary:
       'D-Mannosio Uro Care: 2400 mg di D-mannosio per dose con cranberry, uva ursina, fermenti lattici vivi e vitamina C. 180 compresse, prodotto in Italia.',
     title: 'D-Mannosio con Cranberry e Probiotici | Nutrex Lab',
@@ -209,6 +259,13 @@ export const PRODUCTS = [
     note: 'Ed esperidina · 1200 mg',
     category: 'estratti-vegetali',
     pack: 'flacone da 180 capsule vegetali',
+    quality: ['vegano', 'capsule'],
+    benefits: [
+      ['circolo', 'Microcircolo', 'La vite rossa favorisce la funzionalità del microcircolo.'],
+      ['piuma', 'Gambe leggere', 'La vite rossa contrasta la sensazione di pesantezza alle gambe.'],
+      ['vasi', 'Vasi sanguigni', 'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione dei vasi sanguigni.'],
+      ['cellule', 'Protezione cellulare', 'La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo.'],
+    ],
     summary:
       'Diosmina ed Esperidina 1200: 1000 mg di diosmina e 200 mg di esperidina per dose, con estratto di semi di vite rossa, rutina e vitamina C. 180 capsule vegetali.',
     title: 'Diosmina 1000 mg ed Esperidina con Vite Rossa | Nutrex Lab',
@@ -231,6 +288,13 @@ export const PRODUCTS = [
     note: 'Con vitamine B1, B6, B12',
     category: 'vitamine-e-minerali',
     pack: 'flacone da 180 compresse',
+    quality: ['vegano', 'glutine', 'lattosio'],
+    benefits: [
+      ['muscoli', 'Muscoli', 'Il magnesio contribuisce alla normale funzione muscolare.'],
+      ['nervi', 'Sistema nervoso', 'Il magnesio e la vitamina B6 contribuiscono al normale funzionamento del sistema nervoso.'],
+      ['batteria', 'Meno stanchezza', "Il magnesio e le vitamine B6 e B12 contribuiscono alla riduzione della stanchezza e dell'affaticamento."],
+      ['equilibrio', 'Equilibrio elettrolitico', "Il magnesio contribuisce all'equilibrio elettrolitico."],
+    ],
     summary:
       'Magnesio bisglicinato con vitamine B1, B6 e B12: 375 mg di magnesio per dose, il 100% del valore di riferimento. 180 compresse, prodotto vegano.',
     title: 'Magnesio Bisglicinato 375 mg con Vitamine B | Nutrex Lab',
@@ -256,6 +320,13 @@ export const PRODUCTS = [
     note: 'Metilcobalamina · 1000 µg',
     category: 'vitamine-e-minerali',
     pack: 'flacone da 450 compresse',
+    quality: ['vegano', 'ogm', 'glutine', 'lattosio'],
+    benefits: [
+      ['energia', 'Energia', 'La vitamina B12 contribuisce al normale metabolismo energetico.'],
+      ['batteria', 'Meno stanchezza', "La vitamina B12 contribuisce alla riduzione della stanchezza e dell'affaticamento."],
+      ['nervi', 'Sistema nervoso', 'La vitamina B12 contribuisce al normale funzionamento del sistema nervoso.'],
+      ['sangue', 'Globuli rossi e difese', 'La vitamina B12 contribuisce alla normale formazione dei globuli rossi e alla normale funzione del sistema immunitario.'],
+    ],
     summary:
       'Vitamina B12 come metilcobalamina: 1000 µg in una compressa al giorno. 450 compresse, oltre un anno di fornitura. Prodotto vegano.',
     title: 'Vitamina B12 Metilcobalamina 1000 µg | Nutrex Lab',
@@ -278,6 +349,13 @@ export const PRODUCTS = [
     note: 'Con rosa canina · 1000 mg',
     category: 'vitamine-e-minerali',
     pack: 'flacone da 180 compresse',
+    quality: ['vegano', 'ogm', 'glutine', 'lattosio'],
+    benefits: [
+      ['difese', 'Sistema immunitario', 'La vitamina C contribuisce alla normale funzione del sistema immunitario.'],
+      ['cellule', 'Protezione cellulare', 'La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo.'],
+      ['collagene', 'Collagene', 'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione di pelle, ossa e vasi sanguigni.'],
+      ['batteria', 'Meno stanchezza', "La vitamina C contribuisce alla riduzione della stanchezza e dell'affaticamento."],
+    ],
     summary:
       'Vitamina C con rosa canina e bioflavonoidi: 1000 mg per compressa, il 1250% del valore di riferimento. 180 compresse, sei mesi di fornitura.',
     title: 'Vitamina C 1000 mg con Rosa Canina | Nutrex Lab',
@@ -303,6 +381,13 @@ export const PRODUCTS = [
     note: 'MK-7 · 2000 UI',
     category: 'vitamine-e-minerali',
     pack: 'flacone da 365 compresse',
+    quality: ['vegano', 'ogm', 'glutine', 'lattosio'],
+    benefits: [
+      ['difese', 'Sistema immunitario', 'La vitamina D contribuisce alla normale funzione del sistema immunitario.'],
+      ['ossa', 'Ossa', 'Le vitamine D e K contribuiscono al mantenimento di ossa normali.'],
+      ['molecola', 'Calcio e fosforo', 'La vitamina D contribuisce al normale assorbimento e utilizzo di calcio e fosforo.'],
+      ['muscoli', 'Muscoli', 'La vitamina D contribuisce al mantenimento della normale funzione muscolare.'],
+    ],
     summary:
       'Vitamina D3 + K2 (MK-7): 2000 UI di vitamina D3 e 100 µg di vitamina K2 in una compressa al giorno. 365 compresse, un anno di fornitura. Prodotto vegano.',
     title: 'Vitamina D3 + K2 MK-7 2000 UI, 365 Compresse | Nutrex Lab',
@@ -443,6 +528,31 @@ export const CATEGORIES = [
     ],
   },
 ]
+
+/* --------------------------------------------------------------------------
+   Qualita' e garanzie (pagina prodotto, sotto "Caratteristiche"; simboli in src/shop/quality.js).
+   LINE_QUALITY vale per tutta la linea (prodotta in Italia, standard GMP / ISO 9001, come nelle
+   domande frequenti del negozio); il resto lo dice il campo quality di ogni prodotto.
+   -------------------------------------------------------------------------- */
+export const LINE_QUALITY = ['italia', 'gmp', 'iso']
+
+export const QUALITY = {
+  italia: { name: 'Made in Italy', note: 'Prodotto in Italia' },
+  gmp: { name: 'GMP', note: 'Buone pratiche di produzione' },
+  iso: { name: 'ISO 9001', note: 'Sistema di qualità certificato' },
+  vegano: { name: 'Vegano', note: 'Nessun ingrediente di origine animale' },
+  ogm: { name: 'Senza OGM', note: 'Nessun ingrediente geneticamente modificato' },
+  glutine: { name: 'Senza glutine', note: 'Formula senza glutine' },
+  lattosio: { name: 'Senza lattosio', note: 'Formula senza lattosio' },
+  gastro: { name: 'Gastroprotetta', note: 'Compresse con rivestimento gastroresistente' },
+  capsule: { name: 'Capsule vegetali', note: 'Involucro vegetale in cellulosa (HPMC)' },
+  ksm66: { name: 'KSM-66®', note: 'Estratto di radice certificato' },
+  neutro: { name: 'Gusto neutro', note: 'Non cambia il sapore delle bevande' },
+  probiotici: { name: 'Con probiotici', note: 'Due ceppi di fermenti lattici vivi' },
+}
+
+/** Qualita' e garanzie di un prodotto: prima quelle della linea, poi le sue (prodotti nuovi: solo quelle della linea). */
+export const qualityFor = (slug) => [...LINE_QUALITY, ...(productBySlug(slug)?.quality ?? [])].filter((k) => QUALITY[k])
 
 /* --------------------------------------------------------------------------
    Pagina Integratori (tutti i prodotti) e domande frequenti sul negozio

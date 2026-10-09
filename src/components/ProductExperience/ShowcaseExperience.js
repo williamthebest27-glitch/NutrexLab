@@ -29,7 +29,7 @@ const CAMERA = {
     { at: 0.62, dist: 0.17, az: -2, el: 10, fov: 16, sx: 0.08, sy: 0.0, cf: 1, ease: 'power2.inOut' },
     { at: 0.72, dist: 0.16, az: -8, el: 13, fov: 15.8, sx: 0.08, sy: 0.0, cf: 1 },
     { at: 0.8, dist: 0.17, az: -4, el: 15, fov: 15.8, sx: 0.08, sy: 0.0, cf: 1 },
-    { at: 0.9, tx: 0, ty: 0.072, dist: 0.8, az: 4, el: 8, fov: 15, sx: -0.22, sy: -0.02, cf: 0, ease: 'power2.inOut' },
+    { at: 0.9, tx: 0, ty: 0.072, dist: 0.8, az: 4, el: 8, fov: 15, sx: 0.22, sy: -0.02, cf: 0, ease: 'power2.inOut' }, // bicchiere a destra, titolo a sinistra
     { at: 1.0, dist: 0.84, az: 2 },
   ],
   mobile: [

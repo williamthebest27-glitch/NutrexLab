@@ -12,11 +12,14 @@ export const SHOWCASE_STEPS = ['Prodotto', 'Forma', 'Dettaglio', 'Precisione', '
 
 export const stepsFor = (type) => (type === 'powder' ? STEPS : SHOWCASE_STEPS)
 
+/** Titolo finale, con il bicchiere: lo stesso per tutti i prodotti. */
+const ROUTINE = ['La tua', 'routine', 'quotidiana.']
+
 export const DEFAULT_COPY = {
   powder: {
     eyebrow: '', // nessuna frase sopra il titolo
     titleA: ['Precisione', 'in ogni', 'misurino.'],
-    titleB: ['La scienza', 'in un', 'bicchiere.'],
+    titleB: ROUTINE,
     pins: {
       dose: ['10 g', 'Un misurino raso'],
       water: ['1 bicchiere', "D'acqua, una volta al giorno"],
@@ -25,7 +28,7 @@ export const DEFAULT_COPY = {
   capsule: {
     eyebrow: '', // nessuna frase sopra il titolo
     titleA: ['Scienza.', 'Semplificata.'],
-    titleB: ['Formulata', 'con', 'precisione.'],
+    titleB: ROUTINE,
     pins: {
       dose: ['Capsula vegetale', 'In due parti'],
       water: ['1 bicchiere', "D'acqua"],
@@ -34,7 +37,7 @@ export const DEFAULT_COPY = {
   tablet: {
     eyebrow: '', // nessuna frase sopra il titolo
     titleA: ['Scienza.', 'Semplificata.'],
-    titleB: ['Formulata', 'con', 'precisione.'],
+    titleB: ROUTINE,
     pins: {
       dose: ['1 compressa', 'Ogni giorno'],
       water: ['1 bicchiere', "D'acqua"],

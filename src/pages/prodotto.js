@@ -7,6 +7,7 @@ import { SHOP } from '../shop/config.js'
 import { money, priceHtml, discountPercent } from '../shop/money.js'
 import { colorVars, storyUrl, esc, availability } from '../shop/themes.js'
 import { productCard, HEX } from '../shop/card.js'
+import { benefitsHtml, qualityHtml } from '../shop/quality.js'
 import { BRAND, SHOP as SEO_SHOP, productBySlug, categoryFor, categoryPath } from '../seo/catalog.js'
 import { faqHtml } from '../seo/render.js'
 
@@ -167,6 +168,9 @@ function render() {
   const story = storyUrl(product.slug)
   // domande frequenti: le stesse del server (dati strutturati FAQPage) e di src/seo/catalog.js
   const seo = productBySlug(product.slug)
+  // sotto la tabella delle caratteristiche: benefici, sigilli e simboli del prodotto (src/shop/quality.js)
+  const specs = specsHtml()
+  const quality = benefitsHtml(product.slug) + qualityHtml(product.slug)
   root.setAttribute('style', colorVars(product.slug))
   root.innerHTML = `
     <div class="pp__grid">
@@ -214,10 +218,10 @@ function render() {
       </div>
     </div>
     ${
-      product.description || specsHtml()
+      product.description || specs || quality
         ? `<section class="pp__details" data-anim>
             ${product.description ? `<div><h2 class="display pp__h">Descrizione</h2><div class="pp__desc">${product.description}</div></div>` : '<div></div>'}
-            ${specsHtml() ? `<div><h2 class="display pp__h">Caratteristiche</h2>${specsHtml()}</div>` : ''}
+            ${specs || quality ? `<div><h2 class="display pp__h">Caratteristiche</h2>${specs}${quality}</div>` : ''}
           </section>`
         : ''
     }

@@ -2431,6 +2431,271 @@ a.shop:hover {
   color: var(--fg-soft);
 }
 
+/* benefici e qualita' e garanzie (src/shop/quality.js), sotto la tabella: cosa apporta il prodotto,
+   sigilli della linea e simboli del prodotto; su desktop il riquadro delle garanzie accompagna la
+   descrizione mentre si scorre */
+.pp__quality {
+  display: grid;
+  gap: 20px;
+  margin-top: 28px;
+  padding: 20px 22px 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, #fff 45%, transparent);
+}
+
+.pp__quality-k {
+  font-size: 10.5px;
+}
+
+.pp__benefits + .pp__guarantees {
+  margin-top: 16px;
+}
+
+.pp__bens {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qben {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.qben:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.qben:last-child {
+  padding-bottom: 0;
+}
+
+/* simbolo pieno nel colore del prodotto (i simboli delle garanzie sono chiari) */
+.qben__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--c-a);
+  color: #fff;
+  box-shadow: 0 10px 22px -12px color-mix(in srgb, var(--c-a) 85%, transparent);
+}
+
+.qben__icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qben b {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.qben small {
+  display: block;
+  margin-top: 3px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--fg-soft);
+}
+
+.pp__seals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0 0 22px;
+  border-bottom: 1px solid var(--line);
+  list-style: none;
+}
+
+.qseal {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 10px;
+  text-align: center;
+}
+
+.qseal svg {
+  width: min(100%, 112px);
+  height: auto;
+  overflow: visible;
+}
+
+.qseal__rim {
+  fill: none;
+  stroke: color-mix(in srgb, var(--c-a) 28%, transparent);
+  stroke-width: 1;
+}
+
+.qseal__ring {
+  transform-box: view-box;
+  transform-origin: 60px 60px;
+  transition: transform 1.4s var(--ease-out);
+}
+
+.qseal:hover .qseal__ring {
+  transform: rotate(-24deg);
+}
+
+.qseal__ring text {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 500;
+  fill: var(--c-a);
+}
+
+.qseal__core {
+  fill: var(--c-a);
+}
+
+.qseal__dash {
+  fill: none;
+  stroke: color-mix(in srgb, #fff 60%, transparent);
+  stroke-width: 0.8;
+  stroke-dasharray: 1.4 2.6;
+}
+
+.qseal__edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--c-a) 28%, transparent);
+  stroke-width: 1;
+}
+
+.qseal__mark {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  fill: #fff;
+  text-anchor: middle;
+}
+
+.qseal__mark--sm {
+  font-size: 19px;
+}
+
+.qseal__small {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  fill: color-mix(in srgb, #fff 82%, transparent);
+  text-anchor: middle;
+}
+
+.qseal__k {
+  max-width: 16ch;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--fg-soft);
+}
+
+.pp__claims {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* numero dispari di simboli: l'ultimo prende tutta la riga */
+.qclaim:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.qclaim {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, #fff 55%, transparent);
+}
+
+.qclaim__icon {
+  --q-bg: color-mix(in srgb, var(--c-a) 9%, #fff);
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid color-mix(in srgb, var(--c-a) 26%, transparent);
+  border-radius: 50%;
+  background: var(--q-bg);
+  color: var(--c-a);
+}
+
+.qclaim__icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qclaim__icon .ko {
+  stroke: var(--q-bg);
+  stroke-width: 4.5;
+}
+
+.qclaim b {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.qclaim small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--fg-soft);
+}
+
+@media (min-width: 1081px) and (min-height: 640px) {
+  .pp__guarantees {
+    position: sticky;
+    top: 90px;
+  }
+}
+
+@media (max-width: 560px) {
+  .pp__quality {
+    padding: 18px 16px 18px;
+  }
+
+  .pp__claims {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qseal__ring {
+    transition: none;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Codice sconto (carrello)
    -------------------------------------------------------------------------- */

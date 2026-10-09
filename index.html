@@ -305,24 +305,17 @@
            Il contenuto lo crea il componente; data-steps = viewport di scroll durante il pin. -->
       <section class="pe" id="rituale" data-section="ritual" data-steps="2.4" data-chapter="Preparazione" data-product-experience></section>
 
-      <!-- ============ OGNI GIORNO ============ -->
-      <section class="section daily" id="daily" data-section="daily" data-steps="3" data-chapter="Ogni giorno">
+      <!-- ============ LA DURATA ============
+           quanto dura davvero una confezione (src/content.js, daily.duration): titolo e durata
+           compaiono appena il bicchiere esce di scena, il barattolo e' gia' a sinistra -->
+      <section class="section daily" id="daily" data-section="daily" data-steps="1.6" data-chapter="Durata">
         <div class="stage stage--back">
-          <div class="marquee" aria-hidden="true" data-marquee>
-            <div class="marquee__track display">
-              <span>Un misurino.</span><span>Ogni giorno.</span><span>Un misurino.</span><span>Ogni giorno.</span>
-              <span>Un misurino.</span><span>Ogni giorno.</span>
-            </div>
-          </div>
-          <h2 class="display daily__title" data-split="chars" data-reveal="daily-title">La tua<br />routine<br />quotidiana.</h2>
+          <h2 class="display daily__title" data-split="chars" data-reveal="daily-title">La durata<br />effettiva.</h2>
         </div>
 
         <div class="stage stage--front">
-          <p class="sr-only">Un misurino. Ogni giorno.</p>
           <ul class="daily__facts" data-reveal="daily-facts">
-            <li><b data-count="10">10</b><span>g</span><em>Un misurino raso</em></li>
-            <li><b data-count="1">1</b><span>bicchiere</span><em>D'acqua, una volta al giorno</em></li>
-            <li><b data-count="50">50</b><span>giorni</span><em>In ogni barattolo da 500 g</em></li>
+            <li><b data-count="50">50</b><span>giorni</span><em>In ogni barattolo da 500 g, con un misurino da 10 g al giorno</em></li>
           </ul>
         </div>
       </section>

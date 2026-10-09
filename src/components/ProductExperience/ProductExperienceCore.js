@@ -230,7 +230,7 @@ export class ProductExperience {
 
   /**
    * I titoli restano grandi ma non invadono la scena: su desktop e tablet ciascuno sta in poco meno
-   * di meta' schermo (il set 3D e' dall'altra parte) e il titolo finale finisce sopra la sequenza;
+   * di meta' schermo (il set 3D e' dall'altra parte) e finisce sopra la sequenza in basso a sinistra;
    * sul telefono stanno nella larghezza dello schermo e nella parte alta. Si riducono solo quando
    * serve (parole lunghe, schermi bassi).
    */
@@ -241,12 +241,12 @@ export class ProductExperience {
     const mobile = this.layout === 'mobile'
     const g = this.el.titleA.parentElement.offsetLeft || 16
     const steps = this.el.steps
-    const stepsTop = getComputedStyle(steps).display === 'none' ? H : steps.offsetTop - steps.offsetHeight / 2
+    const stepsTop = getComputedStyle(steps).display === 'none' ? H : steps.offsetTop
     for (const title of [this.el.titleA, this.el.titleB]) {
       title.style.removeProperty('--pe-fit')
       const top = title.offsetTop + title.parentElement.offsetTop
       const maxW = mobile ? W - 2 * g : W * 0.44
-      const maxH = mobile ? H * 0.4 - top : title === this.el.titleB ? stepsTop - 24 - top : H * 0.6
+      const maxH = mobile ? H * 0.4 - top : Math.min(title === this.el.titleB ? H : H * 0.6, stepsTop - 24 - top)
       const k = Math.min(1, maxW / title.scrollWidth, maxH / title.scrollHeight)
       if (k < 0.999) title.style.setProperty('--pe-fit', Math.max(0.5, k).toFixed(3))
     }
@@ -540,7 +540,7 @@ export class ProductExperience {
   /**
    * Etichette agganciate al 3D, come quelle del sito (src/ui/stageUI.js): il pallino sta sul punto,
    * la linea esce dalla sagoma dell'oggetto (bodies dell'esperienza) e il testo non copre mai
-   * prodotto, bicchiere o titoli, resta nello schermo e lontano dalla sequenza a destra.
+   * prodotto, bicchiere, titoli o la sequenza in basso a sinistra, e resta nello schermo.
    */
   updatePins() {
     const a = this._pin
@@ -700,6 +700,7 @@ export class ProductExperience {
     if (p < t.titleAOut + 0.06 && ui[0]) list.push(ui[0])
     if (p > t.titleBIn - 0.01 && ui[1]) list.push(ui[1])
     if (ui[2]) list.push(ui[2])
+    if (ui[3]) list.push(ui[3]) // la sequenza, in basso a sinistra
     return list
   }
 
@@ -713,17 +714,15 @@ export class ProductExperience {
   }
 
   /**
-   * Area libera per le etichette (margini della pagina e, se c'e', la sequenza a destra) e
-   * rettangoli dei testi fissi: titolo A, titolo B, nome del prodotto.
+   * Area libera per le etichette (margini della pagina) e rettangoli dei testi fissi: titolo A,
+   * titolo B, nome del prodotto e sequenza (in basso a sinistra).
    */
   measurePinBounds() {
     const { w, h } = this.size
     const g = this.el.titleA.parentElement.offsetLeft || 16 // = --pe-gutter
-    const steps = this.el.steps
-    const stepsOn = getComputedStyle(steps).display !== 'none'
     this.pinBounds = {
       left: g,
-      right: stepsOn ? Math.min(w - g, steps.offsetLeft - 28) : w - g,
+      right: w - g,
       top: g + 24,
       bottom: h - g - 24,
     }
@@ -733,7 +732,7 @@ export class ProductExperience {
       const r = el.getBoundingClientRect()
       return { l: r.left - s.left - 12, r: r.right - s.left + 12, t: r.top - s.top - 12, b: r.bottom - s.top + 12 }
     }
-    this.pinUi = [rect(this.el.titleA.parentElement), rect(this.el.titleB.parentElement), rect(this.el.product)]
+    this.pinUi = [rect(this.el.titleA.parentElement), rect(this.el.titleB.parentElement), rect(this.el.product), rect(this.el.steps)]
     return this.pinBounds
   }
 

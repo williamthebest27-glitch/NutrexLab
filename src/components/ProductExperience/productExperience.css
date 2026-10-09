@@ -102,10 +102,10 @@
   top: 15%;
 }
 
+/* titolo finale (LA TUA ROUTINE QUOTIDIANA.) a sinistra, come il primo: il bicchiere finisce a destra */
 .pe__copy--b {
-  right: var(--pe-gutter);
+  left: var(--pe-gutter);
   top: 17%;
-  text-align: right;
 }
 
 /* --pe-fit: riduzione calcolata dal JS quando una parola lunga non ci sta (es. SEMPLIFICATA.) */
@@ -168,24 +168,24 @@
 
 /* --------------------------------------------------------------------------
    Sequenza: PRODOTTO -> PRECISIONE -> PREPARAZIONE -> ATTIVAZIONE -> RISULTATO
+   In basso a sinistra, sotto i titoli: il prodotto e il bicchiere hanno tutta la destra.
    -------------------------------------------------------------------------- */
 .pe__steps {
-  right: var(--pe-gutter);
-  top: 50%;
+  left: var(--pe-gutter);
+  bottom: calc(var(--pe-gutter) + 4px);
   z-index: 2;
   display: grid;
   gap: clamp(12px, 2vh, 20px);
   margin: 0;
-  padding: 2px 20px 2px 0;
+  padding: 2px 0 2px 20px;
   list-style: none;
-  transform: translateY(-50%);
   font-family: var(--pe-mono);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.2em;
   line-height: 1;
   text-transform: uppercase;
-  text-align: right;
+  text-align: left;
   color: var(--pe-ink-faint);
   pointer-events: none;
 }
@@ -193,7 +193,7 @@
 .pe__steps-track {
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
   bottom: 0;
   width: 1px;
   background: var(--pe-line);
@@ -209,7 +209,7 @@
 
 .pe__step {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 12px;
   transition: color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }

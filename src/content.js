@@ -13,7 +13,8 @@
   pins      dettagli agganciati al barattolo: [titolo, testo] (punti in products.js, geo)
   ing       tabella degli ingredienti (value + unit, nrv = % VNR oppure note = testo)
   sci       sezione scienza: titolo in due parti, testo, frase in evidenza, tre dati
-  daily     marquee e tre dati sull'uso quotidiano
+  daily     la durata effettiva della confezione (duration: sezione La durata) e tre dati sull'uso
+            quotidiano (facts: dosi e bicchiere d'acqua della sezione del bicchiere, src/main.js)
   shop      pulsante finale e riga sotto
 */
 
@@ -83,7 +84,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Un misurino.', 'Ogni giorno.'],
+      duration: { value: 50, unit: 'giorni', text: 'In ogni barattolo da 500 g, con un misurino da 10 g al giorno' },
       facts: [
         { value: 10, unit: 'g', text: 'Un misurino raso' },
         { value: 1, unit: 'bicchiere', text: "D'acqua, una volta al giorno" },
@@ -137,7 +138,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Una compressa.', 'Ogni giorno.'],
+      duration: { value: 24, unit: 'settimane', text: 'Oltre 170 giorni: due compresse al giorno la prima settimana, poi una' },
       facts: [
         { value: 2, unit: 'compresse', text: 'Al giorno nella prima settimana' },
         { value: 1, unit: 'compressa', text: 'Al giorno per il mantenimento' },
@@ -188,7 +189,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Una compressa.', 'Ogni giorno.'],
+      duration: { value: 6, unit: 'mesi', text: '180 compresse, una al giorno' },
       facts: [
         { value: 1, unit: 'compressa', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 600, unit: 'mg', text: 'Di KSM-66® per dose' },
@@ -245,7 +246,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Due capsule.', 'Ogni giorno.'],
+      duration: { value: 3, unit: 'mesi', text: '180 capsule, due al giorno' },
       facts: [
         { value: 2, unit: 'capsule', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 200, unit: 'mg', text: 'Di coenzima Q10 per dose' },
@@ -306,7 +307,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Tre compresse.', 'Ogni giorno.'],
+      duration: { value: 2, unit: 'mesi', text: '180 compresse, tre al giorno: 60 giorni' },
       facts: [
         { value: 3, unit: 'compresse', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 2100, unit: 'mg', text: 'Di collagene per dose' },
@@ -364,7 +365,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Tre compresse.', 'Ogni giorno.'],
+      duration: { value: 2, unit: 'mesi', text: '180 compresse, tre al giorno: 60 giorni' },
       facts: [
         { value: 3, unit: 'compresse', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 3000, unit: 'mg', text: 'Di collagene per dose' },
@@ -420,7 +421,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Tre compresse.', 'Ogni giorno.'],
+      duration: { value: 2, unit: 'mesi', text: '180 compresse, tre al giorno: 60 giorni' },
       facts: [
         { value: 3, unit: 'compresse', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 2400, unit: 'mg', text: 'Di D-mannosio per dose' },
@@ -476,7 +477,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Due capsule.', 'Ogni giorno.'],
+      duration: { value: 3, unit: 'mesi', text: '180 capsule, due al giorno' },
       facts: [
         { value: 2, unit: 'capsule', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 1200, unit: 'mg', text: 'Di diosmina ed esperidina per dose' },
@@ -531,7 +532,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Due compresse.', 'Ogni giorno.'],
+      duration: { value: 3, unit: 'mesi', text: '180 compresse, due al giorno' },
       facts: [
         { value: 2, unit: 'compresse', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 375, unit: 'mg', text: 'Di magnesio per dose' },
@@ -584,7 +585,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Una compressa.', 'Ogni giorno.'],
+      duration: { value: 450, unit: 'giorni', text: 'Oltre 14 mesi: 450 compresse, una al giorno' },
       facts: [
         { value: 1, unit: 'compressa', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 1000, unit: 'µg', text: 'Di vitamina B12' },
@@ -638,7 +639,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Una compressa.', 'Ogni giorno.'],
+      duration: { value: 6, unit: 'mesi', text: '180 compresse, una al giorno' },
       facts: [
         { value: 1, unit: 'compressa', text: "Al giorno, con un bicchiere d'acqua" },
         { value: 1000, unit: 'mg', text: 'Di vitamina C per porzione' },
@@ -691,7 +692,7 @@ export const COPY = {
       ],
     },
     daily: {
-      marquee: ['Una compressa.', 'Ogni giorno.'],
+      duration: { value: 12, unit: 'mesi', text: 'Un anno intero: 365 compresse, una al giorno' },
       facts: [
         { value: 1, unit: 'compressa', text: 'Al giorno, durante i pasti principali' },
         { value: 2000, unit: 'UI', text: 'Di vitamina D3 per compressa' },
