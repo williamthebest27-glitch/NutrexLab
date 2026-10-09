@@ -309,7 +309,9 @@ function update() {
     const total = qty + inCart
     const reached = [...TIERS].reverse().find((tier) => total >= tier.pieces) ?? null
     const next = TIERS.find((tier) => total < tier.pieces) ?? null
-    offers.querySelectorAll('[data-tier]').forEach((b) => b.setAttribute('aria-pressed', String(!!reached && Number(b.dataset.tier) === reached.pieces)))
+    // il pulsante acceso e' quello dei pezzi scelti nella scheda (il messaggio sotto conta anche il carrello)
+    const picked = [...TIERS].reverse().find((tier) => qty >= tier.pieces) ?? null
+    offers.querySelectorAll('[data-tier]').forEach((b) => b.setAttribute('aria-pressed', String(!!picked && Number(b.dataset.tier) === picked.pieces)))
     const unit = reached && prices?.price > 0 ? money(Math.round((prices.price * (100 - reached.off)) / 100), prices.currency) : ''
     const vars = {
       totale: total,
@@ -435,8 +437,8 @@ root.addEventListener('click', async (e) => {
   }
   const tier = e.target.closest('[data-tier]')
   if (tier) {
-    // la soglia conta anche i pezzi gia' nel carrello
-    qty = Math.max(1, Number(tier.dataset.tier) - (cart.count || 0))
+    // il pulsante mette nella scheda esattamente quei pezzi (lo stock li limita in update)
+    qty = Math.max(1, Number(tier.dataset.tier))
     return update()
   }
   if (e.target.closest('[data-add]')) addToCart()
