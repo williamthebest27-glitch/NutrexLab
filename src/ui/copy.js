@@ -86,10 +86,27 @@ export function fitIngredients() {
 }
 
 /**
+ * Titolo della sezione Scienza (una riga per parte): se una parola e' piu' larga dello schermo (lingue con
+ * parole lunghe, es. il tedesco sul telefono) quella parte si rimpicciolisce quanto basta; altrimenti resta
+ * della sua misura (--fs-sci).
+ */
+function fitTitleWidth(el) {
+  if (!el?.offsetParent) return
+  el.style.removeProperty('font-size')
+  const cs = getComputedStyle(el)
+  const margin = parseFloat(el.classList.contains('sci__b') ? cs.right : cs.left) || 0
+  const room = el.offsetParent.clientWidth - 2 * margin
+  const width = el.scrollWidth
+  if (width > room) el.style.fontSize = `calc(var(--fs-sci) * ${(room / width).toFixed(3)})`
+}
+
+/**
  * Sezione Scienza su mobile: ELICA. resta sopra ai testi del prodotto, che hanno lunghezze diverse
  * (altezza del blocco in --sci-text-h). Da chiamare quando cambiano i testi o lo schermo.
  */
 export function fitScience() {
+  fitTitleWidth($('.sci__a'))
+  fitTitleWidth($('.sci__b'))
   const text = $('.sci__text')
   if (text) text.closest('.science')?.style.setProperty('--sci-text-h', `${Math.ceil(text.offsetHeight)}px`)
 }

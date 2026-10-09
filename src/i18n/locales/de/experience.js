@@ -1,1 +1,21 @@
-export default {}
+// Sezione del bicchiere (src/components/ProductExperience/copy.js) in tedesco: testo italiano -> traduzione ({x} = segnaposto)
+export default {
+  "Precisione": "Präzision",
+  "in ogni": "in jedem",
+  "misurino.": "Messlöffel.",
+  "La tua": "Deine",
+  "routine": "tägliche",
+  "quotidiana.": "Routine.",
+  "1 bicchiere": "1 Glas",
+  "Scienza.": "Wissenschaft.",
+  "Semplificata.": "Vereinfacht.",
+  "Capsula vegetale": "Pflanzliche Kapsel",
+  "In due parti": "Zweiteilig",
+  "D'acqua": "Wasser",
+  "1 compressa": "1 Tablette",
+  "Ogni giorno": "Jeden Tag",
+  "Preparazione": "Zubereitung",
+  "Attivazione": "Aktivierung",
+  "Risultato": "Ergebnis",
+  "Dettaglio": "Detail",
+}

@@ -485,6 +485,8 @@
 .pcard__name {
   font-size: clamp(19px, 1.55vw, 27px);
   line-height: 0.92;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .pcard__name a {
@@ -2332,6 +2334,9 @@ html.lbox-open {
 
 .pp__name {
   font-size: clamp(40px, 5vw, 88px);
+  /* nomi di una sola parola lunga (es. in tedesco): vanno a capo invece di allargare la pagina */
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .pp__summary {

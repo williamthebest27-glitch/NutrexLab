@@ -201,7 +201,7 @@ export async function shopScope() {
   const { category: slug } = requireConfig('wooUrl', 'category')
   const all = await categoryTree()
   const root = all.find((c) => c.slug === slug)
-  if (!root) throw new ShopError(503, 'not_configured', 'Il negozio non è ancora attivo. Riprova più tardi.', { category: slug })
+  if (!root) throw new ShopError(503, 'not_configured', 'Il negozio non è ancora attivo. Riprova più tardi.', { category: slug })
   const ids = new Set([root.id])
   // sottocategorie a qualunque profondita'
   let grew = true

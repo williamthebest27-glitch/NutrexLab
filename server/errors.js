@@ -74,7 +74,7 @@ export function publicError(err) {
   if (err?.name === 'ConfigError') {
     return {
       status: 503,
-      body: { error: { code: 'not_configured', message: 'Il negozio non è ancora attivo. Riprova più tardi.' } },
+      body: { error: { code: 'not_configured', message: 'Il negozio non è ancora attivo. Riprova più tardi.' } },
     }
   }
   if (err instanceof UpstreamError) {
@@ -93,6 +93,6 @@ export function publicError(err) {
   }
   return {
     status: 500,
-    body: { error: { code: 'server_error', message: 'Qualcosa è andato storto. Riprova tra qualche istante.' } },
+    body: { error: { code: 'server_error', message: 'Qualcosa è andato storto. Riprova tra qualche istante.' } },
   }
 }

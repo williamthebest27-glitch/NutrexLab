@@ -1,1 +1,21 @@
-export default {}
+// Sezione del bicchiere (src/components/ProductExperience/copy.js) in inglese: testo italiano -> traduzione ({x} = segnaposto)
+export default {
+  "Precisione": "Precision",
+  "in ogni": "in every",
+  "misurino.": "scoop.",
+  "La tua": "Your",
+  "routine": "daily",
+  "quotidiana.": "routine.",
+  "1 bicchiere": "1 glass",
+  "Scienza.": "Science.",
+  "Semplificata.": "Simplified.",
+  "Capsula vegetale": "Vegetable capsule",
+  "In due parti": "Two-piece shell",
+  "D'acqua": "Of water",
+  "1 compressa": "1 tablet",
+  "Ogni giorno": "Every day",
+  "Preparazione": "Preparation",
+  "Attivazione": "Activation",
+  "Risultato": "Result",
+  "Dettaglio": "Detail",
+}

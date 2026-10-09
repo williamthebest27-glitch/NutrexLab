@@ -24,6 +24,7 @@ const ENTITIES = {
 }
 const norm = (s) =>
   String(s ?? '')
+    .normalize('NFC')
     .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) =>
       e[0] === '#' ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)) : (ENTITIES[e] ?? m),
     )
@@ -86,7 +87,13 @@ const files = (dir, ext) =>
 
 const texts = []
 for (const f of [...readdirSync(ROOT).filter((f) => f.endsWith('.html')), ...files('integratori', '.html'), ...files('src/partials', '.html')]) {
-  texts.push(...fromHtml(readFileSync(join(ROOT, f), 'utf8'), f))
+  const html = readFileSync(join(ROOT, f), 'utf8')
+  texts.push(...fromHtml(html, f))
+  // titolo e descrizione scritti nell'HTML (le altre pagine li hanno da src/seo/pages.js): li traduce setMeta
+  const title = /<title>([\s\S]*?)<\/title>/.exec(html)?.[1]
+  const description = /<meta name="description" content="([^"]*)"/.exec(html)?.[1]
+  if (title) texts.push([title, `${f}: <title>`])
+  if (description) texts.push([description, `${f}: descrizione`])
 }
 
 // pagine e parti generate in build (vite.config.js, src/seo/build.js)
@@ -103,6 +110,8 @@ for (const f of files('src', '.js')) {
   if (f.replace(/\\/g, '/').endsWith('src/i18n/index.js')) continue
   const src = readFileSync(join(ROOT, f), 'utf8')
   for (const m of src.matchAll(new RegExp(String.raw`\bt\(\s*` + STR, 'g'))) texts.push([unq(m[1], m[2]), `${f}: t()`])
+  // HTML scritto dal JavaScript con il testo italiano e data-i18n (lo traduce translateDom)
+  for (const m of src.matchAll(/data-i18n>([^<$`{}]+)<\//g)) texts.push([m[1], `${f}: data-i18n`])
   for (const m of src.matchAll(new RegExp(String.raw`\btp\([^,()]+(?:\([^()]*\))?,\s*` + STR + String.raw`\s*,\s*` + STR, 'g'))) {
     texts.push([unq(m[1], m[2]), `${f}: tp()`], [unq(m[3], m[4]), `${f}: tp()`])
   }

@@ -1449,14 +1449,58 @@ ul {
   background: var(--accent);
 }
 
+/* telefono: solo la bandiera in un cerchio grande come il pulsante del menu (logo, lingua, "Acquista ora"
+   e menu stanno in una riga anche sugli schermi stretti); la tendina si apre verso destra */
 @media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
   .lang__btn {
-    gap: 6px;
-    padding: 0 10px 0 9px;
+    justify-content: center;
+    width: 38px;
+    padding: 0;
+  }
+
+  .lang__btn .lang__code,
+  .lang__btn .lang__chev {
+    display: none;
+  }
+
+  .lang__btn .lang__flag {
+    width: 20px;
+    height: 14px;
   }
 
   .lang__menu {
+    right: auto;
+    left: 0;
     width: 210px;
+  }
+
+  .lang__card {
+    transform-origin: 0 0;
+  }
+
+  .nav__right {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 374px) {
+  .nav__right {
+    gap: 6px;
+  }
+
+  .nav__cta.btn--sm {
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 345px) {
+  .nav__cta .btn__icon {
+    display: none;
+  }
+
+  .nav__logo,
+  .nav.is-compact .nav__logo {
+    width: 84px;
   }
 }
 

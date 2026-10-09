@@ -116,12 +116,12 @@ const ACTIONS = {
   add: ({ id, quantity = 1 }) => {
     const pid = Number.parseInt(id, 10)
     const qty = Number.parseInt(quantity, 10)
-    if (!(pid > 0) || !(qty > 0) || qty > 9999) throw new ShopError(400, 'invalid_item', 'Prodotto o quantità non validi.')
+    if (!(pid > 0) || !(qty > 0) || qty > 9999) throw new ShopError(400, 'invalid_item', 'Prodotto o quantità non validi.')
     return ['/cart/add-item', 'POST', { id: pid, quantity: qty }]
   },
   update: ({ key, quantity }) => {
     const qty = Number.parseInt(quantity, 10)
-    if (!key || !(qty >= 0) || qty > 9999) throw new ShopError(400, 'invalid_item', 'Quantità non valida.')
+    if (!key || !(qty >= 0) || qty > 9999) throw new ShopError(400, 'invalid_item', 'Quantità non valida.')
     return qty === 0 ? ['/cart/remove-item', 'POST', { key: String(key) }] : ['/cart/update-item', 'POST', { key: String(key), quantity: qty }]
   },
   remove: ({ key }) => {

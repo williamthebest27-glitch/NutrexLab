@@ -39,11 +39,14 @@ export { LANGS } from './langs.js'
 export const lang = () => current
 export const locale = () => LANG_INFO[current].locale
 
-/** Chiave di un testo: spazi e a capo non contano (anche l'HTML: <br /> e <br> sono la stessa cosa). */
+/**
+ * Chiave di un testo: spazi e a capo non contano (anche l'HTML: <br /> e <br> sono la stessa cosa), ne'
+ * come sono scritte le lettere accentate (a + accento o un carattere solo: forma NFC).
+ */
 const tpl = browser ? document.createElement('template') : null
 const squeeze = (s) => String(s).replace(/\s+/g, ' ').trim()
 export function norm(s) {
-  const str = String(s ?? '')
+  const str = String(s ?? '').normalize('NFC')
   if (!tpl || !/[<&]/.test(str)) return squeeze(str)
   tpl.innerHTML = str
   return squeeze(tpl.innerHTML)
@@ -79,11 +82,14 @@ if (missing) window.__i18nMissing = () => [...missing]
 
 const fill = (s, vars) => (vars ? String(s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] ?? m)) : s)
 
+// testi uguali in tutte le lingue: marchio, quantita' con unita' (500 g, 180 mg...)
+const SAME = /^(Nutrex Lab|[\d\s.,%/+-]+\s*(mg|g|µg|kg|ml|UI|GDU)?)$/
+
 /** Traduzione di un testo italiano (null se non c'e'). */
 function lookup(it) {
   if (current === DEFAULT_LANG || it == null || it === '' || !/[A-Za-zÀ-ÿ]/.test(it)) return null
   const s = dict?.get(norm(it))
-  if (s == null && it.length > 3) warn(it) // unita' (mg, g...) uguali in tutte le lingue
+  if (s == null && it.length > 3 && !SAME.test(String(it).trim())) warn(it)
   return s ?? null
 }
 

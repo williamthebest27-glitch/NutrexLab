@@ -37,7 +37,7 @@ async function call(path, { method = 'GET', body, signal } = {}) {
   }
   if (!res.ok) {
     const e = data?.error ?? {}
-    throw new ApiError(res.status, e.code ?? 'error', e.message ?? 'Qualcosa è andato storto. Riprova tra qualche istante.', e)
+    throw new ApiError(res.status, e.code ?? 'error', e.message ?? 'Qualcosa è andato storto. Riprova tra qualche istante.', e)
   }
   return data
 }

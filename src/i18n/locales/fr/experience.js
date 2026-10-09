@@ -1,1 +1,21 @@
-export default {}
+// Sezione del bicchiere (src/components/ProductExperience/copy.js) in francese: testo italiano -> traduzione ({x} = segnaposto)
+export default {
+  "Precisione": "Précision",
+  "in ogni": "dans chaque",
+  "misurino.": "mesurette.",
+  "La tua": "Votre",
+  "routine": "routine",
+  "quotidiana.": "quotidienne.",
+  "1 bicchiere": "1 verre",
+  "Scienza.": "Science.",
+  "Semplificata.": "Simplifiée.",
+  "Capsula vegetale": "Gélule végétale",
+  "In due parti": "En deux parties",
+  "D'acqua": "D’eau",
+  "1 compressa": "1 comprimé",
+  "Ogni giorno": "Chaque jour",
+  "Preparazione": "Préparation",
+  "Attivazione": "Activation",
+  "Risultato": "Résultat",
+  "Dettaglio": "Détail",
+}

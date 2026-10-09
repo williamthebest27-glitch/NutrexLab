@@ -16,7 +16,7 @@ import { ShopError } from './errors.js'
 export async function checkoutUrl(token) {
   const { wooUrl } = requireConfig('wooUrl')
   const { cart } = await getCart(token)
-  if (!cart.items.length) throw new ShopError(409, 'empty_cart', 'Il carrello è vuoto.')
+  if (!cart.items.length) throw new ShopError(409, 'empty_cart', 'Il carrello è vuoto.')
   if (cart.errors.length) throw new ShopError(409, 'cart_error', cart.errors[0].message)
   const url = new URL(wooUrl + '/')
   url.searchParams.set('nutrex-checkout', '1')

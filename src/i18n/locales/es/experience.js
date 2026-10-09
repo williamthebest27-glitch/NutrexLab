@@ -1,1 +1,21 @@
-export default {}
+// Sezione del bicchiere (src/components/ProductExperience/copy.js) in spagnolo: testo italiano -> traduzione ({x} = segnaposto)
+export default {
+  "Precisione": "Precisión",
+  "in ogni": "en cada",
+  "misurino.": "cacito.",
+  "La tua": "Tu",
+  "routine": "rutina",
+  "quotidiana.": "diaria.",
+  "1 bicchiere": "1 vaso",
+  "Scienza.": "Ciencia.",
+  "Semplificata.": "Simplificada.",
+  "Capsula vegetale": "Cápsula vegetal",
+  "In due parti": "En dos partes",
+  "D'acqua": "De agua",
+  "1 compressa": "1 comprimido",
+  "Ogni giorno": "Cada día",
+  "Preparazione": "Preparación",
+  "Attivazione": "Activación",
+  "Risultato": "Resultado",
+  "Dettaglio": "Detalle",
+}
