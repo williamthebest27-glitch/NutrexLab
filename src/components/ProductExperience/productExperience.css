@@ -351,8 +351,9 @@
   box-sizing: border-box;
 }
 
-/* benefici nella macro (capsule e compresse): pallino piu' grande sul bordo del prodotto, linea nel
-   colore del prodotto; testi grandi e chiari, su piu' righe e in minuscolo (sono frasi) */
+/* benefici nella macro (capsule e compresse) e attorno al bicchiere (polvere): pallino piu' grande sul
+   bordo del prodotto, linea nel colore del prodotto; testi grandi e chiari, su piu' righe e in
+   minuscolo (sono frasi). Senza posto il JS li rimpicciolisce (--pe-pin-fit, fino a 0.7) */
 .pe__pin--benefit .pe__pin-dot {
   width: 15px;
   height: 15px;
@@ -374,14 +375,14 @@
 .pe__pin--benefit .pe__pin-text {
   max-width: 22em;
   white-space: normal;
-  font-size: clamp(14px, 1.15vw, 18px);
+  font-size: calc(clamp(14px, 1.15vw, 18px) * var(--pe-pin-fit, 1));
   color: var(--pe-ink);
 }
 
 .pe__pin--benefit .pe__pin-text b {
   white-space: normal; /* i titoli lunghi vanno su due righe */
   margin-bottom: 8px;
-  font-size: clamp(22px, 2.1vw, 34px);
+  font-size: calc(clamp(22px, 2.1vw, 34px) * var(--pe-pin-fit, 1));
 }
 
 .pe__pin--benefit .pe__pin-text > span {
@@ -456,7 +457,7 @@
      beneficio e l'altro */
   .pe__pin--row .pe__pin-text {
     max-width: 27em;
-    font-size: 13px;
+    font-size: calc(13px * var(--pe-pin-fit, 1));
   }
 
   .pe__pin--row .pe__pin-text > span {
@@ -465,7 +466,7 @@
 
   .pe__pin--row .pe__pin-text b {
     margin-bottom: 0;
-    font-size: 19px;
+    font-size: calc(19px * var(--pe-pin-fit, 1));
     line-height: 1.3;
   }
 

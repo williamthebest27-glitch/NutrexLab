@@ -109,6 +109,13 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
   il prodotto girando e dal bicchiere che rientra alla fine; il pallino (piu' grande) scorre sul
   bordo del prodotto e la linea lo segue. Sul telefono una riga sola sotto il prodotto con i tre
   titoli insieme. Nel sito sono i primi tre benefici della pagina prodotto (`src/seo/catalog.js`).
+- Benefici della polvere: alla fine, quando la camera si allontana, tre etichette attorno al
+  bicchiere (sopra, a sinistra vicino al fondo, a destra a meta' altezza; sul telefono la riga dei
+  tre titoli sopra il bicchiere). Seguono il bicchiere come `pins.water`; di lato il testo puo'
+  salire o scendere (la linea arriva sempre al testo).
+- Nessuna scritta sulla pozza di luce bianca del piano (alla fine della polvere: `screenObstacles`
+  di `PowderExperience.js`). Un beneficio che non trova posto prima va a capo, poi si rimpicciolisce
+  (`--pe-pin-fit`, fino a 0.7) e torna grande appena c'e' di nuovo spazio.
 - Un'etichetta puo' essere evidenziata (terzo elemento `true` di `[titolo, testo, true]`): titolo
   nel colore d'accento, su due righe se serve.
 - Etichette agganciate al 3D (`pins.dose` sul prodotto, `pins.water` sul bicchiere, `pins.aside`

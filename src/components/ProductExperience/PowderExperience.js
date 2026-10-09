@@ -21,6 +21,8 @@ const G = 0.55              // gravita' al rallentatore (m/s^2 del racconto)
 const DRAG = { grain: 1.25, dust: 3.4 }
 const REPOSE = 34 * DEG     // angolo di riposo della polvere
 const POUR = [0.6, 0.9]     // finestra della timeline in cui la polvere esce
+const POOL_EDGE = 2.1       // fin dove la pozza di luce sul piano si vede chiara (in raggi della pozza)
+const FINAL = 0.86          // da qui la camera si allontana e resta il bicchiere solo (vedi CAMERA)
 
 // --- coreografia (progresso 0..1 della sezione: stati del brief 0, 20, 40, 55, 65, 75, 85, 100%) ---
 const CAMERA = {
@@ -116,8 +118,15 @@ export class PowderExperience {
     this.s = { T: 0, px: 0.04, py: 0.178, pz: -0.012, yaw: 32, roll: 14, pitch: 3, fill: 1, glassRot: -10 }
     this.anchors = { dose: new THREE.Vector3(), water: new THREE.Vector3() }
     this.bodies = { dose: { center: new THREE.Vector3(), radius: 0 }, water: { center: new THREE.Vector3(), radius: 0 } }
-    // a destra c'e' il manico del misurino; sul telefono sopra, dove lo schermo e' libero
-    this.pinSides = { dose: 'left', mobile: { dose: 'above' } }
+    for (const key of ['b1', 'b2', 'b3']) {
+      this.anchors[key] = new THREE.Vector3()
+      this.bodies[key] = { center: new THREE.Vector3(), radius: 0 }
+    }
+    // a destra c'e' il manico del misurino; sul telefono sopra, dove lo schermo e' libero. I benefici,
+    // alla fine: sopra il bicchiere, a sinistra sotto l'etichetta dell'acqua e a destra (sul
+    // telefono la riga con i tre benefici sopra il bicchiere)
+    this.pinSides = { dose: 'left', b1: 'above', b2: 'left', b3: 'right', mobile: { dose: 'above', b1: 'above' } }
+    this.layout = 'desktop'
     this.heapU = {
       uPlaneN: { value: new THREE.Vector3(0, 1, 0) },
       uPlaneD: { value: 0 },
@@ -206,6 +215,7 @@ export class PowderExperience {
 
   /** Tracce della timeline (l'orchestratore le trasforma in tween GSAP). */
   tracks(layout) {
+    this.layout = layout // (sul telefono i benefici partono dal bordo sinistro della bocca)
     return [
       { target: this.s, keys: STORY },
       // il bicchiere gira piano su se stesso per tutta la sezione (il logo inciso scorre)
@@ -390,6 +400,39 @@ export class PowderExperience {
     this.bodies.dose.radius = this.dim.riTop * 1.15
     this.bodies.water.center.set(0, g.waterY, 0)
     this.bodies.water.radius = g.rOut
+    // benefici: sopra, dal bordo dietro della bocca (il punto piu' alto del bicchiere sullo schermo;
+    // sul telefono dal bordo sinistro, cosi' la linea non attraversa l'etichetta dell'acqua, sopra
+    // anche lei); di lato sul bordo del bicchiere (piu' stretto in basso), a sinistra vicino al fondo
+    // (sotto l'etichetta dell'acqua) e a destra a meta' altezza (sotto l'acqua, se la sua etichetta e' li')
+    if (this.layout === 'mobile') this.anchors.b1.set(-g.rOut, g.height, 0)
+    else this.anchors.b1.set(0, g.height, -g.rOut)
+    this.bodies.b1.center.copy(this.anchors.b1)
+    this.bodies.b1.radius = 0
+    for (const [key, y, dir] of [['b2', g.height * 0.16, -1], ['b3', g.height * 0.5, 1]]) {
+      const r = g.rBase + (g.rOut - g.rBase) * (y / g.height)
+      this.anchors[key].set(dir * r, y, 0)
+      this.bodies[key].center.set(0, y, 0)
+      this.bodies[key].radius = r
+    }
+  }
+
+  /**
+   * Alla fine (bicchiere solo, etichetta dell'acqua e benefici) le scritte non vanno sulla pozza di
+   * luce bianca del piano attorno al bicchiere (centro e raggio come in pe_floor, fin dove si vede
+   * chiara): in px, a fasce orizzontali dell'ellisse che fa sullo schermo. Restano sul nero.
+   */
+  screenObstacles({ w, h }) {
+    if (this.s.T / TOTAL < FINAL) return []
+    const cam = this.scene.camera
+    const R = (this.scene.u?.uPoolR?.value ?? 0.07) * POOL_EDGE
+    const v = (this._pv ??= new THREE.Vector3())
+    const pts = []
+    for (let i = 0; i < 48; i++) {
+      const t = (i / 48) * Math.PI * 2
+      v.set(Math.cos(t) * R, 0, -0.03 + Math.sin(t) * R).project(cam)
+      pts.push([((v.x + 1) / 2) * w, ((1 - v.y) / 2) * h])
+    }
+    return bands(pts, 6)
   }
 
   /** Dopo l'aggiornamento della camera: dimensione delle particelle in pixel. */
@@ -427,6 +470,32 @@ export class PowderExperience {
     u.uRipple.value = 0
     for (const r of u.uRipples.value) r.set(0, 0, 0, 0)
   }
+}
+
+/** Un poligono convesso (px) come n rettangoli orizzontali che lo coprono. */
+function bands(pts, n) {
+  const ys = pts.map((p) => p[1])
+  const top = Math.min(...ys)
+  const bottom = Math.max(...ys)
+  const out = []
+  for (let k = 0; k < n; k++) {
+    const y0 = top + ((bottom - top) * k) / n
+    const y1 = top + ((bottom - top) * (k + 1)) / n
+    let l = Infinity
+    let r = -Infinity
+    for (let i = 0; i < pts.length; i++) {
+      const [ax, ay] = pts[i]
+      const [bx, by] = pts[(i + 1) % pts.length]
+      const lo = Math.max(y0, Math.min(ay, by))
+      const hi = Math.min(y1, Math.max(ay, by))
+      if (lo > hi) continue
+      const xs = ay === by ? [ax, bx] : [lo, hi].map((y) => ax + ((bx - ax) * (y - ay)) / (by - ay))
+      l = Math.min(l, ...xs)
+      r = Math.max(r, ...xs)
+    }
+    if (l < r) out.push({ l, r, t: y0, b: y1 })
+  }
+  return out
 }
 
 /**

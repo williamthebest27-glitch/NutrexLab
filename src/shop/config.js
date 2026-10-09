@@ -14,7 +14,7 @@ export const SHOP = {
   },
   // "Dove vendiamo" (pagina Contatti): url = link al negozio, null = solo il nome
   marketplaces: {
-    amazon: 'https://www.amazon.it/stores/page/E1F09FA2-E05D-49B3-AD2A-0B2F35D69BDF',
+    amazon: null, // logo senza link (richiesta del 2026-10-09)
     tiktok: null,
     temu: null,
   },
@@ -26,7 +26,6 @@ export const SHOP = {
   quantityOffers: [
     { pieces: 2, off: 5 },
     { pieces: 4, off: 10 },
-    { pieces: 10, off: 15 },
   ],
   // metodi di pagamento attivi nel checkout di WooCommerce (icone nella pagina prodotto e nel carrello)
   payments: ['mastercard', 'visa', 'amex', 'paypal', 'klarna', 'applepay', 'googlepay'],

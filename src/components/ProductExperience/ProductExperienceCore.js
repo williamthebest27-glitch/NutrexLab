@@ -27,7 +27,9 @@ const TIMING = {
   powder: {
     titleAOut: 0.16,
     titleBIn: 0.905, // quando la camera, allontanandosi, ha liberato lo spazio del titolo
-    pins: { dose: [0.255, 0.5], water: [0.885, 1.01] },
+    // alla fine i tre benefici attorno al bicchiere, uno dopo l'altro, quando la camera allontanandosi
+    // ha lasciato loro spazio
+    pins: { dose: [0.255, 0.5], water: [0.885, 1.01], b1: [0.945, 1.01], b2: [0.952, 1.01], b3: [0.959, 1.01] },
     steps: [0, 0.2, 0.45, 0.66, 0.86],
   },
   showcase: {
@@ -49,9 +51,13 @@ const TIMING = {
 }
 const timingFor = (type) => (type === 'powder' ? TIMING.powder : TIMING.showcase)
 
+/** Scala dei testi di un beneficio che non trova posto: prima intero, poi sempre piu' piccolo. */
+const PIN_FITS = [1, 0.9, 0.8, 0.7]
+
 /**
  * Etichette agganciate al 3D [chiave, classe]: dose (sul prodotto), water (sul bicchiere), aside
- * (sui pezzi a parte), b1-b3 (i benefici attorno al prodotto nella macro di capsule e compresse).
+ * (sui pezzi a parte), b1-b3 (i benefici attorno al prodotto nella macro di capsule e compresse,
+ * attorno al bicchiere alla fine della polvere).
  */
 const PINS = [
   ['dose', ''],
@@ -203,6 +209,7 @@ export class ProductExperience {
       side: el.classList.contains('pe__pin--left') ? 'left' : 'right',
       textW: 0,
       wrap: 0,
+      fit: 1, // scala del testo (--pe-pin-fit): i benefici si rimpiccioliscono se non c'e' posto
       // sopra o sotto l'oggetto il testo si apre dalla parte del pallino (i benefici: due etichette
       // sopra lo stesso prodotto non si incrociano)
       outward: el.classList.contains('pe__pin--benefit'),
@@ -243,7 +250,9 @@ export class ProductExperience {
       pin.el.querySelector('b').textContent = b
       pin.el.querySelector('.pe__pin-text > span').textContent = t
       pin.textW = 0 // testo nuovo: larghezza da rimisurare
+      pin.sizes = null
       pin.fixed = null
+      this.fitPin(pin, 1)
     }
     // nomi dei passi: quelli del sito (nella sua lingua) se li passa, altrimenti quelli di copy.js
     ;(this.o.stepNames?.(this.type) ?? stepsFor(this.type)).forEach((name, i) => {
@@ -269,8 +278,8 @@ export class ProductExperience {
       return n[1] === '1' && c.benefits?.length ? [c.benefits.map(([t]) => t.replace(/ /g, '\u00a0')).join(' · '), ''] : null
     }
     if (n) return c.benefits?.[n[1] - 1] ?? null
-    // nella macro di capsule e compresse i benefici prendono il posto della dose
-    if (key === 'dose' && c.benefits?.length && timingFor(this.type).pins.b1) return null
+    // nella macro di capsule e compresse i benefici prendono il posto della dose (la polvere li ha alla fine)
+    if (key === 'dose' && c.benefits?.length && this.type !== 'powder') return null
     return c.pins[key] ?? null
   }
 
@@ -629,9 +638,9 @@ export class ProductExperience {
     for (const pin of this.pins) {
       const vis = this.ui[pin.prop]
       let place = null
-      if (pin.outward) {
-        // benefici: il testo resta fermo per tutta la macro (posto una volta, fuori da dove arriva il
-        // prodotto girando); il pallino scorre sul bordo del prodotto e la linea lo segue
+      if (pin.outward && this.exp.calloutView) {
+        // benefici nella macro: il testo resta fermo per tutta la macro (posto una volta, fuori da
+        // dove arriva il prodotto girando); il pallino scorre sul bordo del prodotto e la linea lo segue
         if (view && vis >= 0.005) {
           k.obstacles ??= this.pinObstacles()
           pin.fixed ??= this.placeCallout(pin, view, k)
@@ -643,9 +652,20 @@ export class ProductExperience {
           this.cam.project(anchor, this.size, a)
           if (a.visible && a.x > 0 && a.x < this.size.w && a.y > 0 && a.y < this.size.h) {
             k.obstacles ??= this.pinObstacles()
-            place = this.placePin(pin, a, k)
+            // benefici attorno al bicchiere (polvere): dal proprio lato (di fianco anche dall'altro);
+            // senza posto si rimpiccioliscono (e restano cosi' finche' si vedono)
+            const own = pin.outward ? pin.side0 : null
+            const other = { left: 'right', right: 'left' }[own]
+            const tryPlace = own
+              ? () => this.placePin(pin, a, k, own) || (other ? this.placePin(pin, a, k, other) : null)
+              : () => this.placePin(pin, a, k)
+            place = tryPlace()
+            if (!place && pin.outward) place = this.shrinkPin(pin, tryPlace)
+            // rimpicciolito: appena c'e' di nuovo posto torna piu' grande
+            else if (place && pin.fit < 1) place = this.growPin(pin, tryPlace) ?? place
           }
         }
+        if (vis < 0.005 && pin.fit < 1) this.fitPin(pin, 1)
       }
       if (place) {
         // le etichette successive non coprono ne' il testo ne' la linea di questa
@@ -660,7 +680,7 @@ export class ProductExperience {
           pin.side = place.side
           for (const s of ['left', 'below', 'above']) pin.el.classList.toggle(`pe__pin--${s}`, s === place.side)
         }
-        pin.text.style.transform = place.dx ? `translateX(${place.dx.toFixed(1)}px)` : ''
+        pin.text.style.transform = place.dx || place.dy ? `translate(${(place.dx ?? 0).toFixed(1)}px, ${(place.dy ?? 0).toFixed(1)}px)` : ''
         pin.el.style.transform = `translate3d(${place.x.toFixed(1)}px, ${a.y.toFixed(1)}px, 0)`
         pin.el.style.setProperty('--pe-line', `${place.len.toFixed(0)}px`)
         pin.el.style.setProperty('--pe-pin', vis.toFixed(3))
@@ -706,6 +726,7 @@ export class ProductExperience {
       const range = document.createRange()
       range.selectNodeContents(pin.text.querySelector('b'))
       pin.titleW = Math.ceil(range.getBoundingClientRect().width) + 15
+      ;(pin.sizes ??= {})[pin.fit] = { textW: pin.textW, textH: pin.textH, titleW: pin.titleW }
     }
     const full = pin.textW
     const hit = (r) => obstacles.find((o) => r.l < o.r && o.l < r.r && r.t < o.b && o.t < r.b)
@@ -717,7 +738,10 @@ export class ProductExperience {
       const vertical = side === 'below' || side === 'above'
       const a = vertical ? a0 : anchorFor(side)
       const { eL, eR, eT, eB } = edges(a)
-      const h = pin.textH * Math.ceil(full / w - 0.01) + (vertical ? 10 : 0) // righe stimate
+      // altezza stimata: righe in piu' se va a capo (i benefici sono gia' un paragrafo: crescono in
+      // proporzione, con un margine)
+      const rows = pin.outward ? (w >= full ? 1 : (full / w) * 1.1) : Math.ceil(full / w - 0.01)
+      const h = pin.textH * rows + (vertical ? 10 : 0)
       const minLen = Math.max(minLine, { left: a.x - eL, right: eR - a.x, below: eB - a.y, above: a.y - eT }[side] + pad)
       // di lato: linea della lunghezza solita, accorciata se il testo uscirebbe dallo schermo
       const maxLen = vertical ? Infinity : side === 'left' ? a.x - 9 - w - b.left : b.right - a.x - 9 - w
@@ -726,13 +750,28 @@ export class ProductExperience {
       // sopra o sotto: testo centrato sul pallino, o aperto dalla sua parte dell'oggetto (outward)
       const outward = pin.outward && c && Math.abs(a.x - c.x) > 1 && !pin.el.classList.contains('pe__pin--row')
       const cx = outward ? (a.x < c.x ? a.x - w + 24 : a.x - 24) : a.x - w / 2
+      // di lato un beneficio puo' salire o scendere, purche' la linea arrivi ancora al testo (ad
+      // almeno 16 px dai suoi bordi): resta nello schermo e, se tocca qualcosa, gli passa sopra o sotto
+      const slide = pin.outward && !vertical
+      const yLo = Math.max(b.top, a.y - h + 16)
+      const yHi = Math.min(b.bottom - h, a.y - 16)
       for (let i = 0; i < 4; i++) {
         const x0 = vertical ? Math.min(Math.max(cx, b.left), b.right - w) : side === 'left' ? a.x - 9 - len - w : a.x + 9 + len
-        const y0 = !vertical ? a.y - h / 2 : side === 'below' ? a.y + 9 + len : a.y - 9 - len - h
+        let y0 = !vertical ? a.y - h / 2 : side === 'below' ? a.y + 9 + len : a.y - 9 - len - h
+        if (slide && yLo <= yHi) y0 = Math.min(Math.max(y0, yLo), yHi)
         const rect = { l: x0, r: x0 + w, t: y0, b: y0 + h }
+        const dy = vertical ? 0 : y0 - (a.y - h / 2)
         if (!inside(rect)) return null
         const o = hit(rect)
-        if (!o) return { side, w, len, x: a.x, dx: vertical ? x0 - (a.x - w / 2) : 0, rect }
+        if (!o) return { side, w, len, x: a.x, dx: vertical ? x0 - (a.x - w / 2) : 0, dy, rect }
+        if (slide) {
+          const moved = [o.b + pad, o.t - pad - h]
+            .filter((ny) => ny >= yLo && ny <= yHi)
+            .map((ny) => ({ ...rect, t: ny, b: ny + h }))
+            .filter((r) => inside(r) && !hit(r))
+            .sort((p, q) => Math.abs(p.t - y0) - Math.abs(q.t - y0))[0]
+          if (moved) return { side, w, len, x: a.x, dx: 0, dy: moved.t - (a.y - h / 2), rect: moved }
+        }
         // sopra o sotto: se l'ostacolo e' di fianco basta spostare il testo di lato (la linea resta
         // sotto il testo, ad almeno 24 px dai suoi bordi), con lo spostamento piu' piccolo
         if (vertical) {
@@ -763,8 +802,19 @@ export class ProductExperience {
     // (il titolo, misurato con un margine, puo' superare di poco la larghezza su una riga: allora basta quella)
     const narrow = (s, w, min = minText) => w >= Math.max(Math.min(full, min), Math.min(pin.titleW, full)) && at(s, w)
     if (only) {
-      const p = vertical(only) ? at(only, wideCol) : at(only, full) || narrow(only, widthOn(only))
-      return p || null
+      if (vertical(only)) return at(only, wideCol) || null
+      // di lato: su una riga, poi su piu' righe sempre piu' strette (fino al titolo), finche' il
+      // testo non sta tra il prodotto e cio' che ha accanto (es. il bicchiere che rientra)
+      const min = Math.max(Math.min(full, minText), Math.min(pin.titleW, full))
+      // largo quanto tutto il testo se c'e' posto; altrimenti la larghezza del fotogramma prima,
+      // finche' c'e' posto (il testo non cambia righe a ogni passo)
+      const prev = pin.shown && pin.side === only ? at(only, full) || (pin.wrap && at(only, pin.wrap)) : null
+      if (prev) return prev
+      for (let w = Math.min(full, widthOn(only)); w > min; w -= 16) {
+        const p = at(only, w)
+        if (p) return p
+      }
+      return at(only, min) || null
     }
     const own = pin.side0
     const sides = own === 'right' ? ['right', 'left'] : ['left', 'right'] // prima il suo lato
@@ -801,8 +851,45 @@ export class ProductExperience {
       below: { x: c.x, y: c.y + reach.bottom },
       above: { x: c.x, y: c.y - reach.top },
     }
-    for (const side of new Set([pin.side0, 'below', 'above', 'left', 'right'])) {
-      const place = this.placePin(pin, from[side], k, side)
+    // se non c'e' posto da nessuna parte, di nuovo con il testo piu' piccolo
+    for (const fit of PIN_FITS) {
+      this.fitPin(pin, fit)
+      for (const side of new Set([pin.side0, 'below', 'above', 'left', 'right'])) {
+        const place = this.placePin(pin, from[side], k, side)
+        if (place) return place
+      }
+    }
+    return null
+  }
+
+  /**
+   * Scala del testo di un'etichetta (1 = intero). Le misure del testo a ogni scala si prendono una
+   * volta sola (pin.sizes): tornando a una scala gia' provata non si rimisura.
+   */
+  fitPin(pin, fit) {
+    if (pin.fit === fit) return
+    pin.fit = fit
+    pin.el.style.setProperty('--pe-pin-fit', String(fit))
+    const m = pin.sizes?.[fit]
+    if (m) Object.assign(pin, m)
+    else pin.textW = 0
+  }
+
+  /** Un passo piu' grande, se c'e' posto (altrimenti resta com'era). */
+  growPin(pin, tryPlace) {
+    const keep = pin.fit
+    this.fitPin(pin, PIN_FITS[PIN_FITS.indexOf(keep) - 1])
+    const place = tryPlace()
+    if (!place) this.fitPin(pin, keep)
+    return place
+  }
+
+  /** Prova a posare l'etichetta con i testi sempre piu' piccoli (dalla scala attuale in giu'). */
+  shrinkPin(pin, tryPlace) {
+    for (const fit of PIN_FITS) {
+      if (fit >= pin.fit) continue
+      this.fitPin(pin, fit)
+      const place = tryPlace()
       if (place) return place
     }
     return null
@@ -914,7 +1001,9 @@ export class ProductExperience {
     this.scene?.resize(w, h)
     for (const pin of this.pins) {
       pin.textW = 0
+      pin.sizes = null
       pin.fixed = null
+      this.fitPin(pin, 1)
     }
     this.fitTitles()
   }
