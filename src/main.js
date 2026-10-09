@@ -33,9 +33,10 @@ import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
 import { createProductExperience, themeFromSite } from './components/ProductExperience/index.js'
-import { ready as i18nReady, localize, t, formatNumber, onLang, translateDom } from './i18n/index.js'
+import { ready as i18nReady, lang, localize, t, formatNumber, onLang, translateDom } from './i18n/index.js'
 import { DEFAULT_COPY, stepsFor } from './components/ProductExperience/copy.js'
 import { initLangPicker } from './i18n/picker.js'
+import { labelFor } from './shop/labels.js'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
@@ -116,6 +117,8 @@ try {
     theme: product.theme,
   })
   stage.productScale = product.heroScale ?? 1
+  // barattoli con l'etichetta nella lingua del sito (in italiano quella del modello)
+  stage.setLabelSource((id) => (lang() === 'it' ? null : (labelFor(id)?.src ?? null)))
 } catch (err) {
   console.warn('WebGL non disponibile, uso l\'immagine statica.', err)
   useFallback()
@@ -388,6 +391,7 @@ async function boot() {
   // cambio lingua (src/i18n): testi del prodotto, menu prodotti e sezione del bicchiere nella nuova lingua
   onLang(() => {
     applyCopy(product.id)
+    stage?.relabel()
     menu?.relabel(menuProducts())
     ui?.setProduct()
     if (ritual) {

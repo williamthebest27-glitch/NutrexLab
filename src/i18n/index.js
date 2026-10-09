@@ -258,11 +258,22 @@ export async function setLang(l) {
 export const ready = (async () => {
   if (!browser) return DEFAULT_LANG
   const l = initialLang()
+  // ?lang= di un link: la scelta resta nella memoria del browser e l'indirizzo torna pulito (cosi', cambiata
+  // la lingua dal selettore, ricaricando la pagina non torna quella del link)
+  try {
+    const url = new URL(location.href)
+    if (url.searchParams.has('lang')) {
+      if (isLang(url.searchParams.get('lang'))) saveLang(l) // anche ?lang=it: vale la lingua del link
+      url.searchParams.delete('lang')
+      history.replaceState(history.state, '', url)
+    }
+  } catch {
+    // indirizzo non modificabile: resta com'e'
+  }
   try {
     if (l !== DEFAULT_LANG) {
       dict = await load(l)
       current = l
-      saveLang(l) // arrivati da un link ?lang=: la scelta resta
     }
   } catch (err) {
     console.error('[i18n] lingua non disponibile', err)

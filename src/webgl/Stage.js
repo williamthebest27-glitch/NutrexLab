@@ -126,6 +126,9 @@ export class Stage {
 
   async _loadEntry(product, onProgress) {
     const url = product.model
+    // etichetta nella lingua del sito: si scarica insieme al modello
+    const label = this.labelSource?.(product.id)
+    if (label) this._labelImage(label).catch(() => {})
     const loader = new GLTFLoader()
     if (url.includes('draco')) {
       // versione compressa: il decoder viene caricato solo se serve
@@ -156,6 +159,7 @@ export class Stage {
       jarW: size.z, // diametro (le linguette sporgono lungo x)
       particles: null,
     }
+    await this.applyLabel(entry)
 
     // i barattoli successivi al primo: shader e texture pronti prima di comparire (niente scatti)
     if (this.entry) {
@@ -168,6 +172,7 @@ export class Stage {
   /** Mostra il barattolo di un prodotto gia' caricato al posto di quello attuale. */
   setProduct(entry) {
     if (this.entry === entry) return
+    this.applyLabel(entry) // (scaricato prima di un cambio di lingua: etichetta della lingua attuale)
     if (this.model) this.pivot.remove(this.model)
     this.entry = entry
     this.model = entry.model
@@ -186,6 +191,67 @@ export class Stage {
     this.burst ??= new SwitchBurst(this, { count: this.tier === 'low' ? 360 : this.tier === 'mid' ? 600 : 900 })
     if (this.particleCount) this.attachParticles()
     this.resize(false) // stessa tela: niente lettura del layout (al cambio prodotto forzava il ricalcolo della pagina)
+  }
+
+  /*
+    Etichetta nella lingua del sito: i barattoli hanno l'etichetta italiana (texture del modello); nelle altre
+    lingue la si sostituisce con quella tradotta, con la stessa impaginazione (public/images/etichette, da
+    src/shop/labels.js). labelSource(id) -> indirizzo dell'etichetta da usare, null = quella del modello.
+    Sulla scheda video resta una sola etichetta per barattolo: quella non usata si libera (l'immagine resta,
+    si ricarica se serve di nuovo).
+  */
+  setLabelSource(fn) {
+    this.labelSource = fn
+  }
+
+  /** Immagine di un'etichetta tradotta (scaricata una volta sola). */
+  _labelImage(url) {
+    this._labelImages ??= new Map()
+    let job = this._labelImages.get(url)
+    if (!job) {
+      job = new THREE.ImageLoader().loadAsync(url)
+      this._labelImages.set(url, job)
+      job.catch(() => this._labelImages.delete(url))
+    }
+    return job
+  }
+
+  /** Etichetta di un barattolo nella lingua del sito. */
+  async applyLabel(entry) {
+    const mat = entry?.materials.find((m) => m.name === 'Etichetta')
+    if (!mat?.map) return
+    entry.labelOriginal ??= mat.map
+    const original = entry.labelOriginal
+    const url = this.labelSource?.(entry.product.id) ?? null
+    let tex = original
+    if (url) {
+      entry.labelTextures ??= new Map()
+      tex = entry.labelTextures.get(url)
+      if (!tex) {
+        const image = await this._labelImage(url).catch(() => null)
+        if (!image) return // non arrivata: resta quella di prima
+        tex = new THREE.Texture(image)
+        // stesse impostazioni della texture del modello (glTF: niente capovolgimento, sRGB, bordi fermi)
+        for (const k of ['flipY', 'colorSpace', 'wrapS', 'wrapT', 'magFilter', 'minFilter', 'anisotropy', 'channel', 'rotation']) tex[k] = original[k]
+        tex.offset.copy(original.offset)
+        tex.repeat.copy(original.repeat)
+        tex.center.copy(original.center)
+        tex.needsUpdate = true
+        entry.labelTextures.set(url, tex)
+      }
+    }
+    // nel frattempo la lingua puo' essere cambiata di nuovo: vale l'ultima
+    if ((this.labelSource?.(entry.product.id) ?? null) !== url || mat.map === tex) return
+    const previous = mat.map
+    mat.map = tex
+    this.renderer.initTexture(tex)
+    previous.dispose()
+  }
+
+  /** Cambio di lingua: le etichette dei barattoli gia' scaricati (quello in scena per primo). */
+  relabel() {
+    if (this.entry) this.applyLabel(this.entry)
+    for (const job of this.entries.values()) job.then((e) => e !== this.entry && this.applyLabel(e)).catch(() => {})
   }
 
   /** Colori della scena: tema a sfumato verso il tema b (k 0..1). */
