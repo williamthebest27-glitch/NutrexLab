@@ -5,7 +5,7 @@ export default {
   "Scroll<br />per scoprire": "Scrollen<br />und entdecken",
   "Cosa c'&egrave;<br />dentro?": "Was steckt<br />drin?",
   "La durata<br />effettiva.": "Die echte<br />Reichweite.",
-  "Integratori alimentari<br /><em>made in Italy.</em>": "Nahrungsergänzung<br /><em>made in Italy.</em>",
+  "Integratori alimentari<br /><em>made in Italy.</em>": "Nahrungs&shy;ergänzung<br /><em>made in Italy.</em>",
   "Sequenza": "Ablauf",
   "UI": "IE",
   "Carrello | Nutrex Lab": "Warenkorb | Nutrex Lab",

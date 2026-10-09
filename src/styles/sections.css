@@ -2117,8 +2117,10 @@ html.no-lines .ing__lines {
   fill: currentColor;
 }
 
+/* (sul telefono una parola troppo lunga per la colonna rimpicciolisce il titolo: fitLinea in copy.js) */
 .linea__title {
-  font-size: clamp(44px, 6.6vw, 120px);
+  --fs-linea: clamp(44px, 6.6vw, 120px);
+  font-size: var(--fs-linea);
   color: var(--curtain-title-a);
 }
 

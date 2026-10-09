@@ -111,6 +111,21 @@ export function fitScience() {
   if (text) text.closest('.science')?.style.setProperty('--sci-text-h', `${Math.ceil(text.offsetHeight)}px`)
 }
 
+/**
+ * Titolo della sezione "La linea": se una parola non entra nella colonna (lingue con parole lunghe sul
+ * telefono, es. "Complementos" in spagnolo) il titolo si rimpicciolisce quanto basta; altrimenti resta
+ * della sua misura (--fs-linea). Una parola piu' larga dello schermo allargava tutta la pagina. Il
+ * tedesco va a capo con il trattino (&shy; nella traduzione). Da chiamare quando cambiano lingua o schermo.
+ */
+export function fitLinea() {
+  const el = $('.linea__title')
+  if (!el) return
+  el.style.removeProperty('font-size')
+  const room = el.clientWidth
+  const width = el.scrollWidth
+  if (room && width > room) el.style.fontSize = `calc(var(--fs-linea) * ${Math.floor((room / width) * 1000) / 1000})`
+}
+
 /*
   Titolo della hero (IL TUO / RITUALE / QUOTIDIANO) nelle altre lingue: le parole tradotte sono piu'
   corte (YOUR / DAILY / RITUAL...) e il titolo restava stretto. Ogni riga si allarga (font-stretch,
