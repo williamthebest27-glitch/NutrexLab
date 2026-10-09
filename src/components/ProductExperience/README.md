@@ -172,6 +172,7 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 - Immagini statiche (`public/images/nutrexlab/`): fotogrammi della scena WebGL, una per prodotto
   (`esperienza-<id>.webp` e `-mobile.webp`) e una per tipo. Si rigenerano dal banco di prova con
   `await __postersAll()` nella console (solo alcune: `__postersAll(['vitamina-c', 'capsule'])`).
+  Nel sito hanno la versione nell'indirizzo (`scripts/sync-model.mjs`, una per tutte le immagini).
 
 ## Banco di prova
 

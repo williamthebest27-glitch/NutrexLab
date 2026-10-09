@@ -78,6 +78,16 @@ for (const studio of VETRO) {
     versions[`nutrexlab/vetro/${studio}/${f}`] = createHash('sha1').update(readFileSync(resolve(abs, f))).digest('hex').slice(0, 10)
   }
 }
+// (immagini statiche della sezione del bicchiere, esperienza-<id>.webp: si rifanno tutte insieme dal
+// banco di prova, quindi una versione sola per tutte; /images resta in cache una settimana)
+const posters = resolve(root, 'public/images/nutrexlab')
+if (existsSync(posters)) {
+  const hash = createHash('sha1')
+  for (const f of readdirSync(posters).filter((f) => f.startsWith('esperienza-') && f.endsWith('.webp')).sort()) {
+    hash.update(f).update(readFileSync(resolve(posters, f)))
+  }
+  versions['images/nutrexlab/esperienza'] = hash.digest('hex').slice(0, 10)
+}
 const versionsFile = resolve(root, 'src/model-versions.json')
 const json = `${JSON.stringify(versions, null, 2)}\n`
 if (!existsSync(versionsFile) || readFileSync(versionsFile, 'utf8') !== json) {
