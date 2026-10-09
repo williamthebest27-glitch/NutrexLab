@@ -34,12 +34,33 @@ const TIMING = {
     titleAOut: 0.16,
     titleBIn: 0.875,
     // l'etichetta del prodotto sparisce prima che il bicchiere rientri nell'inquadratura (0.8);
-    // quella dei pezzi a parte (aside) compare quando si posano
-    pins: { dose: [0.645, 0.76], water: [0.905, 1.01], aside: [0.965, 1.01] },
+    // i tre benefici della macro (al posto della dose) compaiono uno dopo l'altro; quella dei pezzi
+    // a parte (aside) compare quando si posano
+    pins: {
+      dose: [0.645, 0.76],
+      b1: [0.645, 0.76],
+      b2: [0.665, 0.76],
+      b3: [0.685, 0.76],
+      water: [0.905, 1.01],
+      aside: [0.965, 1.01],
+    },
     steps: [0, 0.18, 0.5, 0.66, 0.86],
   },
 }
 const timingFor = (type) => (type === 'powder' ? TIMING.powder : TIMING.showcase)
+
+/**
+ * Etichette agganciate al 3D [chiave, classe]: dose (sul prodotto), water (sul bicchiere), aside
+ * (sui pezzi a parte), b1-b3 (i benefici attorno al prodotto nella macro di capsule e compresse).
+ */
+const PINS = [
+  ['dose', ''],
+  ['water', 'pe__pin--left'],
+  ['aside', ''],
+  ['b1', 'pe__pin--benefit'],
+  ['b2', 'pe__pin--benefit'],
+  ['b3', 'pe__pin--benefit'],
+]
 
 const DEFAULT_THEME = {
   bgLow: '#0b0a0d',
@@ -92,7 +113,7 @@ export class ProductExperience {
     this.layout = currentLayout()
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     this.quality = { ...detectQuality(this.layout), ...(this.o.quality ?? {}) }
-    this.ui = { pinDose: 0, pinWater: 0, pinAside: 0, exposure: 1 }
+    this.ui = { exposure: 1 } // (e la visibilita' di ogni etichetta: pinDose, pinWater...)
     this.size = { w: 1, h: 1 }
     this.ready = false
     this.active = false
@@ -151,15 +172,11 @@ export class ProductExperience {
         <div class="pe__copy pe__copy--b"><h2 class="pe__title pe__title--b"></h2></div>
         <ol class="pe__steps" aria-label="Sequenza"><span class="pe__steps-track" aria-hidden="true"><span class="pe__steps-bar"></span></span></ol>
         <p class="pe__product"></p>
-        <div class="pe__pin" data-pin="dose" aria-hidden="true"><div class="pe__pin-body">
+        ${PINS.map(
+          ([key, cls]) => `<div class="pe__pin${cls ? ` ${cls}` : ''}" data-pin="${key}" aria-hidden="true"><div class="pe__pin-body">
           <span class="pe__pin-dot"></span><span class="pe__pin-line"></span><span class="pe__pin-text"><b></b><span></span></span>
-        </div></div>
-        <div class="pe__pin pe__pin--left" data-pin="water" aria-hidden="true"><div class="pe__pin-body">
-          <span class="pe__pin-dot"></span><span class="pe__pin-line"></span><span class="pe__pin-text"><b></b><span></span></span>
-        </div></div>
-        <div class="pe__pin" data-pin="aside" aria-hidden="true"><div class="pe__pin-body">
-          <span class="pe__pin-dot"></span><span class="pe__pin-line"></span><span class="pe__pin-text"><b></b><span></span></span>
-        </div></div>
+        </div></div>`,
+        ).join('')}
       </div>`
     const q = (sel) => s.querySelector(sel)
     this.stage = q('.pe__stage')
@@ -178,7 +195,7 @@ export class ProductExperience {
     this.pins = [...s.querySelectorAll('.pe__pin')].map((el) => ({
       el,
       key: el.dataset.pin,
-      prop: { dose: 'pinDose', water: 'pinWater', aside: 'pinAside' }[el.dataset.pin],
+      prop: `pin${el.dataset.pin[0].toUpperCase()}${el.dataset.pin.slice(1)}`, // pinDose, pinB1...
       text: el.querySelector('.pe__pin-text'),
       // lato del testo: quello dell'HTML, o quello che preferisce l'esperienza (pinSides)
       sideHtml: el.classList.contains('pe__pin--left') ? 'left' : 'right',
@@ -186,7 +203,11 @@ export class ProductExperience {
       side: el.classList.contains('pe__pin--left') ? 'left' : 'right',
       textW: 0,
       wrap: 0,
+      // sopra o sotto l'oggetto il testo si apre dalla parte del pallino (i benefici: due etichette
+      // sopra lo stesso prodotto non si incrociano)
+      outward: el.classList.contains('pe__pin--benefit'),
     }))
+    for (const pin of this.pins) this.ui[pin.prop] = 0
     this.steps = [0, 1, 2, 3, 4].map((i) => {
       const li = document.createElement('li')
       li.className = 'pe__step'
@@ -216,7 +237,8 @@ export class ProductExperience {
     const name = [this.o.productName, this.o.productNote].filter(Boolean).join(' · ')
     this.el.product.textContent = name
     for (const pin of this.pins) {
-      const [b, t] = c.pins[pin.key] ?? ['', '']
+      pin.el.classList.toggle('pe__pin--row', pin.key === 'b1' && this.layout === 'mobile')
+      const [b, t] = this.pinCopy(pin.key) ?? ['', '']
       pin.el.querySelector('b').textContent = b
       pin.el.querySelector('.pe__pin-text > span').textContent = t
       pin.textW = 0 // testo nuovo: larghezza da rimisurare
@@ -231,6 +253,22 @@ export class ProductExperience {
     this.poster.onerror = own ? () => this.poster.getAttribute('src') !== byType && this.poster.setAttribute('src', byType) : null
     this.poster.setAttribute('src', own || byType)
     this.poster.alt = this.o.productName ? `${this.o.productName}: bicchiere d'acqua` : ''
+  }
+
+  /**
+   * Testo di un'etichetta: i benefici (b1-b3) da copy.benefits, le altre da copy.pins. Sul telefono
+   * una riga sola (b1) con i tre benefici insieme: i titoli, ognuno intero.
+   */
+  pinCopy(key) {
+    const c = this.copy
+    const n = /^b(\d)$/.exec(key)
+    if (n && this.layout === 'mobile') {
+      return n[1] === '1' && c.benefits?.length ? [c.benefits.map(([t]) => t.replace(/ /g, '\u00a0')).join(' · '), ''] : null
+    }
+    if (n) return c.benefits?.[n[1] - 1] ?? null
+    // nella macro di capsule e compresse i benefici prendono il posto della dose
+    if (key === 'dose' && c.benefits?.length && timingFor(this.type).pins.b1) return null
+    return c.pins[key] ?? null
   }
 
   /**
@@ -303,8 +341,9 @@ export class ProductExperience {
       // tutte spente: la timeline nuova le riaccende fin dove e' arrivato lo scroll (con valori
       // rimasti dalla timeline di prima, un'etichetta poteva comparire prima del suo momento)
       this.ui[pin.prop] = 0
-      // etichetta senza tempi (polvere) o senza testo (prodotto senza pezzi a parte): resta spenta
-      if (!timing.pins[pin.key] || !this.copy.pins[pin.key]) continue
+      // etichetta senza tempi (polvere) o senza testo (prodotto senza pezzi a parte o senza
+      // benefici; la dose quando ci sono i benefici): resta spenta
+      if (!timing.pins[pin.key] || !this.pinCopy(pin.key)) continue
       const [a, b] = timing.pins[pin.key]
       main.fromTo(this.ui, { [pin.prop]: 0 }, { [pin.prop]: 1, duration: 0.035, immediateRender: false }, a)
       if (b < 1) main.fromTo(this.ui, { [pin.prop]: 1 }, { [pin.prop]: 0, duration: 0.03, immediateRender: false }, b)
@@ -591,7 +630,13 @@ export class ProductExperience {
         }
       }
       if (place) {
-        k.obstacles.push(place.rect) // le etichette successive non la coprono
+        // le etichette successive non coprono ne' il testo ne' la linea di questa
+        const r = place.rect
+        const line =
+          place.side === 'below' || place.side === 'above'
+            ? { l: place.x - 3, r: place.x + 3, t: Math.min(a.y, r.b), b: Math.max(a.y, r.t) }
+            : { l: Math.min(place.x, r.r), r: Math.max(place.x, r.l), t: a.y - 3, b: a.y + 3 }
+        k.obstacles.push(r, line)
         this.wrapPin(pin, place.w)
         if (place.side !== pin.side) {
           pin.side = place.side
@@ -660,8 +705,11 @@ export class ProductExperience {
       const maxLen = vertical ? Infinity : side === 'left' ? a.x - 9 - w - b.left : b.right - a.x - 9 - w
       if (maxLen < minLen) return null
       let len = vertical ? minLen : Math.min(maxLen, Math.max(minLen, prefLine))
+      // sopra o sotto: testo centrato sul pallino, o aperto dalla sua parte dell'oggetto (outward)
+      const outward = pin.outward && c && Math.abs(a.x - c.x) > 1 && !pin.el.classList.contains('pe__pin--row')
+      const cx = outward ? (a.x < c.x ? a.x - w + 24 : a.x - 24) : a.x - w / 2
       for (let i = 0; i < 4; i++) {
-        const x0 = vertical ? Math.min(Math.max(a.x - w / 2, b.left), b.right - w) : side === 'left' ? a.x - 9 - len - w : a.x + 9 + len
+        const x0 = vertical ? Math.min(Math.max(cx, b.left), b.right - w) : side === 'left' ? a.x - 9 - len - w : a.x + 9 + len
         const y0 = !vertical ? a.y - h / 2 : side === 'below' ? a.y + 9 + len : a.y - 9 - len - h
         const rect = { l: x0, r: x0 + w, t: y0, b: y0 + h }
         if (!inside(rect)) return null
@@ -694,7 +742,8 @@ export class ProductExperience {
     }
     const wideCol = Math.min(full, Math.floor(b.right - b.left))
     const widthOn = (s) => (vertical(s) ? wideCol : Math.min(full, room(s)))
-    const narrow = (s, w, min = minText) => w >= Math.max(Math.min(full, min), pin.titleW) && at(s, w)
+    // (il titolo, misurato con un margine, puo' superare di poco la larghezza su una riga: allora basta quella)
+    const narrow = (s, w, min = minText) => w >= Math.max(Math.min(full, min), Math.min(pin.titleW, full)) && at(s, w)
     const own = pin.side0
     const sides = own === 'right' ? ['right', 'left'] : ['left', 'right'] // prima il suo lato
     const tries = []
@@ -726,12 +775,16 @@ export class ProductExperience {
       })
       list.push(this.cam.rectOf(this._glassPts, this.size))
     }
-    for (const shape of Object.values(this.exp.bodies ?? {})) {
+    // sagome delle etichette che si vedono (gli oggetti stessi sono in exp.obstacles)
+    for (const pin of this.pins) {
+      const shape = this.exp.bodies?.[pin.key]
+      if (!shape || this.ui[pin.prop] < 0.005) continue
       const c = this.cam.project(shape.center, this.size, {})
       const r = this.cam.pixelRadius(shape.center, shape.radius, this.size)
       list.push({ l: c.x - r, r: c.x + r, t: c.y - r, b: c.y + r })
     }
     for (const obj of this.exp.obstacles ?? []) list.push(this.cam.rectOfObject(obj, this.size))
+    list.push(...(this.exp.screenObstacles?.(this.size) ?? []))
     // testi della pagina quando si vedono
     const p = this.main?.progress() ?? 0
     const t = this.timing ?? timingFor(this.type)

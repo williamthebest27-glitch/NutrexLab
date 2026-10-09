@@ -16,6 +16,9 @@ import { DEG, lerp, smooth } from './kit.js'
   parte del bicchiere, a sinistra, con la loro etichetta (anchors.aside); allora l'etichetta della
   dose (water) passa dal bicchiere ai pezzi della dose, a destra.
 
+  BENEFICI: nella macro tre etichette attorno al prodotto (b1-b3: a sinistra, a destra, sotto; sul
+  telefono una riga sola, b1, sotto), con il pallino sul bordo del prodotto come appare sullo schermo.
+
   CapsuleExperience e TabletExperience aggiungono solo modello, materiali, pose e disposizione.
 */
 
@@ -74,10 +77,10 @@ export class ShowcaseExperience {
     // sagome da cui escono le linee delle etichette: il prodotto e il bicchiere. Nella macro
     // l'etichetta del prodotto sta a sinistra, nello spazio lasciato libero dal bicchiere
     this.bodies = { dose: { center: this.follow, radius: 0 }, water: { center: new THREE.Vector3(), radius: 0 } }
-    this.pinSides = { dose: 'left' }
     this.layout = 'desktop'
     this.count = 1
     this.aside = 0
+    this.setPinSides()
     this.dose = [] // gli altri pezzi della dose, dal secondo in poi, e quelli a parte
   }
 
@@ -117,6 +120,13 @@ export class ShowcaseExperience {
     this.pivot.rotation.order = 'ZXY'
     for (const mesh of this.createMeshes(this.root)) this.pivot.add(mesh)
     this.scene.back.add(this.pivot)
+    // punti della superficie (vertici radi): i benefici partono dal bordo del prodotto sullo schermo
+    this.outline = []
+    for (const mesh of this.pivot.children) {
+      const pos = mesh.geometry.attributes.position
+      const step = Math.max(1, Math.floor(pos.count / 400))
+      for (let i = 0; i < pos.count; i += step) this.outline.push(new THREE.Vector3().fromBufferAttribute(pos, i))
+    }
     this.buildShadow()
     this.buildDose()
   }
@@ -131,10 +141,21 @@ export class ShowcaseExperience {
     if (count === this.count && apart === this.aside) return
     this.count = count
     this.aside = apart
-    // con i pezzi a parte le etichette della dose e del mantenimento stanno sopra i loro pezzi (sul
-    // telefono quella dei pezzi a parte sotto: sopra c'e' gia' quella della dose)
-    this.pinSides = apart ? { dose: 'left', water: 'above', aside: 'above', mobile: { aside: 'below' } } : { dose: 'left' }
+    this.setPinSides()
     if (this.pivot) this.buildDose()
+  }
+
+  /**
+   * Lato preferito di ogni etichetta (letto dal motore a ogni ricostruzione). Con i pezzi a parte le
+   * etichette della dose e del mantenimento stanno sopra i loro pezzi (sul telefono quella dei pezzi
+   * a parte sotto: sopra c'e' gia' quella della dose).
+   */
+  setPinSides() {
+    const benefits = { b1: 'left', b2: 'right', b3: 'below' }
+    const mobile = { b1: 'below' }
+    this.pinSides = this.aside
+      ? { dose: 'left', water: 'above', aside: 'above', ...benefits, mobile: { ...mobile, aside: 'below' } }
+      : { dose: 'left', ...benefits, mobile }
   }
 
   /**
@@ -181,14 +202,25 @@ export class ShowcaseExperience {
     delete this.bodies.aside
   }
 
-  /** Le etichette non coprono gli altri pezzi della dose quando ci sono. */
+  /**
+   * Le etichette non coprono il prodotto e gli altri pezzi della dose quando ci sono (nella macro il
+   * prodotto e' in screenObstacles: la sua sagoma sullo schermo, piu' stretta del suo ingombro 3D).
+   */
   get obstacles() {
-    return this.dose.filter((d) => d.group.visible).map((d) => d.group)
+    const dose = this.dose.filter((d) => d.group.visible).map((d) => d.group)
+    return this.silhouette ? dose : [this.pivot, ...dose]
+  }
+
+  /** Nella macro: il rettangolo della sagoma del prodotto sullo schermo (px, con 6 px di margine). */
+  screenObstacles({ w, h }) {
+    const s = this.silhouette
+    const m = 6
+    return s ? [{ l: ((s.x0 + 1) / 2) * w - m, r: ((s.x1 + 1) / 2) * w + m, t: ((1 - s.y1) / 2) * h - m, b: ((1 - s.y0) / 2) * h + m }] : []
   }
 
   /** Tutti i pezzi sulla scena (controlli del banco di prova). */
   get pieces() {
-    return [this.pivot, ...this.obstacles]
+    return [this.pivot, ...this.dose.filter((d) => d.group.visible).map((d) => d.group)]
   }
 
   /** Ombra morbida sul piano quando il prodotto si avvicina (si posa accanto al bicchiere). */
@@ -340,6 +372,49 @@ export class ShowcaseExperience {
     } else {
       delete this.anchors.aside
       delete this.bodies.aside
+    }
+  }
+
+  /**
+   * Dopo la camera: nella macro i tre benefici si agganciano ai punti del prodotto piu' a sinistra,
+   * piu' a destra e piu' in basso sullo schermo, qualunque sia la sua rotazione (il pallino e' gia'
+   * sul bordo), e la sagoma del prodotto sullo schermo diventa l'ostacolo per i testi.
+   */
+  updateView() {
+    const p = this.s.T / TOTAL
+    if (p < 0.6 || p > 0.8 || !this.outline?.length) {
+      for (const k of ['b1', 'b2', 'b3']) {
+        delete this.anchors[k]
+        delete this.bodies[k]
+      }
+      this.silhouette = null
+      return
+    }
+    const at = (this.benefitAt ??= { b1: new THREE.Vector3(), b2: new THREE.Vector3(), b3: new THREE.Vector3() })
+    const cam = this.scene.camera
+    const w = (this._w ??= new THREE.Vector3())
+    const v = (this._v ??= new THREE.Vector3())
+    const s = (this.silhouette = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity })
+    for (const pt of this.outline) {
+      w.copy(pt).applyMatrix4(this.pivot.matrixWorld)
+      v.copy(w).project(cam)
+      if (v.x < s.x0) (s.x0 = v.x), at.b1.copy(w)
+      if (v.x > s.x1) (s.x1 = v.x), at.b2.copy(w)
+      if (v.y < s.y0) (s.y0 = v.y), at.b3.copy(w)
+      s.y1 = Math.max(s.y1, v.y)
+    }
+    // (sagoma puntiforme al centro: serve solo a sapere da che parte del prodotto e' il pallino)
+    const body = (this.benefitBody ??= { center: this.follow, radius: 0 })
+    // sul telefono la riga dei benefici (b1) parte dal punto piu' basso
+    const keys = this.layout === 'mobile' ? { b1: at.b3 } : at
+    for (const k of ['b1', 'b2', 'b3']) {
+      if (keys[k]) {
+        this.anchors[k] = keys[k]
+        this.bodies[k] = body
+      } else {
+        delete this.anchors[k]
+        delete this.bodies[k]
+      }
     }
   }
 

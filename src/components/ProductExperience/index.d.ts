@@ -47,6 +47,8 @@ export interface ProductExperienceCopy {
   titleB?: string[]
   /** dose: sul prodotto; water: sul bicchiere; aside: sui pezzi a parte (solo con aside > 0) */
   pins?: { dose?: PinCopy; water?: PinCopy; aside?: PinCopy }
+  /** capsule e compresse: fino a tre benefici attorno al prodotto nella macro, al posto di pins.dose */
+  benefits?: PinCopy[]
 }
 
 export interface ProductExperienceQuality {

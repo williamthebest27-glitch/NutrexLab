@@ -67,7 +67,7 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 | `productName`, `productNote` | | nome in basso a destra (desktop) |
 | `chapter` | | numero davanti al sopratitolo (es. `'05'`) |
 | `theme` | tema di base | colori di studio e prodotto (`themeFromSite()` li ricava da un prodotto del sito) |
-| `copy` | testi del tipo (`copy.js`) | `eyebrow`, `titleA`, `titleB` (una voce per riga), `pins.dose`, `pins.water` (`[titolo, testo]`) |
+| `copy` | testi del tipo (`copy.js`) | `eyebrow`, `titleA`, `titleB` (una voce per riga), `pins.dose`, `pins.water`, `pins.aside` (`[titolo, testo]`), `benefits` (fino a tre `[titolo, testo]`) |
 | `poster` | immagine del tipo | immagine statica del prodotto: URL o `(layout) => URL` |
 | `model` | modello del tipo | URL del modello del prodotto (misurino, capsula o compressa) |
 | `shape` | | forma per i tipi che ne hanno piu' d'una: `'oval'` = compressa ovale (`tablet-oblong.glb`) |
@@ -88,6 +88,11 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
   fine. L'ultima riga e' nel colore d'accento. Se una parola e' troppo lunga per il suo spazio
   (es. SEMPLIFICATA.) il titolo si riduce quanto basta: non invade la scena, non tocca la sequenza
   a destra e su mobile non esce dallo schermo.
+- Benefici (capsule e compresse, `copy.benefits`): nella macro tre etichette attorno al prodotto
+  al posto di `pins.dose`, una dopo l'altra, con il pallino (piu' grande) sul bordo del prodotto
+  come appare sullo schermo (a sinistra, a destra, sotto), linea nel colore d'accento, titolo e
+  frase grandi. Sul telefono una riga sola sotto il prodotto con i tre titoli insieme. Nel sito
+  sono i primi tre benefici della pagina prodotto (`src/seo/catalog.js`).
 - Etichette agganciate al 3D (`pins.dose` sul prodotto, `pins.water` sul bicchiere, `pins.aside`
   sui pezzi a parte), come quelle del sito: la linea esce sempre dalla sagoma dell'oggetto e il
   testo non copre mai prodotto, bicchiere, titoli o un'altra etichetta e resta nello schermo. Ogni

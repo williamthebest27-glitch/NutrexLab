@@ -189,15 +189,26 @@ const ritualEl = document.querySelector('[data-product-experience]')
 const ritualSteps = ritualEl ? parseFloat(ritualEl.dataset.steps) : 0
 let ritual = null
 
+// Benefici del prodotto (src/seo/catalog.js, gli stessi della pagina prodotto): nella macro della
+// sezione, tre attorno alla capsula o alla compressa. Il catalogo si scarica a parte dopo l'avvio
+// (alla homepage non serve altro); se arriva a sezione gia' creata, si aggiorna in un momento libero.
+let benefitsOf = () => null
+import('./seo/catalog.js')
+  .then(({ productBySlug }) => {
+    benefitsOf = (id) => productBySlug(id)?.benefits?.slice(0, 3).map(([, title, text]) => [title, text]) ?? null
+    if (ritual) idle(() => ritual.setProduct(ritualOptions(product)))
+  })
+  .catch(() => {}) // senza catalogo resta il dettaglio della dose
+
 const numberIt = new Intl.NumberFormat('it-IT', { useGrouping: 'always' })
 const fact = (f) => (f ? [`${numberIt.format(f.value)} ${f.unit}`.trim(), f.text] : null)
 
 /**
  * Testi della sezione per un prodotto: dai dati gia' nel sito (dosi dell'etichetta in content.js),
  * eventuali testi propri in COPY[id].experience. Polvere: misurino e bicchiere d'acqua;
- * capsule e compresse: il dettaglio della dose e quante al giorno (e alla fine, accanto al
- * bicchiere, se ne posano altrettante: perDay in products.js; con maintenance anche quelle del
- * mantenimento, a parte, con la loro etichetta).
+ * capsule e compresse: nella macro tre benefici (il dettaglio della dose se il catalogo non c'e'),
+ * alla fine quante al giorno (e accanto al bicchiere se ne posano altrettante: perDay in
+ * products.js; con maintenance anche quelle del mantenimento, a parte, con la loro etichetta).
  */
 function ritualOptions(p) {
   const c = COPY[p.id] ?? {}
@@ -207,6 +218,7 @@ function ritualOptions(p) {
       ? { dose: fact(facts[0]), water: fact(facts[1]) }
       : { dose: c.pins?.dose, water: fact(facts[0]), aside: p.maintenance ? fact(facts[1]) : null }
   for (const k of Object.keys(pins)) if (!pins[k]) delete pins[k]
+  const benefits = p.form === 'powder' ? null : benefitsOf(p.id)
   const own = c.experience ?? {}
   return {
     type: p.form,
@@ -216,7 +228,7 @@ function ritualOptions(p) {
     productName: p.name,
     productNote: p.note,
     theme: themeFromSite(p.theme),
-    copy: { ...own, pins: { ...pins, ...(own.pins ?? {}) } },
+    copy: { ...own, ...(benefits ? { benefits } : {}), pins: { ...pins, ...(own.pins ?? {}) } },
     // immagine statica con i colori del prodotto (senza WebGL e mentre la scena 3D si carica)
     poster: (layout) => `/images/nutrexlab/esperienza-${p.id}${layout === 'mobile' ? '-mobile' : ''}.webp`,
   }
