@@ -7,7 +7,7 @@
   Campi:
   meta      titolo della pagina e descrizione
   hero      nome e frase sotto IL TUO, pulsante, etichetta accessibile della freccia
-  about     sipario "Ingrediente principale" (long: titolo piu' piccolo per i nomi lunghi)
+  about     sipario "Ingrediente principale": titolo su due righe e testo
   tags      tre caratteristiche sotto "Puro. Semplice. Efficace."
   inside    scena scura: titolo su tre righe e frase in evidenza
   pins      dettagli agganciati al barattolo: [titolo, testo] (punti in products.js, geo)
@@ -162,7 +162,6 @@ export const COPY = {
     },
     about: {
       title: 'Ashwagandha<br>KSM-66®',
-      long: true,
       copy: 'Estratto secco di radice di <i>Withania somnifera</i>, titolato al 5% in withanolidi: 600&nbsp;mg di KSM-66® in ogni compressa.',
     },
     tags: ['KSM-66®', 'Prodotto vegano', 'Senza glutine'],
@@ -445,7 +444,6 @@ export const COPY = {
     },
     about: {
       title: 'Diosmina<br>ed esperidina',
-      long: true,
       copy: '1000&nbsp;mg di diosmina e 200&nbsp;mg di esperidina in due capsule vegetali, con estratto di semi di vite rossa, rutina e vitamina C.',
     },
     tags: ['Capsule vegetali', 'Prodotto vegano', 'GMP / ISO 9001'],
@@ -501,7 +499,6 @@ export const COPY = {
     },
     about: {
       title: 'Magnesio<br>bisglicinato',
-      long: true,
       copy: '375&nbsp;mg di magnesio da bisglicinato, il 100% del valore di riferimento, con le vitamine B1, B6 e B12 in due compresse al giorno.',
     },
     tags: ['Prodotto vegano', 'Senza glutine', 'Senza lattosio'],

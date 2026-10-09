@@ -77,8 +77,8 @@ function desktopKeys(T, R) {
     // e il menu prodotti a destra (heroFit: la dimensione segue la composizione, tarata su schermi 3:2)
     { t: s, ...BASE, sx: 0.18, sy: 0.1, size: 0.44, heroFit: true, rotY: R.hero, rotX: 0.34, rotZ: -0.3, elev: 2, shadow: 0 },
     { t: s + 0.06, heroOut: 0 },
-    // scena 2: sul sipario scuro, dritto a destra con luce di taglio
-    { t: s + 1.0, sx: 0.46, sy: -0.01, size: 0.62, rotY: R.s2, rotX: 0, rotZ: 0, elev: 7, key: 0.9, rim: 1.6, env: 0.75, heroOut: 1 },
+    // scena 2: sul sipario scuro, dritto a destra con luce di taglio (lascia spazio ai nomi lunghi)
+    { t: s + 1.0, sx: 0.58, sy: -0.01, size: 0.62, rotY: R.s2, rotX: 0, rotZ: 0, elev: 7, key: 0.9, rim: 1.6, env: 0.75, heroOut: 1 },
     { t: s + 1.95, rotY: R.s2b },
     { t: s + 3, sx: -0.36, sy: 0.02, size: 0.68, rotY: R.s3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
     { t: s + 3.6, sx: 0.52, sy: -0.06, size: 0.92, rotY: R.s4a, elev: 8, key: 1.1, rim: 1.7, env: 0.7, shadow: 0, aura: 1 },
@@ -91,8 +91,8 @@ function desktopKeys(T, R) {
     // la camera entra sull'etichetta: la tabella nutrizionale, intera e leggibile, a sinistra
     { t: i + 0.8, sx: -0.66, sy: 0.8, size: 1.6, rotY: R.ing1, elev: 4, key: 1.05, rim: 0.8, env: 0.85, aura: 0, ambient: 0 },
     { t: i + 2.95, sx: -0.65, sy: 0.8, size: 1.63, rotY: R.ing2 },
-    // (l'elica un po' a sinistra: a destra i testi grandi si leggono senza particelle sotto)
-    { t: c, sx: -0.16, sy: 0.02, size: 0.44, rotY: R.sci0, elev: 8, key: 1, rim: 1.4, env: 0.8, aura: 0.25, ambient: 0.7 },
+    // (l'elica a sinistra e un po' in basso: a destra i testi grandi si leggono senza particelle sotto)
+    { t: c, sx: -0.24, sy: -0.1, size: 0.44, rotY: R.sci0, elev: 8, key: 1, rim: 1.4, env: 0.8, aura: 0.25, ambient: 0.7 },
     { t: c + 0.2, uP: 0 },
     { t: c + 1.6, uP: 1, size: 0.4, rotY: R.sci1, twist: 0.6 },
     { t: c + 3, size: 0.42, rotY: R.sci2, twist: 2.2 },

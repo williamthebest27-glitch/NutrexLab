@@ -784,15 +784,22 @@ html.no-lines .ing__lines {
   color: var(--curtain-ink);
 }
 
+/* titolo e testo del sipario: stesso carattere e stessa grandezza di "La bellezza nasce da dentro"
+   (.s4__title, .s4__claim), uguali per tutti i prodotti; i colori restano quelli del sipario.
+   La larghezza e' quella della riga piu' lunga (ASHWAGANDHA): la sfumatura copre tutte le lettere.
+   padding/margin: la sfumatura arriva anche sulle parti delle lettere fuori dalla riga (coda della Q) */
 .curtain__title {
-  margin-top: 0;
-  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  font-weight: 300;
-  font-size: min(6.6vw, 9.8vh);
-  line-height: 0.98;
-  letter-spacing: 0.005em;
+  width: max-content;
+  margin-block: -0.14em;
+  padding-block: 0.14em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: var(--fs-s4);
+  line-height: 0.86;
+  letter-spacing: -0.035em;
   text-transform: uppercase;
-  font-variant-numeric: lining-nums; /* Q10, B12, KSM-66: cifre alte come le maiuscole */
+  font-kerning: normal;
   background: linear-gradient(100deg, var(--curtain-title-a) 0%, var(--curtain-title-b) 46%, var(--curtain-title-c) 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -800,15 +807,11 @@ html.no-lines .ing__lines {
   will-change: transform;
 }
 
-/* nomi lunghi (ASHWAGANDHA, BISGLICINATO): un passo piu' piccolo, restano su una riga */
-.curtain__title--long {
-  font-size: min(5.2vw, 7.8vh);
-}
-
 .curtain__copy {
-  margin-top: clamp(22px, 3.4vh, 36px);
-  max-width: 34ch;
-  font-size: clamp(19px, 1.55vw, 25px);
+  margin-top: clamp(22px, 3.4vh, 40px);
+  max-width: min(30ch, 38vw);
+  font-size: clamp(24px, 2.3vw, 38px);
+  line-height: 1.35;
   color: var(--curtain-copy);
 }
 
@@ -1569,14 +1572,6 @@ html.no-lines .ing__lines {
     width: 60vw;
   }
 
-  .curtain__title {
-    font-size: 8.6vw;
-  }
-
-  .curtain__title--long {
-    font-size: 6.8vw;
-  }
-
   .ingredients {
     --col-w: 34vw;
   }
@@ -1742,16 +1737,14 @@ html.no-lines .ing__lines {
     width: auto;
   }
 
+  /* stessa grandezza per tutti i prodotti, la piu' grande che fa stare ASHWAGANDHA nello schermo */
   .curtain__title {
-    font-size: 13vw;
-  }
-
-  .curtain__title--long {
-    font-size: 10.4vw;
+    font-size: min(var(--fs-s4), 10.2vw);
   }
 
   .curtain__copy {
-    font-size: 17px;
+    max-width: none;
+    font-size: 20px;
   }
 
   .s3__w--1 {

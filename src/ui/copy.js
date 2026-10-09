@@ -181,10 +181,7 @@ function applyTop(c, animate, id) {
 
   // sipario: ingrediente principale
   const title = $('.curtain__title')
-  if (title) {
-    title.innerHTML = c.about.title
-    title.classList.toggle('curtain__title--long', !!c.about.long)
-  }
+  if (title) title.innerHTML = c.about.title
   setHTML($('.curtain__copy'), c.about.copy)
 
   // scena 3 e scena scura
