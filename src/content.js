@@ -15,6 +15,8 @@
   sci       sezione scienza: titolo in due parti, testo, frase in evidenza, tre dati
   daily     la durata effettiva della confezione (duration: sezione La durata) e tre dati sull'uso
             quotidiano (facts: dosi e bicchiere d'acqua della sezione del bicchiere, src/main.js)
+  experience  (facoltativo) testi propri della sezione del bicchiere, al posto di quelli presi da
+            daily: pins.water = [titolo, testo, evidenziato] sulla dose del giorno
   shop      pulsante finale e riga sotto
 */
 
@@ -145,6 +147,8 @@ export const COPY = {
         { value: 6, unit: 'mesi', text: 'Fino a sei mesi di fornitura' },
       ],
     },
+    // sezione del bicchiere: sopra le due compresse della prima settimana, evidenziato
+    experience: { pins: { water: ['2 compresse la prima settimana', "Al giorno, con un bicchiere d'acqua", true] } },
     shop: { cta: 'Acquista la bromelina', meta: '180 compresse gastroprotette. Prodotto in Italia.' },
   },
 

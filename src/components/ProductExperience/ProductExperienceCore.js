@@ -238,10 +238,12 @@ export class ProductExperience {
     this.el.product.textContent = name
     for (const pin of this.pins) {
       pin.el.classList.toggle('pe__pin--row', pin.key === 'b1' && this.layout === 'mobile')
-      const [b, t] = this.pinCopy(pin.key) ?? ['', '']
+      const [b, t, accent] = this.pinCopy(pin.key) ?? ['', '']
+      pin.el.classList.toggle('pe__pin--accent', !!accent) // titolo evidenziato nel colore d'accento
       pin.el.querySelector('b').textContent = b
       pin.el.querySelector('.pe__pin-text > span').textContent = t
       pin.textW = 0 // testo nuovo: larghezza da rimisurare
+      pin.fixed = null
     }
     stepsFor(this.type).forEach((name, i) => {
       this.steps[i].querySelector('.pe__step-t').textContent = name
@@ -618,15 +620,28 @@ export class ProductExperience {
       prefLine: mobile ? 30 : Math.min(92, Math.max(44, this.size.w * 0.054)),
       obstacles: null,
     }
+    // nella macro di capsule e compresse: centro del prodotto, fin dove arriva girando, suoi bordi
+    const view = this.exp.calloutView?.(this.size) ?? null
+    if (!view) this._calloutGlass = null
     for (const pin of this.pins) {
       const vis = this.ui[pin.prop]
-      const anchor = this.exp.anchors?.[pin.key]
       let place = null
-      if (anchor && vis >= 0.005) {
-        this.cam.project(anchor, this.size, a)
-        if (a.visible && a.x > 0 && a.x < this.size.w && a.y > 0 && a.y < this.size.h) {
+      if (pin.outward) {
+        // benefici: il testo resta fermo per tutta la macro (posto una volta, fuori da dove arriva il
+        // prodotto girando); il pallino scorre sul bordo del prodotto e la linea lo segue
+        if (view && vis >= 0.005) {
           k.obstacles ??= this.pinObstacles()
-          place = this.placePin(pin, a, k)
+          pin.fixed ??= this.placeCallout(pin, view, k)
+          if (pin.fixed) place = this.calloutAt(pin.fixed, view, a)
+        } else pin.fixed = null
+      } else {
+        const anchor = this.exp.anchors?.[pin.key]
+        if (anchor && vis >= 0.005) {
+          this.cam.project(anchor, this.size, a)
+          if (a.visible && a.x > 0 && a.x < this.size.w && a.y > 0 && a.y < this.size.h) {
+            k.obstacles ??= this.pinObstacles()
+            place = this.placePin(pin, a, k)
+          }
         }
       }
       if (place) {
@@ -660,9 +675,9 @@ export class ProductExperience {
    * salti); dal suo lato su una riga, o su piu' righe se la colonna e' ampia; dall'altro lato;
    * su piu' righe nella colonna libera; sotto l'oggetto; sopra. Se il testo tocca un ostacolo la
    * linea si allunga quanto basta per superarlo. null se non c'e' posto da nessuna parte: meglio
-   * nessuna etichetta che una sopra il prodotto o fuori dallo schermo.
+   * nessuna etichetta che una sopra il prodotto o fuori dallo schermo. only: prova solo quel lato.
    */
-  placePin(pin, a0, { b, pad, minLine, minText, prefLine, obstacles }) {
+  placePin(pin, a0, { b, pad, minLine, minText, prefLine, obstacles }, only = null) {
     // sagoma del proprio oggetto attorno al punto
     let c = null
     let r = 0
@@ -744,6 +759,10 @@ export class ProductExperience {
     const widthOn = (s) => (vertical(s) ? wideCol : Math.min(full, room(s)))
     // (il titolo, misurato con un margine, puo' superare di poco la larghezza su una riga: allora basta quella)
     const narrow = (s, w, min = minText) => w >= Math.max(Math.min(full, min), Math.min(pin.titleW, full)) && at(s, w)
+    if (only) {
+      const p = vertical(only) ? at(only, wideCol) : at(only, full) || narrow(only, widthOn(only))
+      return p || null
+    }
     const own = pin.side0
     const sides = own === 'right' ? ['right', 'left'] : ['left', 'right'] // prima il suo lato
     const tries = []
@@ -761,6 +780,58 @@ export class ProductExperience {
       if (p) return p
     }
     return null
+  }
+
+  /**
+   * Benefici: lato e posto del testo, una volta per tutta la macro. Si parte appena fuori da dove
+   * arriva il prodotto girando su se stesso (view.reach): prima il lato preferito, poi sotto, sopra,
+   * a sinistra, a destra.
+   */
+  placeCallout(pin, view, k) {
+    const { c, reach } = view
+    // alla fine della macro la camera gira e il bicchiere rientra da sinistra: anche li' niente testo
+    this._calloutGlass ??= this.glassAt(Math.max(...['b1', 'b2', 'b3'].map((key) => this.timing.pins[key]?.[1] ?? 0)) + 0.03)
+    if (this._calloutGlass) k = { ...k, obstacles: [...k.obstacles, this._calloutGlass] }
+    const from = {
+      left: { x: c.x - reach.left, y: c.y },
+      right: { x: c.x + reach.right, y: c.y },
+      below: { x: c.x, y: c.y + reach.bottom },
+      above: { x: c.x, y: c.y - reach.top },
+    }
+    for (const side of new Set([pin.side0, 'below', 'above', 'left', 'right'])) {
+      const place = this.placePin(pin, from[side], k, side)
+      if (place) return place
+    }
+    return null
+  }
+
+  /**
+   * Richiamo fermo in questo fotogramma: il pallino (a) sul bordo del prodotto lungo la linea per il
+   * suo centro, la linea fino al testo, che resta dov'e'.
+   */
+  calloutAt(fixed, view, a) {
+    const dot = view.edge[{ left: 'left', right: 'right', below: 'bottom', above: 'top' }[fixed.side]]
+    a.x = dot.x
+    a.y = dot.y
+    const r = fixed.rect
+    const len = Math.max(4, { left: dot.x - 9 - r.r, right: r.l - 9 - dot.x, below: r.t - 9 - dot.y, above: dot.y - 9 - r.b }[fixed.side])
+    const vertical = fixed.side === 'below' || fixed.side === 'above'
+    return { ...fixed, len, x: dot.x, dx: vertical ? r.l - (dot.x - fixed.w / 2) : 0 }
+  }
+
+  /** Il bicchiere sullo schermo (rettangolo, px) al progresso `at` della sezione; poi tutto torna com'era. */
+  glassAt(at) {
+    if (!this._glassPts) return null
+    const keep = this.main.time()
+    const time = gsap.ticker.time
+    this.main.time(at, true)
+    this.exp.update(time, 0)
+    this.cam.update(0, time, this.size)
+    const rect = this.cam.rectOf(this._glassPts, this.size)
+    this.main.time(keep, true)
+    this.exp.update(time, 0)
+    this.cam.update(0, time, this.size)
+    return rect
   }
 
   /** Ingombri sullo schermo (px) che il testo delle etichette non deve coprire. */
@@ -838,7 +909,10 @@ export class ProductExperience {
     const { w, h } = this.stageSize()
     this.size = { w, h }
     this.scene?.resize(w, h)
-    for (const pin of this.pins) pin.textW = 0
+    for (const pin of this.pins) {
+      pin.textW = 0
+      pin.fixed = null
+    }
     this.fitTitles()
   }
 

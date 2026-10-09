@@ -35,8 +35,8 @@ export interface ProductExperienceTheme {
   speckle?: string
 }
 
-/** [testo grande, testo piccolo] di un'etichetta agganciata al 3D. */
-export type PinCopy = [title: string, text: string]
+/** [testo grande, testo piccolo, evidenziata] di un'etichetta agganciata al 3D (evidenziata: titolo nel colore d'accento). */
+export type PinCopy = [title: string, text: string, accent?: boolean]
 
 /** Testi della sezione; quelli assenti restano quelli di default del tipo (copy.js). */
 export interface ProductExperienceCopy {

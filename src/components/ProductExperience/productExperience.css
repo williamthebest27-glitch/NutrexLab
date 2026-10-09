@@ -391,6 +391,18 @@
   line-height: 1.45;
 }
 
+/* etichetta evidenziata (terzo elemento del testo): il titolo nel colore del prodotto, su due righe
+   se serve (resta vicina ai suoi pezzi anche accanto al bicchiere) */
+.pe__pin--accent .pe__pin-text {
+  max-width: 21em;
+  white-space: normal;
+}
+
+.pe__pin--accent .pe__pin-text b {
+  white-space: normal;
+  color: var(--pe-accent, #d45c95);
+}
+
 .pe__pin-text b {
   display: block;
   white-space: nowrap; /* va a capo solo la riga piccola */

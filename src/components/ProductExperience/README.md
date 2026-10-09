@@ -89,10 +89,13 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
   (es. SEMPLIFICATA.) il titolo si riduce quanto basta: non invade la scena, non tocca la sequenza
   a destra e su mobile non esce dallo schermo.
 - Benefici (capsule e compresse, `copy.benefits`): nella macro tre etichette attorno al prodotto
-  al posto di `pins.dose`, una dopo l'altra, con il pallino (piu' grande) sul bordo del prodotto
-  come appare sullo schermo (a sinistra, a destra, sotto), linea nel colore d'accento, titolo e
-  frase grandi. Sul telefono una riga sola sotto il prodotto con i tre titoli insieme. Nel sito
-  sono i primi tre benefici della pagina prodotto (`src/seo/catalog.js`).
+  al posto di `pins.dose`, una dopo l'altra (a sinistra, a destra, sotto), linea nel colore
+  d'accento, titolo e frase grandi. Il testo resta fermo per tutta la macro, fuori da dove arriva
+  il prodotto girando e dal bicchiere che rientra alla fine; il pallino (piu' grande) scorre sul
+  bordo del prodotto e la linea lo segue. Sul telefono una riga sola sotto il prodotto con i tre
+  titoli insieme. Nel sito sono i primi tre benefici della pagina prodotto (`src/seo/catalog.js`).
+- Un'etichetta puo' essere evidenziata (terzo elemento `true` di `[titolo, testo, true]`): titolo
+  nel colore d'accento, su due righe se serve.
 - Etichette agganciate al 3D (`pins.dose` sul prodotto, `pins.water` sul bicchiere, `pins.aside`
   sui pezzi a parte), come quelle del sito: la linea esce sempre dalla sagoma dell'oggetto e il
   testo non copre mai prodotto, bicchiere, titoli o un'altra etichetta e resta nello schermo. Ogni

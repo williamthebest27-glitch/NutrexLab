@@ -17,7 +17,8 @@ import { DEG, lerp, smooth } from './kit.js'
   dose (water) passa dal bicchiere ai pezzi della dose, a destra.
 
   BENEFICI: nella macro tre etichette attorno al prodotto (b1-b3: a sinistra, a destra, sotto; sul
-  telefono una riga sola, b1, sotto), con il pallino sul bordo del prodotto come appare sullo schermo.
+  telefono una riga sola, b1, sotto). Il testo resta fermo mentre il prodotto gira: il pallino
+  scorre sul suo bordo (calloutView).
 
   CapsuleExperience e TabletExperience aggiungono solo modello, materiali, pose e disposizione.
 */
@@ -376,45 +377,94 @@ export class ShowcaseExperience {
   }
 
   /**
-   * Dopo la camera: nella macro i tre benefici si agganciano ai punti del prodotto piu' a sinistra,
-   * piu' a destra e piu' in basso sullo schermo, qualunque sia la sua rotazione (il pallino e' gia'
-   * sul bordo), e la sagoma del prodotto sullo schermo diventa l'ostacolo per i testi.
+   * Dopo la camera, nella macro: la sagoma del prodotto sullo schermo (inviluppo convesso dei suoi
+   * punti) e cio' che serve ai benefici, che restano fermi mentre il prodotto gira: il suo centro,
+   * fin dove arriva girando su se stesso (misurato una volta, all'ingresso nella macro) e i suoi
+   * bordi sulle linee orizzontale e verticale che passano per il centro (li' scorrono i pallini).
    */
   updateView() {
     const p = this.s.T / TOTAL
-    if (p < 0.6 || p > 0.8 || !this.outline?.length) {
-      for (const k of ['b1', 'b2', 'b3']) {
-        delete this.anchors[k]
-        delete this.bodies[k]
-      }
+    // (da 0.64: la camera e' gia' arrivata nella macro, l'ingombro si misura con la sua inquadratura)
+    if (p < 0.64 || p > 0.8 || !this.outline?.length) {
+      this.view = null
       this.silhouette = null
       return
     }
-    const at = (this.benefitAt ??= { b1: new THREE.Vector3(), b2: new THREE.Vector3(), b3: new THREE.Vector3() })
     const cam = this.scene.camera
-    const w = (this._w ??= new THREE.Vector3())
-    const v = (this._v ??= new THREE.Vector3())
+    const c = (this._c ??= new THREE.Vector3()).copy(this.follow).project(cam)
+    const hull = convexHull(this.projectOutline(cam))
     const s = (this.silhouette = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity })
-    for (const pt of this.outline) {
-      w.copy(pt).applyMatrix4(this.pivot.matrixWorld)
-      v.copy(w).project(cam)
-      if (v.x < s.x0) (s.x0 = v.x), at.b1.copy(w)
-      if (v.x > s.x1) (s.x1 = v.x), at.b2.copy(w)
-      if (v.y < s.y0) (s.y0 = v.y), at.b3.copy(w)
-      s.y1 = Math.max(s.y1, v.y)
+    for (const [x, y] of hull) {
+      s.x0 = Math.min(s.x0, x)
+      s.x1 = Math.max(s.x1, x)
+      s.y0 = Math.min(s.y0, y)
+      s.y1 = Math.max(s.y1, y)
     }
-    // (sagoma puntiforme al centro: serve solo a sapere da che parte del prodotto e' il pallino)
-    const body = (this.benefitBody ??= { center: this.follow, radius: 0 })
-    // sul telefono la riga dei benefici (b1) parte dal punto piu' basso
-    const keys = this.layout === 'mobile' ? { b1: at.b3 } : at
-    for (const k of ['b1', 'b2', 'b3']) {
-      if (keys[k]) {
-        this.anchors[k] = keys[k]
-        this.bodies[k] = body
-      } else {
-        delete this.anchors[k]
-        delete this.bodies[k]
+    const across = chord(hull, 1, c.y) // bordi sinistro e destro all'altezza del centro
+    const down = chord(hull, 0, c.x) // bordi in basso e in alto sulla verticale del centro
+    const reach = this.view?.aspect === cam.aspect ? this.view.reach : this.measureReach(cam, c)
+    this.view = {
+      aspect: cam.aspect,
+      c: { x: c.x, y: c.y },
+      reach,
+      edge: { left: across?.[0] ?? s.x0, right: across?.[1] ?? s.x1, bottom: down?.[0] ?? s.y0, top: down?.[1] ?? s.y1 },
+    }
+  }
+
+  /** Punti della superficie del prodotto sullo schermo (coordinate normalizzate, -1..1). */
+  projectOutline(cam, step = 1) {
+    const w = (this._w ??= new THREE.Vector3())
+    const pts = []
+    for (let i = 0; i < this.outline.length; i += step) {
+      w.copy(this.outline[i]).applyMatrix4(this.pivot.matrixWorld).project(cam)
+      pts.push([w.x, w.y])
+    }
+    return pts
+  }
+
+  /**
+   * Fin dove arriva il prodotto attorno al suo centro c mentre gira su se stesso (un giro intero,
+   * con la camera di adesso), con un margine per la camera che si avvicina e l'assetto che cambia
+   * un poco durante la macro.
+   */
+  measureReach(cam, c) {
+    const keep = this.pivot.rotation.y
+    const r = { left: 0, right: 0, top: 0, bottom: 0 }
+    for (let i = 0; i < 24; i++) {
+      this.pivot.rotation.y = keep + (i / 24) * Math.PI * 2
+      this.pivot.updateMatrixWorld(true)
+      for (const [x, y] of this.projectOutline(cam, 3)) {
+        r.left = Math.max(r.left, c.x - x)
+        r.right = Math.max(r.right, x - c.x)
+        r.top = Math.max(r.top, y - c.y)
+        r.bottom = Math.max(r.bottom, c.y - y)
       }
+    }
+    this.pivot.rotation.y = keep
+    this.pivot.updateMatrixWorld(true)
+    for (const k in r) r[k] *= 1.12
+    return r
+  }
+
+  /**
+   * Per i benefici, in px: centro del prodotto, fin dove arriva girando e i suoi bordi sulle linee
+   * per il centro. null fuori dalla macro.
+   */
+  calloutView({ w, h }) {
+    const v = this.view
+    if (!v) return null
+    const X = (x) => ((x + 1) / 2) * w
+    const Y = (y) => ((1 - y) / 2) * h
+    const r = v.reach
+    return {
+      c: { x: X(v.c.x), y: Y(v.c.y) },
+      reach: { left: (r.left * w) / 2, right: (r.right * w) / 2, top: (r.top * h) / 2, bottom: (r.bottom * h) / 2 },
+      edge: {
+        left: { x: X(v.edge.left), y: Y(v.c.y) },
+        right: { x: X(v.edge.right), y: Y(v.c.y) },
+        top: { x: X(v.c.x), y: Y(v.edge.top) },
+        bottom: { x: X(v.c.x), y: Y(v.edge.bottom) },
+      },
     }
   }
 
@@ -430,4 +480,41 @@ export class ShowcaseExperience {
     this.shadowMat?.map?.dispose()
     this.shadowMat?.dispose()
   }
+}
+
+/** Inviluppo convesso di punti [x, y] (catena monotona), in senso antiorario. */
+function convexHull(points) {
+  const pts = [...points].sort((p, q) => p[0] - q[0] || p[1] - q[1])
+  if (pts.length < 3) return pts
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+  const half = (list) => {
+    const out = []
+    for (const p of list) {
+      while (out.length >= 2 && cross(out[out.length - 2], out[out.length - 1], p) <= 0) out.pop()
+      out.push(p)
+    }
+    out.pop()
+    return out
+  }
+  return [...half(pts), ...half(pts.reverse())]
+}
+
+/**
+ * Dove la retta coordinata[axis] = value attraversa il poligono convesso: [minimo, massimo]
+ * dell'altra coordinata, o null se non lo attraversa.
+ */
+function chord(hull, axis, value) {
+  const o = 1 - axis
+  let lo = Infinity
+  let hi = -Infinity
+  for (let i = 0; i < hull.length; i++) {
+    const p = hull[i]
+    const q = hull[(i + 1) % hull.length]
+    if ((p[axis] - value) * (q[axis] - value) > 0 || p[axis] === q[axis]) continue
+    const t = (value - p[axis]) / (q[axis] - p[axis])
+    const x = p[o] + (q[o] - p[o]) * t
+    lo = Math.min(lo, x)
+    hi = Math.max(hi, x)
+  }
+  return lo <= hi ? [lo, hi] : null
 }
