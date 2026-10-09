@@ -190,7 +190,8 @@ const ritualSteps = ritualEl ? parseFloat(ritualEl.dataset.steps) : 0
 let ritual = null
 
 // Benefici del prodotto (src/seo/catalog.js, gli stessi della pagina prodotto): nella macro della
-// sezione, tre attorno alla capsula o alla compressa. Il catalogo si scarica a parte dopo l'avvio
+// sezione, tre attorno alla capsula o alla compressa; per la polvere tre attorno al bicchiere, alla
+// fine. Il catalogo si scarica a parte dopo l'avvio
 // (alla homepage non serve altro); se arriva a sezione gia' creata, si aggiorna in un momento libero.
 let benefitsOf = () => null
 import('./seo/catalog.js')
@@ -205,8 +206,9 @@ const fact = (f) => (f ? [`${numberIt.format(f.value)} ${f.unit}`.trim(), f.text
 
 /**
  * Testi della sezione per un prodotto: dai dati gia' nel sito (dosi dell'etichetta in content.js),
- * eventuali testi propri in COPY[id].experience. Polvere: misurino e bicchiere d'acqua;
- * capsule e compresse: nella macro tre benefici (il dettaglio della dose se il catalogo non c'e'),
+ * eventuali testi propri in COPY[id].experience. Polvere: misurino e bicchiere d'acqua, alla fine
+ * tre benefici attorno al bicchiere; capsule e compresse: nella macro tre benefici (il dettaglio
+ * della dose se il catalogo non c'e'),
  * alla fine quante al giorno (e accanto al bicchiere se ne posano altrettante: perDay in
  * products.js; con maintenance anche quelle del mantenimento, a parte, con la loro etichetta).
  */
@@ -218,7 +220,7 @@ function ritualOptions(p) {
       ? { dose: fact(facts[0]), water: fact(facts[1]) }
       : { dose: c.pins?.dose, water: fact(facts[0]), aside: p.maintenance ? fact(facts[1]) : null }
   for (const k of Object.keys(pins)) if (!pins[k]) delete pins[k]
-  const benefits = p.form === 'powder' ? null : benefitsOf(p.id)
+  const benefits = benefitsOf(p.id)
   const own = c.experience ?? {}
   return {
     type: p.form,
