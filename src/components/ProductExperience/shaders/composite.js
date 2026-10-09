@@ -1,10 +1,10 @@
-import { OUTPUT } from './chunks.js'
+import { GRADE } from './chunks.js'
 
 /*
   Passate a tutto schermo.
   COPY:   strato posteriore -> immagine principale (HDR lineare), con FXAA se lo strato non ha MSAA.
   OUTPUT: immagine principale sullo schermo, con vignettatura leggera, tone mapping del renderer,
-          sRGB e dithering (niente bande nei neri).
+          punto del nero (GRADE), sRGB e dithering (niente bande nei neri).
 */
 
 export const screenVertex = /* glsl */ `
@@ -50,6 +50,7 @@ void main() {
 export const outputFragment = /* glsl */ `
 #include <common>
 #include <dithering_pars_fragment>
+${GRADE}
 uniform sampler2D tMain;
 uniform float uVignette;
 varying vec2 vUv;
@@ -58,6 +59,9 @@ void main() {
   vec2 v = (vUv - 0.5) * vec2(1.0, 0.82);
   c *= mix(1.0 - uVignette, 1.0, smoothstep(0.78, 0.18, length(v)));
   gl_FragColor = vec4(c, 1.0);
-  ${OUTPUT}
+  #include <tonemapping_fragment>
+  gl_FragColor.rgb = pe_grade(gl_FragColor.rgb);
+  #include <colorspace_fragment>
+  #include <dithering_fragment>
 }
 `

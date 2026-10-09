@@ -6,13 +6,19 @@ ScrollTrigger, nessun'altra dipendenza. Nel sito e' il capitolo "Preparazione", 
 Ogni giorno (`#rituale` in `index.html`).
 
 Nel sito lo studio e' quello del render di Blender (`themeFromSite(theme, { studio: 'scuro' })`):
-parete grigio scuro, piano illuminato attorno al bicchiere, e il bicchiere e' il render stesso.
+fondo nero, piano illuminato attorno al bicchiere, e il bicchiere e' il render stesso.
 Vetro, acqua, bollicine e logo inciso non si calcolano nel browser: sono le immagini del bicchiere
 (`/models/nutrexlab/vetro/scuro/vetro_eNN.webp`, una ogni 3 gradi di inclinazione della camera, dai
 3 ai 33), e per ogni pixel lo shader (`shaders/impostor.js`) prende quella con la stessa
 inclinazione del raggio. Il bicchiere e' tondo: girandogli attorno resta identico al render. Sopra
 le immagini solo cio' che entra nel bicchiere (la polvere, l'acqua che si intorbida). Senza
 `studio` (o finche' le immagini non arrivano) il vetro e' calcolato come prima, nello studio nero.
+
+Il fondo e' nero per tutti i prodotti: nella passata finale (e sul bicchiere renderizzato, allo
+stesso modo) i toni fino al punto del nero (`blackPoint` del tema, `GRADE` in `shaders/chunks.js`)
+diventano nero pieno: la parete grigia del render e quello che se ne vede attraverso il vetro e
+l'acqua. Dai toni medi in su (capsule, compresse, misurino, luce sul piano, luci e logo del vetro)
+l'immagine resta quella del render.
 
 Il tipo sceglie l'animazione:
 

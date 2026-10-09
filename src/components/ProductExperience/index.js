@@ -43,16 +43,22 @@ export function mountProductExperiences(root = document, defaults = {}) {
 /**
  * Colori dello studio dal tema di un prodotto del sito (src/products.js): fondo quasi nero tinto
  * col colore del prodotto, alone dietro al bicchiere, controluce e accenti.
- * { studio: 'scuro' }: lo studio grigio del render di Blender, con il bicchiere renderizzato (vetro,
- * acqua e logo inciso sono le immagini del render): parete grigio scuro, piano illuminato solo
- * attorno al bicchiere (capsule e compresse bianche si staccano dal fondo), testi chiari. Del
- * prodotto restano l'accento e i colori di polvere e pastiglie.
+ * { studio: 'scuro' }: lo studio del render di Blender, con il bicchiere renderizzato (vetro, acqua
+ * e logo inciso sono le immagini del render): fondo nero per tutti i prodotti (punto del nero
+ * nella passata finale, blackPoint), piano illuminato solo attorno al bicchiere (capsule e
+ * compresse bianche si staccano dal fondo), testi chiari; accento, polvere e pastiglie come nel
+ * resto del sito.
  */
 export function themeFromSite(theme, { studio = 'dark' } = {}) {
   const p = theme.palette
   if (studio === 'scuro') {
     return {
       studio,
+      // la parete grigia del render (luminanza ~0.05 sullo schermo) e quello che se ne vede
+      // attraverso il bicchiere diventano nero pieno
+      blackPoint: 0.06,
+      // fondo della sezione (bordi sfumati): nero come la parete sullo schermo
+      cssBg: '#000000',
       bgLow: '#2e2e30',
       bgGlow: '#161617',
       pool: '#ffffff',

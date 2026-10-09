@@ -38,6 +38,10 @@ export interface ProductExperienceTheme {
   /** luce sul piano: intensita' (moltiplica pool) e raggio della pozza attorno al bicchiere (m) */
   poolGain?: number
   poolR?: number
+  /** punto del nero dell'immagine finale (luminanza lineare, 0-0.3): i toni fino a qui diventano neri (0 = spento) */
+  blackPoint?: number
+  /** fondo CSS della sezione (bordi sfumati), se diverso da bgLow */
+  cssBg?: string
 }
 
 /** [testo grande, testo piccolo, evidenziata] di un'etichetta agganciata al 3D (evidenziata: titolo nel colore d'accento). */

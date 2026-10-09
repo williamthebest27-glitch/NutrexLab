@@ -162,6 +162,7 @@ export class ProductScene {
       uPhoto: { value: 0 },
       uGlassInside: { value: 0 },
       uPoolR: { value: 0.24 },
+      uBlack: { value: 0 },
       uKeyDir: { value: keyDir },
       uCloud: { value: 0 },
       uCloudColor: { value: new THREE.Color(0.72, 0.71, 0.69) },
@@ -256,7 +257,7 @@ export class ProductScene {
     })
     this.outputMaterial = pass(
       outputFragment,
-      { tMain: { value: this.mainRT.texture }, uVignette: { value: 0.5 } },
+      { tMain: { value: this.mainRT.texture }, uVignette: { value: 0.5 }, uBlack: this.u.uBlack },
       { dithering: true },
     )
     this.quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.outputMaterial)
@@ -472,6 +473,8 @@ export class ProductScene {
     u.uBgGlow.value.set(t.bgGlow)
     u.uPool.value.set(t.pool).multiplyScalar(t.poolGain ?? 1)
     u.uPoolR.value = t.poolR ?? 0.24
+    // immagine finale: i toni scuri fino al punto del nero diventano neri (studio scuro: fondo nero)
+    u.uBlack.value = t.blackPoint ?? 0
     u.uCloudColor.value.set(t.cloud)
     u.uPhoto.value = photo ? 1 : 0
     this.keyShadow ??= u.uShadowDir.value.clone()

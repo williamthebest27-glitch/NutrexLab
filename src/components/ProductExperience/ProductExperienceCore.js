@@ -299,7 +299,8 @@ export class ProductExperience {
   }
 
   applyCssTheme() {
-    this.section.style.setProperty('--pe-bg', this.theme.bgLow)
+    // (studio scuro: il fondo nero come la parete sullo schermo, non il grigio del render)
+    this.section.style.setProperty('--pe-bg', this.theme.cssBg ?? this.theme.bgLow)
     this.section.style.setProperty('--pe-accent', this.theme.accent)
   }
 

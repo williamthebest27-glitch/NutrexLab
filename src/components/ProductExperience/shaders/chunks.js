@@ -229,6 +229,26 @@ float pe_etch(vec3 p) {
 }
 `
 
+/**
+ * Punto del nero dell'immagine finale (studio scuro): i toni fino a uBlack (luminanza lineare: la
+ * parete, il fondo e quello che se ne vede attraverso il vetro e l'acqua) diventano nero pieno; da
+ * 0.3 in su (capsule, compresse, misurino, luce sul piano, luci e logo del vetro) l'immagine resta
+ * quella che e'; in mezzo una curva morbida, senza scalini. In spazio schermo, dopo il tone mapping,
+ * uguale per fondale, oggetti e bicchiere renderizzato. uBlack 0 = spento.
+ */
+export const GRADE = /* glsl */ `
+uniform float uBlack;
+vec3 pe_grade(vec3 c) {
+  float L = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  if (uBlack <= 0.0 || L >= 0.3) return c;
+  // da 0 (piatta) a uBlack fino a 0.3 (pendenza 1, come la parte che resta com'e')
+  float t = max(L - uBlack, 0.0) / (0.3 - uBlack);
+  float m = 1.0 - uBlack / 0.3;
+  float o = 0.3 * t * t * ((3.0 - m) + (m - 2.0) * t);
+  return c * (o / max(L, 1e-6));
+}
+`
+
 /** Uscita in HDR lineare verso lo schermo: esposizione, tone mapping del renderer, sRGB, dithering. */
 export const OUTPUT = /* glsl */ `
   #include <tonemapping_fragment>

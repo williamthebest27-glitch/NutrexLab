@@ -1,4 +1,4 @@
-import { PROJECT, GLASS } from './chunks.js'
+import { PROJECT, GLASS, GRADE } from './chunks.js'
 
 /*
   Bicchiere renderizzato (studio scuro): vetro, acqua e logo inciso non si calcolano qui, sono le
@@ -29,6 +29,7 @@ export const impostorFragment = /* glsl */ `
 #include <tonemapping_pars_fragment>
 ${PROJECT}
 ${GLASS}
+${GRADE}
 uniform sampler2D tImp0;
 uniform sampler2D tImp1;
 uniform sampler2D tImp2;
@@ -145,6 +146,8 @@ void main() {
       col = mix(col, AgXToneMapping(uCloudColor * lit * 0.6), cloud);
     }
   }
+  // punto del nero, come il resto dell'immagine (GRADE nella passata finale)
+  col = pe_grade(col);
   float a = clamp(im.a, 0.0, 1.0);
   gl_FragColor = vec4(pe_srgb(col) * a, a);
 }
