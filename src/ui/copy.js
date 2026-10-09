@@ -123,7 +123,10 @@ function science(sci) {
 /** La durata: quanto dura davvero una confezione del prodotto (giorni, settimane o mesi). */
 function daily(dl) {
   const f = dl.duration
-  setHTML($('.daily__facts'), `<li>${num('b', f.value, f.decimals)}<span>${f.unit}</span><em>${f.text}</em></li>`)
+  setHTML(
+    $('.daily__facts'),
+    `<li><span class="daily__k">Un barattolo per:</span><span class="daily__v">${num('b', f.value, f.decimals)}<span class="daily__u">${f.unit}</span></span><em>${f.text}</em></li>`,
+  )
 }
 
 /** Riga e pulsante della hero: con animate le righe escono verso l'alto e le nuove salgono. */

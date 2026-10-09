@@ -1448,20 +1448,39 @@ html.no-lines .ing__lines {
   text-align: right;
 }
 
+/* la durata al centro dello spazio libero a destra del barattolo (il barattolo occupa circa il 44%
+   sinistro dello schermo: il blocco va dal 46% al margine destro).
+   Una riga: "Un barattolo per:" a sinistra, la durata (50 giorni, 24 settimane...) a destra; sotto,
+   come si calcola */
 .daily__facts {
+  left: 46%;
   right: var(--gutter);
-  bottom: 14%;
-  width: min(480px, 36vw);
-  text-align: right;
+  bottom: 17%;
+  text-align: center;
 }
 
 .daily__facts li {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: baseline;
-  column-gap: 14px;
-  row-gap: 20px;
+  column-gap: clamp(16px, 2vw, 36px);
+  row-gap: 22px;
+}
+
+.daily__k {
+  font-family: var(--font-mono);
+  font-size: clamp(19px, 1.8vw, 28px);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.daily__v {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 14px;
 }
 
 .daily__facts b {
@@ -1473,10 +1492,10 @@ html.no-lines .ing__lines {
   letter-spacing: -0.04em;
 }
 
-.daily__facts span {
+.daily__u {
   font-family: var(--font-mono);
-  font-size: clamp(15px, 1.25vw, 20px);
-  letter-spacing: 0.14em;
+  font-size: clamp(17px, 1.5vw, 24px);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--fg-soft);
 }
@@ -2028,16 +2047,28 @@ html.no-lines .ing__lines {
   }
 
   .daily__facts li {
-    justify-content: flex-start;
+    justify-content: space-between;
+    column-gap: 12px;
     row-gap: 12px;
   }
 
-  .daily__facts b {
-    font-size: 20vw;
+  .daily__k {
+    flex-basis: 100%;
+    font-size: 16px;
+    letter-spacing: 0.06em;
   }
 
-  .daily__facts span {
-    font-size: 14px;
+  .daily__v {
+    gap: 10px;
+  }
+
+  .daily__facts b {
+    font-size: 17vw;
+  }
+
+  .daily__u {
+    font-size: 15px;
+    letter-spacing: 0.08em;
   }
 
   .daily__facts em {
