@@ -638,6 +638,8 @@ function initSeal() {
 // massimo della velocita' viene sostituito e il nuovo rallenta fino a fermarsi di
 // fronte. Intanto tutti i colori sfumano verso quelli del nuovo prodotto e il
 // liquido di RITUALE si svuota e si riempie del nuovo colore.
+// Scegliendo un prodotto piu' in basso nella pagina (pulsante PRODOTTI) si torna prima nella hero
+// (backToHero) e l'animazione parte da li'.
 const TAU = Math.PI * 2
 const SPIN = 24 // rad/s: velocita' massima della rotazione (circa 4 giri al secondo)
 let switching = false
@@ -746,12 +748,16 @@ async function switchProduct(id) {
   if (next === product) return
   switching = true
   lastSwitch = performance.now()
-  const prev = product
-  product = next
   menu?.setActive(next.id)
-  const ready = stage.loadProduct(next)
+  const ready = stage.loadProduct(next) // (il modello si scarica anche mentre la pagina torna in cima)
   let entry = null
   ready.then((e) => (entry = e)).catch(() => {})
+  // da qualsiasi sezione della homepage il cambio riparte dalla hero: prima si torna in cima, poi li'
+  // il barattolo di prima gira e lascia il posto a quello scelto
+  await backToHero()
+  lastSwitch = performance.now()
+  const prev = product
+  product = next
 
   if (reduced) {
     await gsap.to(canvas, { opacity: 0, duration: 0.25 })
@@ -860,6 +866,42 @@ function jump(t) {
       stage?.snap()
     })
     .to(veil, { opacity: 0, duration: 0.9, ease: 'power2.inOut', delay: 0.15 })
+}
+
+/**
+ * Prima di un cambio prodotto: torna in cima alla homepage e risolve quando la hero e' di nuovo
+ * sullo schermo. Appena scesi (sipario che sale) la pagina scorre su; piu' in basso passa dalla
+ * dissolvenza del velo, come i salti lunghi della navigazione. Con movimento ridotto: subito.
+ */
+function backToHero() {
+  if (scrollY() < 1) return Promise.resolve()
+  if (!lenis) {
+    window.scrollTo(0, 0)
+    stage?.snap()
+    return Promise.resolve()
+  }
+  return new Promise((resolve) => {
+    const t = currentT()
+    if (t < 1) {
+      // (lock: niente scroll a mano finche' non si arriva in cima)
+      const duration = 0.3 + 0.8 * t
+      lenis.scrollTo(0, { duration, lock: true, force: true, onComplete: () => resolve() })
+      gsap.delayedCall(duration + 0.3, resolve) // se un salto della navigazione interrompe lo scroll
+      return
+    }
+    const veil = document.querySelector('.veil')
+    veil.style.background = getComputedStyle(document.body).backgroundColor // il fondo del momento
+    gsap
+      .timeline()
+      .to(veil, { opacity: 1, duration: 0.45, ease: 'power2.inOut' })
+      .add(() => {
+        lenis.scrollTo(0, { immediate: true, force: true })
+        stage?.snap()
+      })
+      .to(veil, { opacity: 0, duration: 0.7, ease: 'power2.inOut', delay: 0.15 })
+      // il barattolo di prima inizia a girare con la hero gia' quasi tutta visibile
+      .add(() => resolve(), '-=0.25')
+  })
 }
 
 // ---------------------------------------------------------------------------
