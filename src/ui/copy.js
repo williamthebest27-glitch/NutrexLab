@@ -1,7 +1,7 @@
 import gsap from 'gsap'
 import { COPY } from '../content.js'
 import { PRODUCTS } from '../products.js'
-import { localize, formatNumber, t, setMeta } from '../i18n/index.js'
+import { localize, formatNumber, t, setMeta, sourceHtml } from '../i18n/index.js'
 
 /*
   Mette nella pagina i testi del prodotto (src/content.js).
@@ -109,6 +109,56 @@ export function fitScience() {
   fitTitleWidth($('.sci__b'))
   const text = $('.sci__text')
   if (text) text.closest('.science')?.style.setProperty('--sci-text-h', `${Math.ceil(text.offsetHeight)}px`)
+}
+
+/*
+  Titolo della hero (IL TUO / RITUALE / QUOTIDIANO) nelle altre lingue: le parole tradotte sono piu'
+  corte (YOUR / DAILY / RITUAL...) e il titolo restava stretto. Ogni riga si allarga (font-stretch,
+  asse wdth di Archivo, al massimo 125%) fino alla larghezza della stessa riga in italiano, mai oltre:
+  composizione e altezze restano quelle tarate sull'italiano (nessuna riga va sopra il barattolo).
+  Il rapporto tra le larghezze non dipende dallo schermo: basta rifarlo quando cambia la lingua.
+*/
+const HERO_WORDS = ['.hero-il', '.hero-ritual__word', '.hero-quot__word']
+const MAX_STRETCH = 125
+
+/**
+ * Larghezza di un testo con lo stile della parola el (stessa misura del carattere) e il font-stretch dato.
+ * Senza crenatura, come le lettere separate da SplitText.
+ */
+function wordWidth(el, html, stretch) {
+  const probe = el.cloneNode(false)
+  probe.removeAttribute('style')
+  probe.removeAttribute('data-split')
+  probe.innerHTML = html
+  Object.assign(probe.style, {
+    position: 'absolute', left: '0', top: '0', display: 'inline-block', width: 'auto',
+    transform: 'none', visibility: 'hidden', fontStretch: `${stretch}%`, fontKerning: 'none',
+  })
+  el.parentNode.append(probe)
+  const w = probe.offsetWidth
+  probe.remove()
+  return w
+}
+
+export function fitHeroTitle() {
+  for (const el of HERO_WORDS.map($)) {
+    if (!el) continue
+    el.style.removeProperty('font-stretch')
+    const it = sourceHtml(el)
+    const html = t(it)
+    if (html === it) continue // italiano (o parola non tradotta): resta com'e'
+    const base = parseFloat(getComputedStyle(el).fontStretch) || 100
+    const target = wordWidth(el, it, base)
+    let s = base
+    let w = wordWidth(el, html, s)
+    if (w >= target - 2) continue // gia' larga come in italiano
+    for (let i = 0; i < 4 && s < MAX_STRETCH && Math.abs(w - target) > 2; i++) {
+      s = Math.min(MAX_STRETCH, (s * target) / w)
+      w = wordWidth(el, html, s)
+    }
+    while (w > target && s > base) w = wordWidth(el, html, --s) // mai piu' larga dell'italiano
+    if (s > base) el.style.fontStretch = `${s.toFixed(1)}%`
+  }
 }
 
 function science(sci) {

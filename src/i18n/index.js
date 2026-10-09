@@ -158,6 +158,9 @@ function original(el) {
   return o
 }
 
+/** HTML italiano di un elemento [data-i18n] (il testo di partenza, qualunque sia la lingua del sito). */
+export const sourceHtml = (el) => original(el).html
+
 /** Cambia il contenuto anche dei testi divisi in righe/lettere per le animazioni (SplitText). */
 function setInner(el, value) {
   const split = el._split

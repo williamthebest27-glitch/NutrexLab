@@ -28,7 +28,7 @@ import { createMobileMenu } from './ui/mobileMenu.js'
 import { initCookieNotice } from './ui/cookieNotice.js'
 import { makeGrain } from './ui/grain.js'
 import { bindCartCount } from './shop/cart.js'
-import { applyCopy, fitIngredients, fitScience } from './ui/copy.js'
+import { applyCopy, fitIngredients, fitScience, fitHeroTitle } from './ui/copy.js'
 import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
@@ -377,6 +377,7 @@ async function boot() {
     : Promise.resolve()
   await Promise.all([fonts, model])
 
+  fitHeroTitle() // (prima della divisione in lettere: nelle altre lingue il titolo si allarga come in italiano)
   prepareText(reduced)
   fitIngredients() // (con i font caricati)
   fitScience()
@@ -412,6 +413,7 @@ async function boot() {
     }
     fitIngredients()
     fitScience()
+    fitHeroTitle()
   })
   ScrollTrigger.refresh()
   gsap.ticker.add(tick)
