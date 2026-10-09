@@ -1450,8 +1450,14 @@ ul {
 }
 
 /* telefono: solo la bandiera in un cerchio grande come il pulsante del menu (logo, lingua, "Acquista ora"
-   e menu stanno in una riga anche sugli schermi stretti); la tendina si apre verso destra */
+   e menu stanno in una riga anche sugli schermi stretti); la tendina si apre sotto la barra, sul lato
+   sinistro dello schermo (allineata al logo), lontana dal pulsante PRODOTTI della hero (in alto a destra,
+   .pmenu.is-drop: la scheda parte sotto di lui) */
 @media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  .lang {
+    position: static;
+  }
+
   .lang__btn {
     justify-content: center;
     width: 38px;
@@ -1469,9 +1475,11 @@ ul {
   }
 
   .lang__menu {
+    top: 100%;
     right: auto;
-    left: 0;
-    width: 210px;
+    left: clamp(18px, 6vw, 100px);
+    width: 176px;
+    padding-top: 22px;
   }
 
   .lang__card {
