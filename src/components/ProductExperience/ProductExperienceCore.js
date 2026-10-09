@@ -48,9 +48,7 @@ const DEFAULT_THEME = {
   rim: '#ffd9ea',
   accent: '#d45c95',
   powder: '#d79ab3',
-  capsule: '#9e2e65',
   capsuleBody: '#f3f0e8',
-  fill: '#e3b04a',
   tablet: '#ede7dc',
   speckle: '#c45a90',
 }
@@ -70,6 +68,8 @@ export class ProductExperience {
       productNote: '',
       chapter: '',
       model: null, // URL del modello del prodotto al posto di quello del tipo (es. scoop.glb)
+      shape: null, // forma del prodotto, se il tipo ne ha piu' d'una: 'oval' = compressa ovale
+      count: 1, // capsule o compresse della dose del giorno: alla fine si posano tutte accanto al bicchiere
       resolveModel: null, // (file) => URL, per esempio con la versione del file nell'indirizzo
       modelsPath: '/models/nutrexlab/',
       postersPath: '/images/nutrexlab/',
@@ -410,7 +410,7 @@ export class ProductExperience {
         const load = { dracoPath: this.o.dracoPath }
         const models = Promise.all([
           loadModel(this.modelUrl('glass.glb'), load),
-          ...Exp.models.map((file, i) => loadModel(this.modelUrl(file, i === 0), load)),
+          ...this.modelFiles(Exp).map((file, i) => loadModel(this.modelUrl(file, i === 0), load)),
           this.o.etch ? import('./etching.js') : null,
         ])
         models.catch(() => {}) // (l'errore arriva con l'await qui sotto)
@@ -442,10 +442,11 @@ export class ProductExperience {
         const etching = loaded[loaded.length - 1]
         if (etching) this.scene.setEtch(etching.createEtchTexture(this.o.etch), this.o.etchOptions)
         const type = this.type // (se nel frattempo e' cambiato, il modello si scarica adesso)
+        const variant = this.variant()
         const exp = await this.createExperience(type)
         await this.breath()
         if (this.destroyed) return exp.dispose()
-        this.attachExperience(exp, type)
+        this.attachExperience(exp, variant)
         // il lavoro pesante dell'esperienza (i granelli della polvere) va in un worker, intanto il resto
         const heavy = exp.prepareAsync?.()
         await this.breath()
@@ -483,23 +484,37 @@ export class ProductExperience {
     return this.initing
   }
 
+  /** Esperienza e modello che servono: il tipo e, se ne ha piu' d'una, la forma. */
+  variant() {
+    return `${this.type}:${this.o.shape ?? ''}`
+  }
+
+  /** Modelli dell'esperienza per la forma attuale (il primo e' quello del prodotto). */
+  modelFiles(Exp) {
+    return Exp.modelsFor?.(this.o.shape) ?? Exp.models
+  }
+
   async createExperience(type) {
     const Exp = await EXPERIENCES[type]()
+    const files = this.modelFiles(Exp)
     const exp = new Exp({
       scene: this.scene,
       quality: this.quality,
       reduced: this.reduced,
-      modelUrl: (file) => this.modelUrl(file, file === Exp.models[0]),
+      shape: this.o.shape,
+      files,
+      modelUrl: (file) => this.modelUrl(file, file === files[0]),
       loadOptions: { dracoPath: this.o.dracoPath },
     })
     await exp.load()
     return exp
   }
 
-  attachExperience(exp, type) {
+  attachExperience(exp, variant) {
     this.exp?.dispose()
     this.exp = exp
-    this.expType = type
+    this.expVariant = variant
+    exp.setCount?.(this.o.count)
     exp.build()
     exp.setTheme(this.theme)
   }
@@ -770,34 +785,37 @@ export class ProductExperience {
   }
 
   /**
-   * Cambio prodotto: testi, colori e, se cambia il tipo, l'esperienza intera (il modello del nuovo
-   * tipo viene scaricato solo adesso).
+   * Cambio prodotto: testi, colori, dose e, se cambia il tipo (o la forma), l'esperienza intera (il
+   * modello nuovo viene scaricato solo adesso).
    */
-  async setProduct({ type = this.type, theme, copy, productName, productNote, model, poster } = {}) {
+  async setProduct({ type = this.type, theme, copy, productName, productNote, model, poster, shape, count } = {}) {
     if (this.destroyed) return
     if (productName !== undefined) this.o.productName = productName
     if (productNote !== undefined) this.o.productNote = productNote
     if (model !== undefined) this.o.model = model
     if (poster !== undefined) this.o.poster = poster
+    if (shape !== undefined) this.o.shape = shape
+    if (count !== undefined) this.o.count = count
     if (theme) this.theme = { ...DEFAULT_THEME, ...theme }
-    const typeChanged = type in EXPERIENCES && type !== this.type
-    if (typeChanged) this.type = type
+    if (type in EXPERIENCES) this.type = type
     this.copy = resolveCopy(this.type, copy)
     this.renderCopy()
     this.applyCssTheme()
     if (this.scene) this.scene.setTheme(this.theme)
     this.exp?.setTheme(this.theme)
+    const swap = this.variant() !== this.expVariant
+    if (!swap) this.exp?.setCount?.(this.o.count)
     this.rebuild() // i testi nuovi entrano subito nelle timeline
-    if (typeChanged) await this.swapExperience()
+    if (swap) await this.swapExperience()
   }
 
   /**
-   * Il tipo e' cambiato: esperienza nuova (il suo modello si scarica solo adesso). Se la scena 3D
-   * non e' ancora pronta non serve: init3D prepara gia' quella del tipo attuale (e alla fine
-   * controlla che sia ancora lui).
+   * Il tipo (o la forma) e' cambiato: esperienza nuova (il suo modello si scarica solo adesso). Se
+   * la scena 3D non e' ancora pronta non serve: init3D prepara gia' quella attuale (e alla fine
+   * controlla che sia ancora lei).
    */
   async swapExperience() {
-    if (!this.ready || this.expType === this.type) return
+    if (!this.ready || this.expVariant === this.variant()) return
     const token = (this._swap = {})
     // cambio dalla hero, sezione lontana: il nuovo prodotto 3D si prepara in un momento
     // tranquillo, non durante l'animazione del cambio (se la sezione compare, subito)
@@ -810,9 +828,10 @@ export class ProductExperience {
     // nel frattempo e' arrivato un altro cambio, o la sezione e' stata smontata
     if (token !== this._swap || this.destroyed) return
     const type = this.type
+    const variant = this.variant()
     const exp = await this.createExperience(type)
     if (token !== this._swap || this.destroyed) return exp.dispose()
-    this.attachExperience(exp, type)
+    this.attachExperience(exp, variant)
     this.rebuild()
     await exp.prepareAsync?.()
     if (this.destroyed) return

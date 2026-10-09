@@ -4,8 +4,8 @@ import { findMesh } from './assets.js'
 import { NOISE } from './shaders/chunks.js'
 
 /*
-  CAPSULA vegetale in due parti (capsule.glb): testa nel colore del prodotto, corpo bianco
-  traslucido, lucide (clearcoat) e appena trasparenti: attraverso il guscio si intravede la polvere.
+  CAPSULA vegetale in due parti (capsule.glb), tutta bianca: testa e corpo bianchi, lucidi
+  (clearcoat) e appena traslucidi, polvere bianca dentro (si intuisce appena attraverso il guscio).
   La trasparenza e' quella fisica di three.js (transmission): la luce attraversa davvero il guscio.
 */
 export class CapsuleExperience extends ShowcaseExperience {
@@ -15,6 +15,11 @@ export class CapsuleExperience extends ShowcaseExperience {
   get pose() {
     // sospesa di fianco alla camera (asse quasi orizzontale), a riposo distesa sul piano
     return { floatX: 12, floatZ: 70, restX: 0, restZ: 90, restY: 0.00384, size: 0.022, spinTurns: 1.5 }
+  }
+
+  /** Dose: le altre capsule distese accanto alla prima, appena girate. */
+  get dosePlaces() {
+    return [{ x: 0.0235, z: -0.004, yaw: -14 }, { x: 0.044, z: 0.004, yaw: 10 }]
   }
 
   createMeshes(root) {
@@ -31,25 +36,26 @@ export class CapsuleExperience extends ShowcaseExperience {
       side: THREE.DoubleSide,
       envMapIntensity: 1.05,
     }
+    // testa e corpo dello stesso bianco; la testa appena piu' piena (dove avvolge il corpo le pareti sono due)
     this.capMat = new THREE.MeshPhysicalMaterial({
       ...shell,
-      color: 0xb8322e,
+      color: 0xf2efe8,
       roughness: 0.15,
-      transmission: 0.32,
+      transmission: 0.25,
       thickness: 0.0004,
-      attenuationColor: new THREE.Color(0xb8322e),
-      attenuationDistance: 0.002,
+      attenuationColor: new THREE.Color(0xf4efe4),
+      attenuationDistance: 0.004,
     })
     this.bodyMat = new THREE.MeshPhysicalMaterial({
       ...shell,
       color: 0xf2efe8,
       roughness: 0.17,
-      transmission: 0.55,
+      transmission: 0.3,
       thickness: 0.0003,
       attenuationColor: new THREE.Color(0xf4efe4),
       attenuationDistance: 0.004,
     })
-    this.fillMat = new THREE.MeshStandardMaterial({ color: 0xe3b04a, roughness: 0.95, metalness: 0 })
+    this.fillMat = new THREE.MeshStandardMaterial({ color: 0xf3f1ec, roughness: 0.95, metalness: 0 })
     this.fillMat.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vObj;')
@@ -74,9 +80,8 @@ export class CapsuleExperience extends ShowcaseExperience {
 
   setTheme(t) {
     if (!this.capMat) return
-    this.capMat.color.set(t.capsule)
-    this.capMat.attenuationColor.set(t.capsule)
-    this.bodyMat.color.set(t.capsuleBody ?? '#f2efe8')
-    this.fillMat.color.set(t.fill)
+    const white = t.capsuleBody ?? '#f2efe8'
+    this.capMat.color.set(white)
+    this.bodyMat.color.set(white)
   }
 }

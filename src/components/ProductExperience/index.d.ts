@@ -6,6 +6,9 @@
 /** Sceglie l'animazione: polvere nel bicchiere, oppure capsula / compressa accanto al bicchiere. */
 export type ProductType = 'powder' | 'capsule' | 'tablet'
 
+/** Forma del prodotto per i tipi che ne hanno piu' d'una (compressa: rotonda di base, oppure ovale). */
+export type ProductShape = 'oval'
+
 /** Impaginazione attuale (stessi limiti del CSS della sezione). */
 export type Layout = 'desktop' | 'tablet' | 'mobile'
 
@@ -25,10 +28,8 @@ export interface ProductExperienceTheme {
   accent?: string
   /** polvere nel misurino */
   powder?: string
-  /** capsula: testa colorata, corpo, contenuto */
-  capsule?: string
+  /** capsula (tutta bianca: testa e corpo; la polvere dentro e' bianca) */
   capsuleBody?: string
-  fill?: string
   /** compressa e puntini */
   tablet?: string
   speckle?: string
@@ -93,6 +94,10 @@ export interface ProductExperienceOptions {
   chapter?: string
   /** modello del prodotto al posto di quello del tipo (scoop.glb, capsule.glb o tablet.glb) */
   model?: string | null
+  /** forma, per i tipi che ne hanno piu' d'una: 'oval' = compressa ovale con linea di frattura */
+  shape?: ProductShape | null
+  /** capsule o compresse della dose del giorno: alla fine si posano tutte accanto al bicchiere (default 1) */
+  count?: number
   /** indirizzo di ogni modello, per esempio con la versione del file (glass.glb, scoop.glb...) */
   resolveModel?: ((file: string) => string) | null
   /** cartella dei modelli (default '/models/nutrexlab/') */
@@ -127,6 +132,8 @@ export interface ProductUpdate {
   productNote?: string
   model?: string | null
   poster?: string | ((layout: Layout) => string) | null
+  shape?: ProductShape | null
+  count?: number
 }
 
 export declare class ProductExperience {
@@ -139,7 +146,7 @@ export declare class ProductExperience {
   init3D(): Promise<void> | void
   /** prepara la parte 3D in anticipo, a piccoli passi e solo nei momenti tranquilli (options.calm) */
   preload(): Promise<void> | void
-  /** testi e colori nuovi; se cambia il tipo scarica solo il modello che serve */
+  /** testi, colori e dose nuovi; se cambia il tipo (o la forma) scarica solo il modello che serve */
   setProduct(update?: ProductUpdate): Promise<void>
   /** toglie scroll, scena e contenuto della sezione */
   destroy(): void

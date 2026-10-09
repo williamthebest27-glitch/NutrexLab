@@ -13,6 +13,10 @@ Il tipo sceglie l'animazione:
   passa ne' davanti ne' dietro (sembrerebbe dentro all'acqua). Resta sospeso alla sua destra e ruota
   su se stesso, il bicchiere gira sul piatto, la camera gli gira intorno; poi la macro sui
   dettagli (incisione, grana, giunzione della capsula) e il prodotto si posa accanto al bicchiere.
+  Con `count` (la dose del giorno: 2 capsule, 3 compresse...) gli altri pezzi arrivano dopo la
+  macro, scendono dall'alto e si posano accanto al primo: nella macro se ne vede sempre uno.
+  La capsula e' tutta bianca (polvere bianca dentro); la compressa e' rotonda con l'esagono
+  inciso o, con `shape: 'oval'`, ovale con la linea di frattura.
 
 Tutto e' funzione della posizione di scroll: tornando indietro l'animazione torna indietro.
 
@@ -29,7 +33,7 @@ const exp = createProductExperience(document.querySelector('#rituale'), {
   theme: themeFromSite(product.theme),
   copy: { pins: { dose: ['Cardio Premium', 'Con acetil L-carnitina'] } },
 })
-exp.setProduct({ type: 'tablet', theme, copy })  // cambio prodotto: stessa scena
+exp.setProduct({ type: 'tablet', shape: 'oval', count: 2, theme, copy })  // cambio prodotto: stessa scena
 exp.destroy()
 ```
 
@@ -66,6 +70,8 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 | `copy` | testi del tipo (`copy.js`) | `eyebrow`, `titleA`, `titleB` (una voce per riga), `pins.dose`, `pins.water` (`[titolo, testo]`) |
 | `poster` | immagine del tipo | immagine statica del prodotto: URL o `(layout) => URL` |
 | `model` | modello del tipo | URL del modello del prodotto (misurino, capsula o compressa) |
+| `shape` | | forma per i tipi che ne hanno piu' d'una: `'oval'` = compressa ovale (`tablet-oblong.glb`) |
+| `count` | `1` | capsule o compresse della dose del giorno: alla fine si posano tutte accanto al bicchiere |
 | `resolveModel` | | `(file) => URL` per ogni modello, per esempio con la versione nell'indirizzo |
 | `modelsPath`, `postersPath`, `dracoPath` | `/models/nutrexlab/`, `/images/nutrexlab/`, `/draco/` | cartelle |
 | `etch`, `etchOptions` | | logo vettoriale inciso sul vetro (formato di `src/ui/logo-paths.js`) |
@@ -91,7 +97,7 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 - La parte 3D si carica quando la sezione si avvicina (IntersectionObserver) oppure prima, con
   `exp.preload()`: in anticipo lavora a piccoli passi solo nei momenti tranquilli (`calm`) e, se la
   sezione intanto si avvicina, completa un passo per fotogramma. Scarica soltanto il codice e il
-  modello del tipo attuale (bicchiere + misurino, capsula o compressa; GLB compressi Draco, 30-55 KB
+  modello del tipo attuale (bicchiere + misurino, capsula o compressa; GLB compressi Draco, 30-65 KB
   l'uno), in parallelo alla preparazione del renderer. Disegna solo mentre la sezione e' sullo schermo.
 - Passi brevi (pochi ms su un computer): contesto WebGL e ambiente dello studio separati
   (`new ProductScene()`, poi `scene.init()`), granelli della polvere calcolati in un worker
@@ -129,21 +135,25 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 ## Modelli e immagini statiche
 
 - Modelli: `Website/sezione bicchiere/blender/esperienza_3d.py` (Blender 5.1, procedurale, misure
-  reali in mm) esporta `web/glass.glb`, `scoop.glb`, `capsule.glb`, `tablet.glb`;
+  reali in mm) esporta `web/glass.glb`, `scoop.glb`, `capsule.glb`, `tablet.glb`; la compressa
+  ovale (`web/tablet-oblong.glb`) viene da `blender/compressa_ovale_3d.py`.
   `scripts/sync-model.mjs` li copia in `public/models/nutrexlab/` con la versione nell'indirizzo.
   Da `Website/sezione bicchiere`: `npm run modelli` (solo export), `npm run render` (anche render e
   `blender/esperienza.blend`).
 - Immagini statiche (`public/images/nutrexlab/`): fotogrammi della scena WebGL, una per prodotto
   (`esperienza-<id>.webp` e `-mobile.webp`) e una per tipo. Si rigenerano dal banco di prova con
-  `await __postersAll()` nella console.
+  `await __postersAll()` nella console (solo alcune: `__postersAll(['vitamina-c', 'capsule'])`).
 
 ## Banco di prova
 
 `Website/sezione bicchiere`: `npm run sandbox` -> http://127.0.0.1:5180 (`?prodotto=<id>`,
-`?type=powder|capsule|tablet`, `?p=0.6` per saltare a un punto). Nella console:
+`?type=powder|capsule|tablet`, `?shape=oval`, `?count=3`, `?p=0.6` per saltare a un punto; forma e
+dose di base sono quelle del prodotto in `src/products.js`). Nella console:
 
 - `await __qa()` / `await __qa({ long: true })`: controlli automatici su tutto lo scroll (prodotto
-  mai sul bicchiere, etichette nello schermo e lontane da prodotto, bicchiere e testi);
+  e pezzi della dose mai sul bicchiere e, posati, dentro lo schermo; etichette nello schermo e
+  lontane da prodotto, bicchiere e testi). Uno per pagina caricata: un secondo `__qa` di seguito
+  parte con le etichette rimaste accese dal primo;
 - `await __sheetUi('foglio.jpg', [0.1, 0.5, 0.9])`: fotogrammi con i testi HTML disegnati sopra;
 - `await __shot('nome.jpg', 0.5, { w: 1440, h: 900, layout: 'desktop' })`: un fotogramma.
 

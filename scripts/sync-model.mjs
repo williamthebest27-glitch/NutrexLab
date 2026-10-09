@@ -26,6 +26,7 @@ const files = [
   ['../sezione bicchiere/web/scoop.glb', 'nutrexlab/scoop.glb'],
   ['../sezione bicchiere/web/capsule.glb', 'nutrexlab/capsule.glb'],
   ['../sezione bicchiere/web/tablet.glb', 'nutrexlab/tablet.glb'],
+  ['../sezione bicchiere/web/tablet-oblong.glb', 'nutrexlab/tablet-oblong.glb'], // compressa ovale
 ]
 
 mkdirSync(resolve(root, 'public/models'), { recursive: true })

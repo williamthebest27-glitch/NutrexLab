@@ -10,12 +10,14 @@
     <ProductExperience
       type="capsule"
       productName="Coenzima Q10"
-      theme={{ accent: '#e0a33a', capsule: '#c8862a' }}
+      theme={{ accent: '#e0a33a' }}
+      count={2}
       copy={{ titleA: ['Scienza.', 'Semplificata.'] }}
     />
 
-  - type, productName, productNote, theme, copy, model, poster si possono cambiare quando si vuole:
-    stessa scena, testi e colori nuovi; se cambia il tipo si scarica solo il modello che serve.
+  - type, productName, productNote, theme, copy, model, poster, shape, count si possono cambiare
+    quando si vuole: stessa scena, testi, colori e dose nuovi; se cambia il tipo (o la forma) si
+    scarica solo il modello che serve.
   - steps (lunghezza in schermate di scroll): se cambia, la sezione si ricrea.
   - le altre opzioni (cartelle, logo inciso, qualita'...) si leggono quando il componente si monta.
   - servono gsap e three nel progetto, e in public/ le cartelle models/nutrexlab, images/nutrexlab
@@ -28,6 +30,7 @@ import type { ProductExperience as Engine, ProductExperienceOptions } from './in
 
 export type {
   ProductType,
+  ProductShape,
   ProductExperienceTheme,
   ProductExperienceCopy,
   ProductExperienceOptions,
@@ -50,6 +53,8 @@ const productKey = (o: ProductExperienceOptions) =>
     o.productName ?? '',
     o.productNote ?? '',
     o.model ?? null,
+    o.shape ?? null,
+    o.count ?? 1,
     o.theme ?? null,
     o.copy ?? null,
     typeof o.poster === 'string' ? o.poster : null,
@@ -122,8 +127,8 @@ export function ProductExperience({ id, className, style, onReady, ...options }:
     const engine = engineRef.current
     if (!engine || applied.current === key) return
     applied.current = key
-    const { type, theme, copy, productName, productNote, model, poster } = latest.current.options
-    void engine.setProduct({ type, theme, copy, productName, productNote, model, poster })
+    const { type, theme, copy, productName, productNote, model, poster, shape, count } = latest.current.options
+    void engine.setProduct({ type, theme, copy, productName, productNote, model, poster, shape, count })
   }, [key])
 
   return <section ref={sectionRef} id={id} className={sectionClass} style={{ '--pe-steps': steps, ...style } as CSSProperties} />

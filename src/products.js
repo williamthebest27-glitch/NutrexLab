@@ -604,6 +604,12 @@ const PICCOLA = {
 // /models/<id>.glb?v=<hash del file>: versioni scritte da scripts/sync-model.mjs
 const glb = (id) => `/models/${id}.glb?v=${MODEL_VERSIONS[id] ?? 0}`
 
+/*
+  form: animazione della sezione del bicchiere (powder, capsule, tablet); shape: 'oval' per la
+  compressa ovale con la linea di frattura (le altre sono rotonde); perDay: capsule o compresse al
+  giorno dell'etichetta (le stesse di daily in src/content.js): nella macro se ne vede una, alla fine
+  si posano tutte accanto al bicchiere.
+*/
 export const PRODUCTS = [
   {
     id: 'collagene',
@@ -618,6 +624,7 @@ export const PRODUCTS = [
   {
     id: 'collagene-marino-compresse',
     form: 'tablet',
+    perDay: 3,
     name: 'Collagene marino',
     note: 'Compresse',
     model: glb('collagene-marino-compresse'),
@@ -628,6 +635,7 @@ export const PRODUCTS = [
   {
     id: 'collagene-bovino',
     form: 'tablet',
+    perDay: 3,
     name: 'Collagene bovino',
     note: 'Compresse',
     model: glb('collagene-bovino'),
@@ -638,6 +646,7 @@ export const PRODUCTS = [
   {
     id: 'bromelina',
     form: 'tablet',
+    perDay: 2, // due la prima settimana, poi una (src/content.js)
     name: 'Bromelina',
     note: 'Alto dosaggio',
     model: glb('bromelina'),
@@ -648,6 +657,7 @@ export const PRODUCTS = [
   {
     id: 'ashwagandha',
     form: 'tablet',
+    perDay: 1,
     name: 'Ashwagandha',
     note: 'Certificata KSM-66',
     model: glb('ashwagandha'),
@@ -658,6 +668,7 @@ export const PRODUCTS = [
   {
     id: 'coenzima-q10',
     form: 'capsule',
+    perDay: 2,
     name: 'Coenzima Q10',
     note: 'Cardio Premium',
     model: glb('coenzima-q10'),
@@ -668,6 +679,7 @@ export const PRODUCTS = [
   {
     id: 'd-mannosio',
     form: 'tablet',
+    perDay: 3,
     name: 'D-Mannosio',
     note: 'Uro Care',
     model: glb('d-mannosio'),
@@ -678,6 +690,7 @@ export const PRODUCTS = [
   {
     id: 'diosmina',
     form: 'capsule',
+    perDay: 2,
     name: 'Diosmina',
     note: 'Ed esperidina 1200',
     model: glb('diosmina'),
@@ -688,6 +701,8 @@ export const PRODUCTS = [
   {
     id: 'magnesio',
     form: 'tablet',
+    shape: 'oval',
+    perDay: 2,
     name: 'Magnesio bisglicinato',
     note: 'Con vitamine B1, B6, B12',
     model: glb('magnesio'),
@@ -698,6 +713,7 @@ export const PRODUCTS = [
   {
     id: 'vitamina-b12',
     form: 'tablet',
+    perDay: 1,
     name: 'Vitamina B12',
     note: 'Metilcobalamina',
     // flacone piu' piccolo (etichetta 130 x 50 mm): l'inquadratura lo porta alla stessa altezza degli altri
@@ -709,6 +725,8 @@ export const PRODUCTS = [
   {
     id: 'vitamina-c',
     form: 'tablet',
+    shape: 'oval',
+    perDay: 1,
     name: 'Vitamina C',
     note: 'Con rosa canina',
     model: glb('vitamina-c'),
@@ -719,6 +737,7 @@ export const PRODUCTS = [
   {
     id: 'vitamina-d3-k2',
     form: 'tablet',
+    perDay: 1,
     name: 'Vitamina D3 + K2',
     note: 'MK-7, 2000 UI',
     // flacone piccolo da 100 ml: l'inquadratura lo porta alla stessa altezza degli altri

@@ -4,7 +4,8 @@ import { findMesh } from './assets.js'
 import { NOISE } from './shaders/chunks.js'
 
 /*
-  COMPRESSA biconvessa (tablet.glb) con l'esagono del logo inciso: superficie satinata di polvere
+  COMPRESSA biconvessa (tablet.glb) con l'esagono del logo inciso, oppure ovale con la linea di
+  frattura (shape 'oval', tablet-oblong.glb: 18.5 x 8.2 x 6.2 mm): superficie satinata di polvere
   compressa (grana finissima, sheen vellutato) e qualche puntino del colore del prodotto.
   Sospesa mostra la faccia con l'incisione che ruota; alla fine si posa piatta sul piano.
 */
@@ -12,14 +13,33 @@ export class TabletExperience extends ShowcaseExperience {
   static type = 'tablet'
   static models = ['tablet.glb']
 
+  /** Modello della forma: rotonda (di base) o ovale. */
+  static modelsFor(shape) {
+    return shape === 'oval' ? ['tablet-oblong.glb'] : this.models
+  }
+
+  constructor(ctx) {
+    super(ctx)
+    this.oval = ctx.shape === 'oval'
+  }
+
   get pose() {
     // sospesa con la faccia incisa verso la camera, a riposo piatta sul piano
+    // (l'ovale, piu' spessa e lunga, si posa di tre quarti: di punta sembrerebbe piccola)
+    if (this.oval) return { floatX: 62, floatZ: 8, restX: 0, restZ: 0, restY: 0.00311, size: 0.019, spinTurns: 1.06 }
     return { floatX: 62, floatZ: 8, restX: 0, restZ: 0, restY: 0.00246, size: 0.014, spinTurns: 1.25 }
+  }
+
+  /** Dose: le altre compresse in fila accanto alla prima, un po' sfalsate e girate. */
+  get dosePlaces() {
+    return this.oval
+      ? [{ x: 0.0185, z: 0.004, yaw: -46 }, { x: 0.0345, z: -0.003, yaw: -8 }]
+      : [{ x: 0.0145, z: -0.004, yaw: 35 }, { x: 0.0285, z: 0.003, yaw: -20 }]
   }
 
   createMeshes(root) {
     const tablet = findMesh(root, 'Compressa')
-    if (!tablet) throw new Error('tablet.glb: manca la compressa')
+    if (!tablet) throw new Error('modello della compressa: manca la mesh Compressa')
     this.speckle = { value: new THREE.Color(0xc45a90) }
     this.mat = new THREE.MeshPhysicalMaterial({
       color: 0xefeae1,

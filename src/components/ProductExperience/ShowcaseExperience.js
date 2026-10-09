@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { loadModel } from './assets.js'
-import { DEG, smooth } from './kit.js'
+import { DEG, lerp, smooth } from './kit.js'
 
 /*
   VETRINA (capsula e compressa): il prodotto non entra nel bicchiere (si deglutisce con l'acqua) e
@@ -9,10 +9,19 @@ import { DEG, smooth } from './kit.js'
   e la camera gira intorno al set. Poi la macro sui dettagli (materiali, giunzione, incisione) e il
   prodotto si posa sul piano accanto al bicchiere.
 
-  CapsuleExperience e TabletExperience aggiungono solo modello, materiali e pose.
+  DOSE DEL GIORNO (setCount: due capsule, tre compresse...): nella macro c'e' un solo pezzo. Gli
+  altri compaiono quando la camera lascia la macro, in alto e fuori dall'inquadratura, scendono uno
+  dopo l'altro e si posano accanto al primo (disposizione in doseLayout).
+
+  CapsuleExperience e TabletExperience aggiungono solo modello, materiali, pose e disposizione.
 */
 
 const TOTAL = 16
+
+// arrivo degli altri pezzi della dose (progresso della sezione): dalla fine della macro, quando la
+// camera e' ancora vicinissima al primo e loro, piu' in alto, non entrano nell'inquadratura;
+// ognuno si posa poco dopo il precedente (il primo si posa a 0.92)
+const DOSE = { from: 0.8, land: 0.935, stagger: 0.016, height: 0.2 }
 
 // Ogni proprieta' scorre tra le chiavi che la contengono (ScrollAnimation.addTrack): nella macro cf
 // e inquadratura sono ripetuti a 0.72 e 0.8, altrimenti scenderebbero gia' da 0.62 verso la chiave
@@ -61,6 +70,8 @@ export class ShowcaseExperience {
     // l'etichetta del prodotto sta a sinistra, nello spazio lasciato libero dal bicchiere
     this.bodies = { dose: { center: this.follow, radius: 0 }, water: { center: new THREE.Vector3(), radius: 0 } }
     this.pinSides = { dose: 'left' }
+    this.count = 1
+    this.dose = [] // gli altri pezzi della dose, dal secondo in poi
   }
 
   /** Assetto sospeso e a riposo (gradi), quota a riposo (m), ingombro per l'ombra: dalle sottoclassi. */
@@ -68,8 +79,19 @@ export class ShowcaseExperience {
     return { floatX: 10, floatZ: 70, restX: 0, restZ: 90, restY: 0.004, size: 0.02, spinTurns: 1.5 }
   }
 
+  /**
+   * Dove si posano gli altri pezzi della dose rispetto al primo: x verso destra e z verso la camera
+   * dell'inquadratura finale (m), yaw = rotazione sul piano (gradi). Le sottoclassi danno i primi
+   * posti (dosePlaces); oltre, la fila continua.
+   */
+  doseLayout(count) {
+    const places = this.dosePlaces ?? []
+    const step = this.pose.size * 1.15
+    return Array.from({ length: count - 1 }, (_, i) => places[i] ?? { x: step * (i + 1), z: i % 2 ? 0.003 : -0.004, yaw: i % 2 ? -20 : 30 })
+  }
+
   async load() {
-    const file = this.constructor.models[0]
+    const file = this.ctx.files?.[0] ?? this.constructor.models[0]
     this.root = await loadModel(this.ctx.modelUrl(file), this.ctx.loadOptions)
   }
 
@@ -79,6 +101,53 @@ export class ShowcaseExperience {
     for (const mesh of this.createMeshes(this.root)) this.pivot.add(mesh)
     this.scene.back.add(this.pivot)
     this.buildShadow()
+    this.buildDose()
+  }
+
+  /** Quante capsule o compresse si posano alla fine (il prodotto cambia, il tipo resta). */
+  setCount(n) {
+    const count = Math.max(1, Math.round(n) || 1)
+    if (count === this.count) return
+    this.count = count
+    if (this.pivot) this.buildDose()
+  }
+
+  /** Gli altri pezzi della dose: copie del primo (stesse geometrie e materiali), ognuno con la sua ombra. */
+  buildDose() {
+    this.disposeDose()
+    this.dose = this.doseLayout(this.count).map((place, i) => {
+      const group = new THREE.Group() // posizione e rotazione sul piano
+      const pivot = new THREE.Group() // assetto, come quello del primo pezzo
+      pivot.rotation.order = 'ZXY'
+      for (const mesh of this.pivot.children) pivot.add(mesh.clone())
+      group.add(pivot)
+      group.visible = false
+      const shadow = new THREE.Mesh(this.shadow.geometry, this.shadowMat.clone())
+      shadow.rotation.x = -Math.PI / 2
+      shadow.renderOrder = -5
+      shadow.visible = false
+      this.scene.back.add(group, shadow)
+      return { ...place, n: i + 1, group, pivot, shadow }
+    })
+  }
+
+  disposeDose() {
+    for (const d of this.dose) {
+      d.group.parent?.remove(d.group)
+      d.shadow.parent?.remove(d.shadow)
+      d.shadow.material.dispose()
+    }
+    this.dose = []
+  }
+
+  /** Le etichette non coprono gli altri pezzi della dose quando ci sono. */
+  get obstacles() {
+    return this.dose.filter((d) => d.group.visible).map((d) => d.group)
+  }
+
+  /** Tutti i pezzi sulla scena (controlli del banco di prova). */
+  get pieces() {
+    return [this.pivot, ...this.obstacles]
   }
 
   /** Ombra morbida sul piano quando il prodotto si avvicina (si posa accanto al bicchiere). */
@@ -165,11 +234,53 @@ export class ShowcaseExperience {
     this.shadow.scale.set(size * 1.6, size, 1)
     this.shadowMat.opacity = 0.85 * k
     this.shadow.visible = k > 0.01
+
+    this.updateDose(time, live)
+  }
+
+  /**
+   * Gli altri pezzi della dose: prima della fine della macro non ci sono; poi scendono dall'alto
+   * (girando su se stessi e raddrizzandosi) e si posano accanto al primo, che seguono (orbit, radius).
+   */
+  updateDose(time, live) {
+    if (!this.dose.length) return
+    const s = this.s
+    const pose = this.pose
+    const p = s.T / TOTAL // progresso della sezione: T scorre lineare con lo scroll
+    const a = s.orbit * DEG
+    const x0 = Math.sin(a) * s.radius
+    const z0 = Math.cos(a) * s.radius
+    const on = p > DOSE.from
+    for (const d of this.dose) {
+      const up = 1 - smooth(DOSE.from + DOSE.stagger * (d.n - 1), DOSE.land + DOSE.stagger * d.n, p)
+      const side = d.n % 2 ? 1 : -1
+      const h = (DOSE.height + 0.02 * d.n) * up // quota sopra il piano
+      const floating = smooth(0.002, 0.03, h)
+      const bob = Math.sin(time * 1.1 + d.n * 1.7) * 0.0012 * floating * live
+      d.group.visible = on
+      d.group.position.set(x0 + d.x + 0.012 * d.n * up, pose.restY + h + bob, z0 + d.z - 0.01 * up)
+      d.group.rotation.y = (d.yaw + 50 * side * up) * DEG
+      d.pivot.rotation.set(
+        (lerp(pose.restX, pose.floatX + 14 * side, up) + Math.sin(time * 0.5 + d.n) * 3 * floating * live) * DEG,
+        (pose.spinTurns * 360 - 120 * side * up) * DEG,
+        lerp(pose.restZ, pose.floatZ, up) * DEG,
+        'ZXY',
+      )
+      // ombra come quella del primo pezzo, girata come il pezzo
+      const k = 1 - smooth(0.0, 0.05, h)
+      const size = pose.size * (1.2 + h * 30)
+      d.shadow.position.set(d.group.position.x + 0.002, 0.0003, d.group.position.z - 0.002)
+      d.shadow.rotation.z = d.group.rotation.y
+      d.shadow.scale.set(size * 1.6, size, 1)
+      d.shadow.material.opacity = 0.85 * k
+      d.shadow.visible = on && k > 0.01
+    }
   }
 
   setTheme() {}
 
   dispose() {
+    this.disposeDose()
     this.pivot?.parent?.remove(this.pivot)
     this.shadow?.parent?.remove(this.shadow)
     this.pivot?.traverse((o) => {

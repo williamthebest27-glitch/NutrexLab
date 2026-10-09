@@ -55,9 +55,7 @@ export function themeFromSite(theme) {
     rim: theme.rim,
     accent: p.berryHi,
     powder: theme.powder?.[3] ?? '#ffffff',
-    capsule: theme.swatch,
-    capsuleBody: '#f3f0e9',
-    fill: theme.powder?.[0] ?? '#e3b04a',
+    capsuleBody: '#f3f0e9', // capsula tutta bianca, polvere bianca dentro
     tablet: '#efeae1',
     speckle: theme.dust ?? theme.swatch,
   }

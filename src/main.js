@@ -195,7 +195,8 @@ const fact = (f) => (f ? [`${numberIt.format(f.value)} ${f.unit}`.trim(), f.text
 /**
  * Testi della sezione per un prodotto: dai dati gia' nel sito (dosi dell'etichetta in content.js),
  * eventuali testi propri in COPY[id].experience. Polvere: misurino e bicchiere d'acqua;
- * capsule e compresse: il dettaglio della dose e quante al giorno.
+ * capsule e compresse: il dettaglio della dose e quante al giorno (e alla fine, accanto al
+ * bicchiere, se ne posano altrettante: perDay in products.js).
  */
 function ritualOptions(p) {
   const c = COPY[p.id] ?? {}
@@ -205,6 +206,8 @@ function ritualOptions(p) {
   const own = c.experience ?? {}
   return {
     type: p.form,
+    shape: p.shape ?? null,
+    count: p.perDay ?? 1,
     productName: p.name,
     productNote: p.note,
     theme: themeFromSite(p.theme),
