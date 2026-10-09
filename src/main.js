@@ -33,10 +33,9 @@ import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
 import { createProductExperience, themeFromSite } from './components/ProductExperience/index.js'
-import { ready as i18nReady, lang, localize, t, formatNumber, onLang, translateDom } from './i18n/index.js'
+import { ready as i18nReady, localize, t, formatNumber, onLang, translateDom } from './i18n/index.js'
 import { DEFAULT_COPY, stepsFor } from './components/ProductExperience/copy.js'
 import { initLangPicker } from './i18n/picker.js'
-import { labelFor } from './shop/labels.js'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
@@ -117,8 +116,8 @@ try {
     theme: product.theme,
   })
   stage.productScale = product.heroScale ?? 1
-  // barattoli con l'etichetta nella lingua del sito (in italiano quella del modello)
-  stage.setLabelSource((id) => (lang() === 'it' ? null : (labelFor(id)?.src ?? null)))
+  // i barattoli tengono sempre l'etichetta italiana del modello, in ogni lingua del sito: sono
+  // prodotti italiani (richiesta del 2026-10-09). L'etichetta tradotta si vede nella scheda prodotto.
 } catch (err) {
   console.warn('WebGL non disponibile, uso l\'immagine statica.', err)
   useFallback()
@@ -389,9 +388,9 @@ async function boot() {
   ritual = createRitual()
   if (ritualEl) translateDom(ritualEl) // (etichette accessibili della sezione nella lingua del sito)
   // cambio lingua (src/i18n): testi del prodotto, menu prodotti e sezione del bicchiere nella nuova lingua
+  // (i barattoli 3D no: etichetta italiana sempre)
   onLang(() => {
     applyCopy(product.id)
-    stage?.relabel()
     menu?.relabel(menuProducts())
     ui?.setProduct()
     if (ritual) {
