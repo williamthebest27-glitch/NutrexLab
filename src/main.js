@@ -28,7 +28,7 @@ import { createMobileMenu } from './ui/mobileMenu.js'
 import { initCookieNotice } from './ui/cookieNotice.js'
 import { makeGrain } from './ui/grain.js'
 import { bindCartCount } from './shop/cart.js'
-import { applyCopy, fitIngredients, fitScience, fitHeroTitle } from './ui/copy.js'
+import { applyCopy, fitIngredients, fitScience, fitHeroTitle, fitLinea } from './ui/copy.js'
 import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
@@ -381,6 +381,7 @@ async function boot() {
   prepareText(reduced)
   fitIngredients() // (con i font caricati)
   fitScience()
+  fitLinea()
   measureCta()
   rebuild()
   if (stage?.model) {
@@ -413,6 +414,7 @@ async function boot() {
     }
     fitIngredients()
     fitScience()
+    fitLinea()
     fitHeroTitle()
   })
   ScrollTrigger.refresh()
@@ -925,6 +927,7 @@ window.addEventListener('resize', () => {
     ui?.resize()
     fitIngredients()
     fitScience()
+    fitLinea()
     measureCta()
   }, 160)
 })
