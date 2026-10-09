@@ -23,6 +23,31 @@
   }
 </style>
 <script>
+  // lingua scelta dal visitatore (src/i18n/langs.js): finche' i testi non sono tradotti restano nascosti,
+  // cosi' non si vede l'italiano per un attimo (al massimo 4 secondi, poi si mostrano comunque)
+  ;(function () {
+    var h = document.documentElement
+    try {
+      var l = new URLSearchParams(location.search).get('lang')
+      if (l !== 'it' && !/^(en|fr|de|es)$/.test(l || '')) l = localStorage.getItem('nx_lang')
+      if (/^(en|fr|de|es)$/.test(l || '')) {
+        h.lang = l
+        h.classList.add('i18n-wait')
+        setTimeout(function () {
+          h.classList.remove('i18n-wait')
+        }, 4000)
+      }
+    } catch (e) {}
+  })()
+</script>
+<style>
+  html.i18n-wait [data-i18n],
+  html.i18n-wait [data-i18n-text],
+  html.i18n-wait [data-i18n-wait] {
+    visibility: hidden !important;
+  }
+</style>
+<script>
   // se il browser interrompe la dissolvenza (finestra ridimensionata, navigazione veloce) non e' un errore
   ;['pageswap', 'pagereveal'].forEach(function (type) {
     addEventListener(type, function (e) {

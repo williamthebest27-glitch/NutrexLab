@@ -1291,6 +1291,182 @@ ul {
 }
 
 /* --------------------------------------------------------------------------
+   Lingua del sito (src/i18n/picker.js): pillola con bandiera e sigla accanto ad "Acquista ora",
+   la tendina delle lingue ha lo stesso aspetto del sottomenu di Acquista. Colori della navbar.
+   -------------------------------------------------------------------------- */
+.lang {
+  position: relative;
+}
+
+.lang__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px 0 10px;
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  color: var(--fg);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 0.5s var(--ease-out),
+    background-color 0.5s var(--ease-out),
+    color 0.5s var(--ease-out),
+    transform 0.45s var(--ease-out);
+}
+
+.lang__btn:hover,
+.lang__btn:focus-visible {
+  border-color: color-mix(in srgb, var(--fg) 40%, transparent);
+}
+
+.lang__btn:active {
+  transform: scale(0.96);
+}
+
+.lang.is-busy .lang__btn {
+  opacity: 0.6;
+}
+
+.lang__flag {
+  flex: none;
+  width: 22px;
+  height: 15px;
+  clip-path: inset(0 round 3px);
+}
+
+.lang__code {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.14em;
+}
+
+.lang__chev {
+  width: 9px;
+  height: 6px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.55s var(--ease-out);
+}
+
+.lang.is-open .lang__chev {
+  transform: rotate(180deg);
+}
+
+.lang__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 3;
+  width: 220px;
+  padding-top: 10px; /* ponte invisibile tra il pulsante e la scheda */
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0s linear 0.32s;
+}
+
+.lang.is-open .lang__menu {
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.lang__card {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 7px;
+  list-style: none;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--fg) 11%, transparent);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  box-shadow:
+    0 30px 60px -30px color-mix(in srgb, var(--ink) 55%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  backdrop-filter: blur(18px) saturate(1.35);
+  opacity: 0;
+  transform: translateY(-10px) scale(0.96);
+  transform-origin: 100% 0;
+  transition:
+    opacity 0.28s var(--ease-out),
+    transform 0.5s var(--ease-out);
+}
+
+.lang.is-open .lang__card {
+  opacity: 1;
+  transform: none;
+}
+
+.lang__opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 450;
+  line-height: 1.1;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.35s var(--ease-out);
+}
+
+.lang__opt .lang__flag {
+  width: 26px;
+  height: 18px;
+}
+
+.lang__opt:hover,
+.lang__opt:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+}
+
+.lang__opt.is-on {
+  font-weight: 650;
+}
+
+/* la lingua attiva: il punto del colore del prodotto, come la voce della pagina aperta */
+.lang__opt.is-on::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  .lang__btn {
+    gap: 6px;
+    padding: 0 10px 0 9px;
+  }
+
+  .lang__menu {
+    width: 210px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang__card {
+    transform: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Footer (tutte le pagine): il grande logo si compone quando entra in scena
    -------------------------------------------------------------------------- */
 .footer {

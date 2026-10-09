@@ -17,6 +17,11 @@ import { prepareText, show } from '../ui/text.js'
 import { makeGrain } from '../ui/grain.js'
 import { bindCartCount } from '../shop/cart.js'
 import { initCookieNotice } from '../ui/cookieNotice.js'
+import { ready as i18nReady } from '../i18n/index.js'
+import { initLangPicker } from '../i18n/picker.js'
+
+// lingua del sito scelta dal visitatore (src/i18n): le pagine disegnano gia' nella lingua giusta
+await i18nReady
 
 gsap.registerPlugin(SplitText)
 
@@ -41,6 +46,7 @@ export function initPage() {
   mountLogos()
   initNavLinks()
   initNavMenu()
+  initLangPicker()
   bindCartCount()
   makeGrain()
 

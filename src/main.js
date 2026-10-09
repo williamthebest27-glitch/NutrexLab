@@ -33,6 +33,8 @@ import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
 import { createProductExperience, themeFromSite } from './components/ProductExperience/index.js'
+import { ready as i18nReady } from './i18n/index.js'
+import { initLangPicker } from './i18n/picker.js'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
@@ -44,10 +46,14 @@ const devFast = import.meta.env.DEV && new URLSearchParams(location.search).has(
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 window.scrollTo(0, 0)
 
+// lingua del sito scelta dal visitatore (src/i18n): i testi si scrivono gia' tradotti
+await i18nReady
+
 // Il preload parte subito: il logo vettoriale si compone mentre il resto carica
 mountLogos()
 initNavLinks()
 initNavMenu() // pagina corrente e sottomenu di Acquista (Negozio, Carrello)
+initLangPicker() // bandiera e tendina delle lingue nella navbar
 bindCartCount()
 const loaderLogo = document.querySelector('.loader .logo')
 // il preload (il logo si compone, poi la camera ci entra) solo alla prima apertura della homepage in
