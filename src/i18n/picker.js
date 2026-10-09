@@ -64,7 +64,10 @@ export function initLangPicker() {
     next?.focus()
   })
   document.addEventListener('pointerdown', (e) => open && !root.contains(e.target) && set(false))
-  root.addEventListener('focusout', (e) => open && !root.contains(e.relatedTarget) && set(false))
+  // da tastiera (Tab) la tendina si chiude quando il fuoco esce. Solo se il fuoco va davvero altrove:
+  // in Safari (iPhone) toccando un pulsante il fuoco cade nel vuoto (relatedTarget nullo) e la tendina
+  // si chiudeva prima che il tocco arrivasse alla lingua scelta
+  root.addEventListener('focusout', (e) => open && e.relatedTarget && !root.contains(e.relatedTarget) && set(false))
   // la tendina segue lo scroll della pagina finche' resta aperta: chiusa se si scorre molto
   let y0 = 0
   window.addEventListener(
