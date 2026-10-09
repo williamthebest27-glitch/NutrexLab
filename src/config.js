@@ -28,12 +28,22 @@ export function currentLayout() {
   return 'desktop'
 }
 
+/** Passi di una sezione nel layout: sul telefono una sezione puo' averne meno (data-steps-mobile). */
+export function sectionSteps(section, layout = currentLayout()) {
+  return parseFloat((layout === 'mobile' && section.dataset.stepsMobile) || section.dataset.steps)
+}
+
+/** Altezza di ogni sezione nel layout (--steps, sections.css: passi + 1 viewport). */
+export function applySectionSteps(layout = currentLayout()) {
+  document.querySelectorAll('[data-section]').forEach((s) => s.style.setProperty('--steps', String(sectionSteps(s, layout))))
+}
+
 /** Posizione (in "viewport scrollate") di ogni sezione: ogni sezione occupa passi + 1. */
-export function sectionTops() {
+export function sectionTops(layout = currentLayout()) {
   const tops = {}
   let acc = 0
   document.querySelectorAll('[data-section]').forEach((section) => {
-    const steps = parseFloat(section.dataset.steps)
+    const steps = sectionSteps(section, layout)
     tops[section.dataset.section] = acc
     acc += steps + 1
   })

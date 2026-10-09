@@ -10,7 +10,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import Lenis from 'lenis'
 
-import { MEDIA, currentLayout, sectionTops } from './config.js'
+import { MEDIA, currentLayout, sectionTops, applySectionSteps } from './config.js'
 import { PRODUCTS, productById } from './products.js'
 import { applyCssTheme, setLiquid } from './theme.js'
 import { Stage } from './webgl/Stage.js'
@@ -78,9 +78,11 @@ let vw = window.innerWidth
 let vh = window.innerHeight
 const getVh = () => vh
 const setVh = () => html.style.setProperty('--vh', `${vh}px`)
-document.querySelectorAll('[data-section]').forEach((s) => s.style.setProperty('--steps', s.dataset.steps))
+// (sul telefono la storia ha meno passi, data-steps-mobile: cambiando layout, misure e testi si rifanno)
+let stepsLayout = currentLayout()
+applySectionSteps(stepsLayout)
 setVh()
-const T = sectionTops()
+const T = sectionTops(stepsLayout)
 
 makeGrain()
 
@@ -108,6 +110,7 @@ html.classList.toggle('no-lines', !product.labelAnchors)
 // WebGL
 const canvas = document.querySelector('.webgl')
 let layout = currentLayout()
+let reveals = null // entrate/uscite dei testi allo scroll (buildReveals)
 let stage = null
 try {
   stage = new Stage(canvas, {
@@ -173,6 +176,16 @@ function fitFor(lay) {
 
 function rebuild() {
   layout = currentLayout()
+  // telefono <-> altri layout: cambiano i passi delle sezioni, quindi la mappa T e i tempi dei testi
+  if ((layout === 'mobile') !== (stepsLayout === 'mobile')) {
+    stepsLayout = layout
+    applySectionSteps(layout)
+    Object.assign(T, sectionTops(layout))
+    if (reveals) {
+      reveals.kill()
+      reveals = buildReveals(T, { reduced, getVh, layout, hooks: ui.hooks })
+    }
+  }
   stage?.setLayout(layout)
   track = buildTrack(T, layout, fitFor(layout), vw / vh, product.geo)
   rebuildMaster()
@@ -377,7 +390,7 @@ async function boot() {
     stage.particles.points.visible = false
   }
   ui = createStageUI({ T, stage, getLayout: () => layout, getProduct: () => product })
-  buildReveals(T, { reduced, getVh, hooks: ui.hooks })
+  reveals = buildReveals(T, { reduced, getVh, layout, hooks: ui.hooks })
   initPointer(stage, { reduced })
   // (prima di initNav: toccando una voce il menu si chiude e lo scroll riparte prima del salto)
   mobileMenu = createMobileMenu({ lenis, reduced, onOpen: () => menu?.close() })
@@ -818,11 +831,10 @@ async function switchProduct(id) {
 // ---------------------------------------------------------------------------
 // Navigazione: salti brevi scorrono, salti lunghi passano da una dissolvenza
 function initNav() {
-  const dest = gotoMap(T)
   document.querySelectorAll('[data-goto]').forEach((a) => {
     a.addEventListener('click', (e) => {
       e.preventDefault()
-      jump(dest[a.dataset.goto] ?? 0)
+      jump(gotoMap(T)[a.dataset.goto] ?? 0) // (T puo' cambiare con il layout)
     })
   })
 }

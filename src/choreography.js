@@ -8,6 +8,7 @@ import { show, hide } from './ui/text.js'
   Unita' di tempo = "viewport scrollate" (t = scrollY / altezza viewport).
   Mappa (con i passi di index.html):
     story        0 .. 6   hero, scene 1-4          (sticky)   6 .. 7  transizione
+                 (telefono: 0 .. 4.4, senza la scena del tappo: data-steps-mobile in index.html)
     ingredients  7 .. 10                            (sticky)  10 .. 11
     science     11 .. 14                            (sticky)  14 .. 15
     ritual      15 .. 17.4  sezione del bicchiere   (pin)     17.4 .. 18.4
@@ -119,12 +120,12 @@ function mobileKeys(T, R) {
     { t: s + 0.06, heroOut: 0 },
     { t: s + 1.0, sx: 0, sy: -0.4, size: 0.36, rotY: 0.1, rotX: 0, rotZ: 0, elev: 8, key: 0.9, rim: 1.6, env: 0.75, heroOut: 1 },
     { t: s + 1.7, rotY: -0.14 },
-    { t: s + 2.3, sy: -0.6, size: 0.66, rotY: R.s2c, elev: 8, key: 1.1, rim: 1.7, env: 0.7 },
-    { t: s + 2.8, sy: -0.64, size: 0.7, rotY: R.s2d },
-    { t: s + 3.98, sy: -0.32, size: 0.4, rotY: -0.3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
-    { t: s + 4.7, sx: -0.3, sy: -0.9, size: 1.0, rotY: R.s5a, rotX: 0.04, elev: 24, rim: 1.2, aura: 0.55 },
-    { t: s + 5.3, sx: 0.3, sy: -0.2, size: 0.8, rotY: R.s5b, rotX: 0, elev: 11 },
-    { t: s + 6, sx: 0, sy: 0, size: 0.36, rotY: R.s6, elev: 9, rim: 1.3, aura: 0.7 },
+    // la frase sui benefici: il barattolo non si avvicina (coprirebbe i testi), gira su se stesso con la
+    // luce di taglio; poi continua a girare verso "Puro. Semplice. Efficace." e, sempre girando e
+    // rimpicciolendosi, va dritto alla posa degli ingredienti: niente zoom sul tappo (i dettagli sul
+    // telefono non si vedono; la storia finisce a 4.4, data-steps-mobile)
+    { t: s + 2.8, sy: -0.38, size: 0.38, rotY: -0.75, elev: 8, key: 1.1, rim: 1.7, env: 0.7 },
+    { t: s + 3.98, sy: -0.32, size: 0.4, rotY: -1.2, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
     { t: i, sx: 0.44, sy: 0.12, size: 0.22, rotY: R.ing0, elev: 10, key: 1, rim: 1.4, env: 0.8, aura: 0.55, ambient: 0.3 },
     // primo piano: la tabella intera, di fronte, nella meta' alta; la lista resta sotto sul fondo scuro
     { t: i + 0.8, sx: -0.08, sy: 0.86, size: 0.9, rotY: R.ingM, elev: 3, key: 1.05, rim: 0.8, env: 0.85, aura: 0, ambient: 0 },
@@ -234,10 +235,12 @@ export function buildMaster(T, layout, palette = COLORS) {
     tl.fromTo(curtain, { y: -m.rise }, { y: -m.rise - m.vh - m.capH - 4, duration: e1 - e0, ease: 'power2.in', immediateRender: false }, s + e0)
   }
 
-  // --- parallasse leggera dei titoli mentre restano in scena
-  tl.fromTo('.s3__w--1', { y: 30 }, { y: -30, duration: 1.2 }, s + 2.93)
-  tl.fromTo('.s3__w--2', { y: 60 }, { y: -60, duration: 1.2 }, s + 2.93)
-  tl.fromTo('.s3__w--3', { y: 90 }, { y: -90, duration: 1.2 }, s + 2.93)
+  // --- parallasse leggera dei titoli mentre restano in scena (sul telefono le parole sono piccole e
+  // restano fino alla fine della storia: corsa ridotta, altrimenti si accavallano)
+  const px = layout === 'mobile' ? 0.33 : 1
+  tl.fromTo('.s3__w--1', { y: 30 * px }, { y: -30 * px, duration: 1.2 }, s + 2.93)
+  tl.fromTo('.s3__w--2', { y: 60 * px }, { y: -60 * px, duration: 1.2 }, s + 2.93)
+  tl.fromTo('.s3__w--3', { y: 90 * px }, { y: -90 * px, duration: 1.2 }, s + 2.93)
   tl.fromTo('.sci__a', { x: 40 }, { x: -10, duration: 3.6 }, c - 0.4)
   tl.fromTo('.sci__b', { x: -40 }, { x: 10, duration: 3.6 }, c - 0.4)
 
@@ -275,17 +278,19 @@ export function curtainMetrics(curtain, layout) {
  * Entrate/uscite dei testi agganciate allo scroll (in avanti escono verso l'alto,
  * tornando indietro rientrano dall'alto). hooks permette azioni extra per elemento.
  */
-export function buildReveals(T, { reduced, getVh, hooks = {} }) {
+export function buildReveals(T, { reduced, getVh, layout = 'desktop', hooks = {} }) {
   const s = T.story, i = T.ingredients, c = T.science, d = T.daily, p = T.shop
+  // sul telefono la storia finisce a 4.4 (niente tappo): le parole restano finche' la sezione scorre via
+  const s3Out = layout === 'mobile' ? s + 4.38 : s + 3.96
   const list = [
     ['s2copy', s + 0.66, s + 1.7],
     // sul sipario, al posto del testo: la frase sui benefici del prodotto
     ['s2claim', s + 1.85, s + 2.85],
-    ['s3a', s + 3.22, s + 3.96],
-    ['s3b', s + 3.36, s + 3.96],
-    ['s3c', s + 3.5, s + 3.96],
-    ['s3tags', s + 3.58, s + 3.96],
-    ['s3cert', s + 3.58, s + 3.96],
+    ['s3a', s + 3.22, s3Out],
+    ['s3b', s + 3.36, s3Out],
+    ['s3c', s + 3.5, s3Out],
+    ['s3tags', s + 3.58, s3Out],
+    ['s3cert', s + 3.58, s3Out],
     ['pins-a', s + 4.42, s + 5.0],
     ['pins-b', s + 5.04, s + 5.62],
     ['ing-title', i - 0.25, i + 2.95],
@@ -315,6 +320,7 @@ export function buildReveals(T, { reduced, getVh, hooks = {} }) {
     entries.push([el, i + 0.55 + Math.min(k, 6) * 0.2 + Math.max(0, k - 6) * 0.1, i + 2.95])
   })
 
+  const triggers = []
   for (const [el, tIn, tOut] of entries) {
     const extra = hooks.get?.(el)
     const doShow = (dir) => {
@@ -325,15 +331,19 @@ export function buildReveals(T, { reduced, getVh, hooks = {} }) {
       hide(el, { dir, reduced })
       extra?.hide?.(dir)
     }
-    ScrollTrigger.create({
-      start: () => tIn * getVh(),
-      end: () => (tOut ?? 1e4) * getVh(),
-      onEnter: () => doShow(1),
-      onEnterBack: () => doShow(-1),
-      onLeave: () => tOut != null && doHide(1),
-      onLeaveBack: () => doHide(-1),
-    })
+    triggers.push(
+      ScrollTrigger.create({
+        start: () => tIn * getVh(),
+        end: () => (tOut ?? 1e4) * getVh(),
+        onEnter: () => doShow(1),
+        onEnterBack: () => doShow(-1),
+        onLeave: () => tOut != null && doHide(1),
+        onLeaveBack: () => doHide(-1),
+      }),
+    )
   }
+  // (cambiando layout si ricostruiscono con la nuova mappa T)
+  return { kill: () => triggers.forEach((st) => st.kill()) }
 }
 
 /** Destinazioni dei link di navigazione (in t). */
