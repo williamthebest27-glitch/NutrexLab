@@ -15,9 +15,9 @@
       copy={{ titleA: ['Scienza.', 'Semplificata.'] }}
     />
 
-  - type, productName, productNote, theme, copy, model, poster, shape, count si possono cambiare
-    quando si vuole: stessa scena, testi, colori e dose nuovi; se cambia il tipo (o la forma) si
-    scarica solo il modello che serve.
+  - type, productName, productNote, theme, copy, model, poster, shape, count, aside si possono
+    cambiare quando si vuole: stessa scena, testi, colori e dose nuovi; se cambia il tipo (o la
+    forma) si scarica solo il modello che serve.
   - steps (lunghezza in schermate di scroll): se cambia, la sezione si ricrea.
   - le altre opzioni (cartelle, logo inciso, qualita'...) si leggono quando il componente si monta.
   - servono gsap e three nel progetto, e in public/ le cartelle models/nutrexlab, images/nutrexlab
@@ -55,6 +55,7 @@ const productKey = (o: ProductExperienceOptions) =>
     o.model ?? null,
     o.shape ?? null,
     o.count ?? 1,
+    o.aside ?? 0,
     o.theme ?? null,
     o.copy ?? null,
     typeof o.poster === 'string' ? o.poster : null,
@@ -127,8 +128,8 @@ export function ProductExperience({ id, className, style, onReady, ...options }:
     const engine = engineRef.current
     if (!engine || applied.current === key) return
     applied.current = key
-    const { type, theme, copy, productName, productNote, model, poster, shape, count } = latest.current.options
-    void engine.setProduct({ type, theme, copy, productName, productNote, model, poster, shape, count })
+    const { type, theme, copy, productName, productNote, model, poster, shape, count, aside } = latest.current.options
+    void engine.setProduct({ type, theme, copy, productName, productNote, model, poster, shape, count, aside })
   }, [key])
 
   return <section ref={sectionRef} id={id} className={sectionClass} style={{ '--pe-steps': steps, ...style } as CSSProperties} />

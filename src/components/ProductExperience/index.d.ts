@@ -45,8 +45,8 @@ export interface ProductExperienceCopy {
   titleA?: string[]
   /** righe del titolo finale */
   titleB?: string[]
-  /** dose: sul prodotto; water: sul bicchiere */
-  pins?: { dose?: PinCopy; water?: PinCopy }
+  /** dose: sul prodotto; water: sul bicchiere; aside: sui pezzi a parte (solo con aside > 0) */
+  pins?: { dose?: PinCopy; water?: PinCopy; aside?: PinCopy }
 }
 
 export interface ProductExperienceQuality {
@@ -98,6 +98,8 @@ export interface ProductExperienceOptions {
   shape?: ProductShape | null
   /** capsule o compresse della dose del giorno: alla fine si posano tutte accanto al bicchiere (default 1) */
   count?: number
+  /** pezzi a parte, posati dopo la dose con la loro etichetta (copy.pins.aside), es. il mantenimento */
+  aside?: number
   /** indirizzo di ogni modello, per esempio con la versione del file (glass.glb, scoop.glb...) */
   resolveModel?: ((file: string) => string) | null
   /** cartella dei modelli (default '/models/nutrexlab/') */
@@ -134,6 +136,7 @@ export interface ProductUpdate {
   poster?: string | ((layout: Layout) => string) | null
   shape?: ProductShape | null
   count?: number
+  aside?: number
 }
 
 export declare class ProductExperience {

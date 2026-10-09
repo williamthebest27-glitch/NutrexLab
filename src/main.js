@@ -196,18 +196,23 @@ const fact = (f) => (f ? [`${numberIt.format(f.value)} ${f.unit}`.trim(), f.text
  * Testi della sezione per un prodotto: dai dati gia' nel sito (dosi dell'etichetta in content.js),
  * eventuali testi propri in COPY[id].experience. Polvere: misurino e bicchiere d'acqua;
  * capsule e compresse: il dettaglio della dose e quante al giorno (e alla fine, accanto al
- * bicchiere, se ne posano altrettante: perDay in products.js).
+ * bicchiere, se ne posano altrettante: perDay in products.js; con maintenance anche quelle del
+ * mantenimento, a parte, con la loro etichetta).
  */
 function ritualOptions(p) {
   const c = COPY[p.id] ?? {}
   const facts = c.daily?.facts ?? []
-  const pins = p.form === 'powder' ? { dose: fact(facts[0]), water: fact(facts[1]) } : { dose: c.pins?.dose, water: fact(facts[0]) }
+  const pins =
+    p.form === 'powder'
+      ? { dose: fact(facts[0]), water: fact(facts[1]) }
+      : { dose: c.pins?.dose, water: fact(facts[0]), aside: p.maintenance ? fact(facts[1]) : null }
   for (const k of Object.keys(pins)) if (!pins[k]) delete pins[k]
   const own = c.experience ?? {}
   return {
     type: p.form,
     shape: p.shape ?? null,
     count: p.perDay ?? 1,
+    aside: p.maintenance ?? 0,
     productName: p.name,
     productNote: p.note,
     theme: themeFromSite(p.theme),

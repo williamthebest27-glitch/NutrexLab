@@ -72,6 +72,7 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 | `model` | modello del tipo | URL del modello del prodotto (misurino, capsula o compressa) |
 | `shape` | | forma per i tipi che ne hanno piu' d'una: `'oval'` = compressa ovale (`tablet-oblong.glb`) |
 | `count` | `1` | capsule o compresse della dose del giorno: alla fine si posano tutte accanto al bicchiere |
+| `aside` | `0` | pezzi a parte (es. il mantenimento): si posano a sinistra del bicchiere con la loro etichetta (`copy.pins.aside`); l'etichetta della dose passa sopra i suoi pezzi |
 | `resolveModel` | | `(file) => URL` per ogni modello, per esempio con la versione nell'indirizzo |
 | `modelsPath`, `postersPath`, `dracoPath` | `/models/nutrexlab/`, `/images/nutrexlab/`, `/draco/` | cartelle |
 | `etch`, `etchOptions` | | logo vettoriale inciso sul vetro (formato di `src/ui/logo-paths.js`) |
@@ -87,10 +88,12 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
   fine. L'ultima riga e' nel colore d'accento. Se una parola e' troppo lunga per il suo spazio
   (es. SEMPLIFICATA.) il titolo si riduce quanto basta: non invade la scena, non tocca la sequenza
   a destra e su mobile non esce dallo schermo.
-- Etichette agganciate al 3D (`pins.dose` sul prodotto, `pins.water` sul bicchiere), come quelle
-  del sito: la linea esce sempre dalla sagoma dell'oggetto e il testo non copre mai prodotto,
-  bicchiere o titoli e resta nello schermo. Ogni etichetta prova, in ordine: il suo lato su una
-  riga o su piu' righe, l'altro lato, sotto l'oggetto, sopra. Se non c'e' posto non compare.
+- Etichette agganciate al 3D (`pins.dose` sul prodotto, `pins.water` sul bicchiere, `pins.aside`
+  sui pezzi a parte), come quelle del sito: la linea esce sempre dalla sagoma dell'oggetto e il
+  testo non copre mai prodotto, bicchiere, titoli o un'altra etichetta e resta nello schermo. Ogni
+  etichetta prova, in ordine: il suo lato su una riga o su piu' righe, l'altro lato, sotto
+  l'oggetto, sopra (sopra e sotto, se tocca qualcosa di fianco, si sposta prima di lato). Se non
+  c'e' posto non compare.
 
 ## Prestazioni e robustezza
 

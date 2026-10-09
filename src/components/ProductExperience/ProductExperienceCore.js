@@ -33,8 +33,9 @@ const TIMING = {
   showcase: {
     titleAOut: 0.16,
     titleBIn: 0.875,
-    // l'etichetta del prodotto sparisce prima che il bicchiere rientri nell'inquadratura (0.8)
-    pins: { dose: [0.645, 0.76], water: [0.905, 1.01] },
+    // l'etichetta del prodotto sparisce prima che il bicchiere rientri nell'inquadratura (0.8);
+    // quella dei pezzi a parte (aside) compare quando si posano
+    pins: { dose: [0.645, 0.76], water: [0.905, 1.01], aside: [0.965, 1.01] },
     steps: [0, 0.18, 0.5, 0.66, 0.86],
   },
 }
@@ -70,6 +71,7 @@ export class ProductExperience {
       model: null, // URL del modello del prodotto al posto di quello del tipo (es. scoop.glb)
       shape: null, // forma del prodotto, se il tipo ne ha piu' d'una: 'oval' = compressa ovale
       count: 1, // capsule o compresse della dose del giorno: alla fine si posano tutte accanto al bicchiere
+      aside: 0, // pezzi a parte, accanto alla dose, con la loro etichetta (copy.pins.aside): es. il mantenimento
       resolveModel: null, // (file) => URL, per esempio con la versione del file nell'indirizzo
       modelsPath: '/models/nutrexlab/',
       postersPath: '/images/nutrexlab/',
@@ -90,7 +92,7 @@ export class ProductExperience {
     this.layout = currentLayout()
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     this.quality = { ...detectQuality(this.layout), ...(this.o.quality ?? {}) }
-    this.ui = { pinDose: 0, pinWater: 0, exposure: 1 }
+    this.ui = { pinDose: 0, pinWater: 0, pinAside: 0, exposure: 1 }
     this.size = { w: 1, h: 1 }
     this.ready = false
     this.active = false
@@ -155,6 +157,9 @@ export class ProductExperience {
         <div class="pe__pin pe__pin--left" data-pin="water" aria-hidden="true"><div class="pe__pin-body">
           <span class="pe__pin-dot"></span><span class="pe__pin-line"></span><span class="pe__pin-text"><b></b><span></span></span>
         </div></div>
+        <div class="pe__pin" data-pin="aside" aria-hidden="true"><div class="pe__pin-body">
+          <span class="pe__pin-dot"></span><span class="pe__pin-line"></span><span class="pe__pin-text"><b></b><span></span></span>
+        </div></div>
       </div>`
     const q = (sel) => s.querySelector(sel)
     this.stage = q('.pe__stage')
@@ -173,7 +178,7 @@ export class ProductExperience {
     this.pins = [...s.querySelectorAll('.pe__pin')].map((el) => ({
       el,
       key: el.dataset.pin,
-      prop: el.dataset.pin === 'dose' ? 'pinDose' : 'pinWater',
+      prop: { dose: 'pinDose', water: 'pinWater', aside: 'pinAside' }[el.dataset.pin],
       text: el.querySelector('.pe__pin-text'),
       // lato del testo: quello dell'HTML, o quello che preferisce l'esperienza (pinSides)
       sideHtml: el.classList.contains('pe__pin--left') ? 'left' : 'right',
@@ -295,6 +300,11 @@ export class ProductExperience {
     main.fromTo(copyA, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.04, immediateRender: false }, timing.titleAOut + 0.02)
     addLines(main, linesB, { at: timing.titleBIn, dur: 0.05, stagger: 0.01 })
     for (const pin of this.pins) {
+      // tutte spente: la timeline nuova le riaccende fin dove e' arrivato lo scroll (con valori
+      // rimasti dalla timeline di prima, un'etichetta poteva comparire prima del suo momento)
+      this.ui[pin.prop] = 0
+      // etichetta senza tempi (polvere) o senza testo (prodotto senza pezzi a parte): resta spenta
+      if (!timing.pins[pin.key] || !this.copy.pins[pin.key]) continue
       const [a, b] = timing.pins[pin.key]
       main.fromTo(this.ui, { [pin.prop]: 0 }, { [pin.prop]: 1, duration: 0.035, immediateRender: false }, a)
       if (b < 1) main.fromTo(this.ui, { [pin.prop]: 1 }, { [pin.prop]: 0, duration: 0.03, immediateRender: false }, b)
@@ -514,7 +524,7 @@ export class ProductExperience {
     this.exp?.dispose()
     this.exp = exp
     this.expVariant = variant
-    exp.setCount?.(this.o.count)
+    exp.setCount?.(this.o.count, this.o.aside)
     exp.build()
     exp.setTheme(this.theme)
   }
@@ -555,7 +565,8 @@ export class ProductExperience {
   /**
    * Etichette agganciate al 3D, come quelle del sito (src/ui/stageUI.js): il pallino sta sul punto,
    * la linea esce dalla sagoma dell'oggetto (bodies dell'esperienza) e il testo non copre mai
-   * prodotto, bicchiere, titoli o la sequenza in basso a sinistra, e resta nello schermo.
+   * prodotto, bicchiere, titoli, la sequenza in basso a sinistra o un'altra etichetta, e resta
+   * nello schermo.
    */
   updatePins() {
     const a = this._pin
@@ -580,6 +591,7 @@ export class ProductExperience {
         }
       }
       if (place) {
+        k.obstacles.push(place.rect) // le etichette successive non la coprono
         this.wrapPin(pin, place.w)
         if (place.side !== pin.side) {
           pin.side = place.side
@@ -654,7 +666,19 @@ export class ProductExperience {
         const rect = { l: x0, r: x0 + w, t: y0, b: y0 + h }
         if (!inside(rect)) return null
         const o = hit(rect)
-        if (!o) return { side, w, len, x: a.x, dx: vertical ? x0 - (a.x - w / 2) : 0 }
+        if (!o) return { side, w, len, x: a.x, dx: vertical ? x0 - (a.x - w / 2) : 0, rect }
+        // sopra o sotto: se l'ostacolo e' di fianco basta spostare il testo di lato (la linea resta
+        // sotto il testo, ad almeno 24 px dai suoi bordi), con lo spostamento piu' piccolo
+        if (vertical) {
+          const lo = Math.max(b.left, a.x - w + 24)
+          const hi = Math.min(b.right - w, a.x - 24)
+          const shifted = [o.r + pad, o.l - pad - w]
+            .filter((nx) => nx >= lo && nx <= hi)
+            .map((nx) => ({ ...rect, l: nx, r: nx + w }))
+            .filter((r) => inside(r) && !hit(r))
+            .sort((p, q) => Math.abs(p.l - x0) - Math.abs(q.l - x0))[0]
+          if (shifted) return { side, w, len, x: a.x, dx: shifted.l - (a.x - w / 2), rect: shifted }
+        }
         // allunga la linea quanto basta per superare l'ostacolo
         len += { left: rect.r - o.l, right: o.r - rect.l, below: o.b - rect.t, above: rect.b - o.t }[side] + pad
       }
@@ -788,7 +812,7 @@ export class ProductExperience {
    * Cambio prodotto: testi, colori, dose e, se cambia il tipo (o la forma), l'esperienza intera (il
    * modello nuovo viene scaricato solo adesso).
    */
-  async setProduct({ type = this.type, theme, copy, productName, productNote, model, poster, shape, count } = {}) {
+  async setProduct({ type = this.type, theme, copy, productName, productNote, model, poster, shape, count, aside } = {}) {
     if (this.destroyed) return
     if (productName !== undefined) this.o.productName = productName
     if (productNote !== undefined) this.o.productNote = productNote
@@ -796,6 +820,7 @@ export class ProductExperience {
     if (poster !== undefined) this.o.poster = poster
     if (shape !== undefined) this.o.shape = shape
     if (count !== undefined) this.o.count = count
+    if (aside !== undefined) this.o.aside = aside
     if (theme) this.theme = { ...DEFAULT_THEME, ...theme }
     if (type in EXPERIENCES) this.type = type
     this.copy = resolveCopy(this.type, copy)
@@ -804,7 +829,7 @@ export class ProductExperience {
     if (this.scene) this.scene.setTheme(this.theme)
     this.exp?.setTheme(this.theme)
     const swap = this.variant() !== this.expVariant
-    if (!swap) this.exp?.setCount?.(this.o.count)
+    if (!swap) this.exp?.setCount?.(this.o.count, this.o.aside)
     this.rebuild() // i testi nuovi entrano subito nelle timeline
     if (swap) await this.swapExperience()
   }

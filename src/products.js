@@ -608,7 +608,8 @@ const glb = (id) => `/models/${id}.glb?v=${MODEL_VERSIONS[id] ?? 0}`
   form: animazione della sezione del bicchiere (powder, capsule, tablet); shape: 'oval' per la
   compressa ovale con la linea di frattura (le altre sono rotonde); perDay: capsule o compresse al
   giorno dell'etichetta (le stesse di daily in src/content.js): nella macro se ne vede una, alla fine
-  si posano tutte accanto al bicchiere.
+  si posano tutte accanto al bicchiere; maintenance: dose di mantenimento, posata a parte accanto
+  alle altre con la sua etichetta (il secondo dato di daily.facts).
 */
 export const PRODUCTS = [
   {
@@ -646,7 +647,8 @@ export const PRODUCTS = [
   {
     id: 'bromelina',
     form: 'tablet',
-    perDay: 2, // due la prima settimana, poi una (src/content.js)
+    perDay: 2, // la prima settimana
+    maintenance: 1, // poi una al giorno
     name: 'Bromelina',
     note: 'Alto dosaggio',
     model: glb('bromelina'),

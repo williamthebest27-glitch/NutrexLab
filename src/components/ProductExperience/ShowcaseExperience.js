@@ -11,7 +11,10 @@ import { DEG, lerp, smooth } from './kit.js'
 
   DOSE DEL GIORNO (setCount: due capsule, tre compresse...): nella macro c'e' un solo pezzo. Gli
   altri compaiono quando la camera lascia la macro, in alto e fuori dall'inquadratura, scendono uno
-  dopo l'altro e si posano accanto al primo (disposizione in doseLayout).
+  dopo l'altro e si posano accanto al primo (disposizione in doseLayout). I pezzi a parte (secondo
+  numero di setCount, es. la compressa del mantenimento) arrivano per ultimi e si posano dall'altra
+  parte del bicchiere, a sinistra, con la loro etichetta (anchors.aside); allora l'etichetta della
+  dose (water) passa dal bicchiere ai pezzi della dose, a destra.
 
   CapsuleExperience e TabletExperience aggiungono solo modello, materiali, pose e disposizione.
 */
@@ -22,6 +25,8 @@ const TOTAL = 16
 // camera e' ancora vicinissima al primo e loro, piu' in alto, non entrano nell'inquadratura;
 // ognuno si posa poco dopo il precedente (il primo si posa a 0.92)
 const DOSE = { from: 0.8, land: 0.935, stagger: 0.016, height: 0.2 }
+// i pezzi a parte arrivano dopo: si posano quando compare la loro etichetta (0.965)
+const ASIDE = { from: 0.83, land: 0.97, stagger: 0.012 }
 
 // Ogni proprieta' scorre tra le chiavi che la contengono (ScrollAnimation.addTrack): nella macro cf
 // e inquadratura sono ripetuti a 0.72 e 0.8, altrimenti scenderebbero gia' da 0.62 verso la chiave
@@ -70,8 +75,10 @@ export class ShowcaseExperience {
     // l'etichetta del prodotto sta a sinistra, nello spazio lasciato libero dal bicchiere
     this.bodies = { dose: { center: this.follow, radius: 0 }, water: { center: new THREE.Vector3(), radius: 0 } }
     this.pinSides = { dose: 'left' }
+    this.layout = 'desktop'
     this.count = 1
-    this.dose = [] // gli altri pezzi della dose, dal secondo in poi
+    this.aside = 0
+    this.dose = [] // gli altri pezzi della dose, dal secondo in poi, e quelli a parte
   }
 
   /** Assetto sospeso e a riposo (gradi), quota a riposo (m), ingombro per l'ombra: dalle sottoclassi. */
@@ -90,6 +97,16 @@ export class ShowcaseExperience {
     return Array.from({ length: count - 1 }, (_, i) => places[i] ?? { x: step * (i + 1), z: i % 2 ? 0.003 : -0.004, yaw: i % 2 ? -20 : 30 })
   }
 
+  /**
+   * Dove si posa il pezzo a parte k: a sinistra del bicchiere, ben staccato dalla dose che e' a
+   * destra (sul telefono tra il bicchiere e il bordo dello schermo c'e' meno spazio).
+   */
+  asidePlace(k) {
+    const gap = this.layout === 'mobile' ? 0.004 : 0.02
+    const x = -(this.scene.glassInfo.rOut + gap + this.pose.size * (0.5 + 1.25 * k))
+    return { x, z: 0.008, yaw: k % 2 ? -25 : 20 }
+  }
+
   async load() {
     const file = this.ctx.files?.[0] ?? this.constructor.models[0]
     this.root = await loadModel(this.ctx.modelUrl(file), this.ctx.loadOptions)
@@ -104,18 +121,29 @@ export class ShowcaseExperience {
     this.buildDose()
   }
 
-  /** Quante capsule o compresse si posano alla fine (il prodotto cambia, il tipo resta). */
-  setCount(n) {
+  /**
+   * Quante capsule o compresse si posano alla fine: la dose e quelle a parte (il prodotto cambia,
+   * il tipo resta).
+   */
+  setCount(n, aside = 0) {
     const count = Math.max(1, Math.round(n) || 1)
-    if (count === this.count) return
+    const apart = Math.max(0, Math.round(aside) || 0)
+    if (count === this.count && apart === this.aside) return
     this.count = count
+    this.aside = apart
+    // con i pezzi a parte le etichette della dose e del mantenimento stanno sopra i loro pezzi (sul
+    // telefono quella dei pezzi a parte sotto: sopra c'e' gia' quella della dose)
+    this.pinSides = apart ? { dose: 'left', water: 'above', aside: 'above', mobile: { aside: 'below' } } : { dose: 'left' }
     if (this.pivot) this.buildDose()
   }
 
-  /** Gli altri pezzi della dose: copie del primo (stesse geometrie e materiali), ognuno con la sua ombra. */
+  /**
+   * Gli altri pezzi della dose e quelli a parte: copie del primo (stesse geometrie e materiali),
+   * ognuno con la sua ombra e i suoi tempi (from: compare in alto, land: posato).
+   */
   buildDose() {
     this.disposeDose()
-    this.dose = this.doseLayout(this.count).map((place, i) => {
+    const piece = (place, n, from, land) => {
       const group = new THREE.Group() // posizione e rotazione sul piano
       const pivot = new THREE.Group() // assetto, come quello del primo pezzo
       pivot.rotation.order = 'ZXY'
@@ -127,8 +155,18 @@ export class ShowcaseExperience {
       shadow.renderOrder = -5
       shadow.visible = false
       this.scene.back.add(group, shadow)
-      return { ...place, n: i + 1, group, pivot, shadow }
-    })
+      return { ...place, n, from, land, group, pivot, shadow }
+    }
+    const dose = this.doseLayout(this.count).map((place, i) =>
+      piece(place, i + 1, DOSE.from + DOSE.stagger * i, DOSE.land + DOSE.stagger * (i + 1)),
+    )
+    const aside = Array.from({ length: this.aside }, (_, k) =>
+      piece({ aside: true, k }, dose.length + k + 1, ASIDE.from + ASIDE.stagger * k, ASIDE.land + ASIDE.stagger * k),
+    )
+    this.dose = [...dose, ...aside]
+    this.doseSpan = Math.max(0, ...dose.map((d) => d.x)) // larghezza della dose posata (dal primo pezzo)
+    // etichetta dei pezzi a parte: agganciata al primo di loro, solo quando c'e'
+    this.asideBody = aside.length ? { center: new THREE.Vector3(), radius: 0 } : null
   }
 
   disposeDose() {
@@ -138,6 +176,9 @@ export class ShowcaseExperience {
       d.shadow.material.dispose()
     }
     this.dose = []
+    this.asideBody = null
+    delete this.anchors.aside
+    delete this.bodies.aside
   }
 
   /** Le etichette non coprono gli altri pezzi della dose quando ci sono. */
@@ -170,6 +211,7 @@ export class ShowcaseExperience {
   }
 
   tracks(layout) {
+    this.layout = layout // (i pezzi a parte si posano dove c'e' spazio in questa impaginazione)
     const p = this.pose
     const turns = p.spinTurns * 360
     // orbit: angolo attorno al bicchiere (0 = verso la camera, 90 = a destra). Resta tra 38 e 80:
@@ -221,10 +263,17 @@ export class ShowcaseExperience {
     this.follow.copy(this.pivot.position)
     this.anchors.dose.copy(this.follow)
     const g = this.scene.glassInfo
-    this.anchors.water.set(-g.rIn * 0.72, g.waterY, g.rIn * 0.5)
     this.bodies.dose.radius = this.pose.size * 0.55
-    this.bodies.water.center.set(0, g.waterY, 0)
-    this.bodies.water.radius = g.rOut
+    if (this.aside) {
+      // con i pezzi a parte (a sinistra) l'etichetta della dose del giorno sta sui suoi pezzi, a destra
+      this.anchors.water.set(this.follow.x + this.doseSpan / 2, this.follow.y, this.follow.z)
+      this.bodies.water.center.copy(this.anchors.water)
+      this.bodies.water.radius = this.doseSpan / 2 + this.pose.size * 0.55
+    } else {
+      this.anchors.water.set(-g.rIn * 0.72, g.waterY, g.rIn * 0.5)
+      this.bodies.water.center.set(0, g.waterY, 0)
+      this.bodies.water.radius = g.rOut
+    }
 
     // ombra: piu' scura e stretta quanto piu' il prodotto e' vicino al piano
     const h = Math.max(0, this.follow.y - this.pose.restY)
@@ -241,6 +290,7 @@ export class ShowcaseExperience {
   /**
    * Gli altri pezzi della dose: prima della fine della macro non ci sono; poi scendono dall'alto
    * (girando su se stessi e raddrizzandosi) e si posano accanto al primo, che seguono (orbit, radius).
+   * I pezzi a parte scendono dritti a sinistra del bicchiere (mai davanti o dietro al vetro).
    */
   updateDose(time, live) {
     if (!this.dose.length) return
@@ -252,14 +302,20 @@ export class ShowcaseExperience {
     const z0 = Math.cos(a) * s.radius
     const on = p > DOSE.from
     for (const d of this.dose) {
-      const up = 1 - smooth(DOSE.from + DOSE.stagger * (d.n - 1), DOSE.land + DOSE.stagger * d.n, p)
+      const up = 1 - smooth(d.from, d.land, p)
       const side = d.n % 2 ? 1 : -1
       const h = (DOSE.height + 0.02 * d.n) * up // quota sopra il piano
       const floating = smooth(0.002, 0.03, h)
       const bob = Math.sin(time * 1.1 + d.n * 1.7) * 0.0012 * floating * live
       d.group.visible = on
-      d.group.position.set(x0 + d.x + 0.012 * d.n * up, pose.restY + h + bob, z0 + d.z - 0.01 * up)
-      d.group.rotation.y = (d.yaw + 50 * side * up) * DEG
+      if (d.aside) {
+        const at = this.asidePlace(d.k)
+        d.group.position.set(at.x, pose.restY + h + bob, at.z - 0.01 * up)
+        d.group.rotation.y = (at.yaw + 50 * side * up) * DEG
+      } else {
+        d.group.position.set(x0 + d.x + 0.012 * d.n * up, pose.restY + h + bob, z0 + d.z - 0.01 * up)
+        d.group.rotation.y = (d.yaw + 50 * side * up) * DEG
+      }
       d.pivot.rotation.set(
         (lerp(pose.restX, pose.floatX + 14 * side, up) + Math.sin(time * 0.5 + d.n) * 3 * floating * live) * DEG,
         (pose.spinTurns * 360 - 120 * side * up) * DEG,
@@ -274,6 +330,16 @@ export class ShowcaseExperience {
       d.shadow.scale.set(size * 1.6, size, 1)
       d.shadow.material.opacity = 0.85 * k
       d.shadow.visible = on && k > 0.01
+    }
+    const first = this.asideBody && this.dose.find((d) => d.aside)
+    if (first && on) {
+      this.asideBody.center.copy(first.group.position)
+      this.asideBody.radius = pose.size * 0.55
+      this.anchors.aside = this.asideBody.center
+      this.bodies.aside = this.asideBody
+    } else {
+      delete this.anchors.aside
+      delete this.bodies.aside
     }
   }
 
