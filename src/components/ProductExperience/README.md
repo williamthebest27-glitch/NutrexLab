@@ -5,6 +5,15 @@ studio fotografico scuro e il prodotto (polvere, capsula o compressa). Three.js 
 ScrollTrigger, nessun'altra dipendenza. Nel sito e' il capitolo "Preparazione", tra Scienza e
 Ogni giorno (`#rituale` in `index.html`).
 
+Nel sito lo studio e' quello del render di Blender (`themeFromSite(theme, { studio: 'scuro' })`):
+parete grigio scuro, piano illuminato attorno al bicchiere, e il bicchiere e' il render stesso.
+Vetro, acqua, bollicine e logo inciso non si calcolano nel browser: sono le immagini del bicchiere
+(`/models/nutrexlab/vetro/scuro/vetro_eNN.webp`, una ogni 3 gradi di inclinazione della camera, dai
+3 ai 33), e per ogni pixel lo shader (`shaders/impostor.js`) prende quella con la stessa
+inclinazione del raggio. Il bicchiere e' tondo: girandogli attorno resta identico al render. Sopra
+le immagini solo cio' che entra nel bicchiere (la polvere, l'acqua che si intorbida). Senza
+`studio` (o finche' le immagini non arrivano) il vetro e' calcolato come prima, nello studio nero.
+
 Il tipo sceglie l'animazione:
 
 - **powder** (polvere): il misurino pieno a raso si avvicina, ruota e si inclina, la polvere cade
@@ -66,7 +75,7 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 | `steps` | `4` | durata del pin in schermate di scroll (la sezione e' alta `steps + 1` schermate) |
 | `productName`, `productNote` | | nome in basso a destra (desktop) |
 | `chapter` | | numero davanti al sopratitolo (es. `'05'`) |
-| `theme` | tema di base | colori di studio e prodotto (`themeFromSite()` li ricava da un prodotto del sito) |
+| `theme` | tema di base | colori di studio e prodotto (`themeFromSite()` li ricava da un prodotto del sito; con `{ studio: 'scuro' }` lo studio e il bicchiere del render) |
 | `copy` | testi del tipo (`copy.js`) | `eyebrow`, `titleA`, `titleB` (una voce per riga), `pins.dose`, `pins.water`, `pins.aside` (`[titolo, testo]`), `benefits` (fino a tre `[titolo, testo]`) |
 | `poster` | immagine del tipo | immagine statica del prodotto: URL o `(layout) => URL` |
 | `model` | modello del tipo | URL del modello del prodotto (misurino, capsula o compressa) |
@@ -134,23 +143,26 @@ Servono `three` e `gsap`, e in `public/` le cartelle `models/nutrexlab`, `images
 | `index.js` | API pubblica: `createProductExperience`, `mountProductExperiences`, `themeFromSite` |
 | `ProductExperienceCore.js` | orchestratore: DOM, testi, timeline, scroll, caricamento, etichette |
 | `ProductExperience.tsx`, `index.d.ts` | involucro React e tipi TypeScript |
-| `ProductScene.js` | renderer e passate (strato posteriore, contenuto dell'acqua, vetro come lente) |
+| `ProductScene.js` | renderer e passate (strato posteriore, contenuto dell'acqua, vetro come lente o bicchiere renderizzato) |
 | `ProductCamera.js`, `ProductLighting.js` | camera cinematografica, luci e ambiente dello studio |
 | `ScrollAnimation.js` | chiavi -> tween GSAP, righe mascherate, ScrollTrigger della sezione |
 | `PowderExperience.js` | misurino, polvere, acqua che si intorbida |
 | `powderPour.js`, `powderPour.worker.js` | calcolo della versata (granelli, nuvola, increspature) in un worker |
 | `ShowcaseExperience.js`, `CapsuleExperience.js`, `TabletExperience.js` | capsula e compressa |
 | `kit.js`, `assets.js`, `etching.js`, `quality.js`, `copy.js` | particelle, caricamento modelli, logo inciso, qualita', testi di default |
-| `shaders/` | vetro, acqua, fondale, particelle, composizione finale |
+| `shaders/` | vetro, acqua, fondale, particelle, composizione finale, bicchiere renderizzato (`impostor.js`) |
 
 ## Modelli e immagini statiche
 
-- Modelli: `Website/sezione bicchiere/blender/esperienza_3d.py` (Blender 5.1, procedurale, misure
-  reali in mm) esporta `web/glass.glb`, `scoop.glb`, `capsule.glb`, `tablet.glb`; la compressa
-  ovale (`web/tablet-oblong.glb`) viene da `blender/compressa_ovale_3d.py`.
-  `scripts/sync-model.mjs` li copia in `public/models/nutrexlab/` con la versione nell'indirizzo.
-  Da `Website/sezione bicchiere`: `npm run modelli` (solo export), `npm run render` (anche render e
-  `blender/esperienza.blend`).
+- Modelli: `Website/sezione bicchiere/blender/bicchiere_3d.py` (Blender 5.1, procedurale, misure
+  reali in mm) esporta `web/glass.glb`: tumbler a tronco di cono, fondo pesante, acqua a 80 mm;
+  negli extras le misure (`r_top`, `r_bot`, `wall`, fondo a coppa, incavo, bollicine) e il campo
+  delle immagini del bicchiere (`imp_*`). Con `npm run bicchiere-web-scuro` le immagini
+  (`web/vetro/scuro/`). `blender/esperienza_3d.py` esporta `scoop.glb`, `capsule.glb`, `tablet.glb`;
+  la compressa ovale (`web/tablet-oblong.glb`) viene da `blender/compressa_ovale_3d.py`.
+  `scripts/sync-model.mjs` copia tutto in `public/models/nutrexlab/` con la versione nell'indirizzo.
+  Da `Website/sezione bicchiere`: `npm run bicchiere`, `npm run modelli` (solo export),
+  `npm run render` (anche render e `.blend`).
 - Immagini statiche (`public/images/nutrexlab/`): fotogrammi della scena WebGL, una per prodotto
   (`esperienza-<id>.webp` e `-mobile.webp`) e una per tipo. Si rigenerano dal banco di prova con
   `await __postersAll()` nella console (solo alcune: `__postersAll(['vitamina-c', 'capsule'])`).

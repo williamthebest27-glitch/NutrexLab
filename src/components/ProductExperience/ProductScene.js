@@ -3,6 +3,7 @@ import { glassVertex, glassBackFragment, glassFrontFragment } from './shaders/gl
 import { waterVertex, waterFragment } from './shaders/water.js'
 import { backdropVertex, backdropFragment } from './shaders/backdrop.js'
 import { screenVertex, copyFragment, outputFragment } from './shaders/composite.js'
+import { impostorVertex, impostorFragment } from './shaders/impostor.js'
 import { ProductLighting } from './ProductLighting.js'
 
 /*
@@ -16,6 +17,8 @@ import { ProductLighting } from './ProductLighting.js'
     3. MAIN (HDR): BACK, poi la "lente" (glass.js) che rifrange BACK e INSIDE come farebbero vetro e
        acqua veri.
     4. SCHERMO: MAIN con vignettatura, tone mapping e dithering.
+    5. Studio scuro: al posto della lente, sopra lo schermo, il bicchiere renderizzato da Blender
+       (shaders/impostor.js): vetro, acqua e logo sono i pixel del render (OVER, dopo il tone mapping).
 
   Cosi' la polvere sospesa nell'acqua si vede ingrandita e deformata dal bicchiere (con le
   trasparenze standard di three.js non si potrebbe: le particelle finirebbero davanti al vetro).
@@ -65,6 +68,7 @@ export class ProductScene {
     this.back = new THREE.Scene()
     this.inside = new THREE.Scene()
     this.front = new THREE.Scene()
+    this.over = new THREE.Scene()
     this.screen = new THREE.Scene()
     this.screenCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
 
@@ -135,10 +139,15 @@ export class ProductScene {
       envMap: { value: this.lighting.envTexture },
       uEnvIntensity: { value: 1.0 },
       uViewProj: { value: new THREE.Matrix4() },
+      uInvViewProj: { value: new THREE.Matrix4() },
       uViewport: { value: new THREE.Vector2(1, 1) },
       uTime: { value: 0 },
       uROut: { value: 0.037 },
       uRIn: { value: 0.0348 },
+      uTaper: { value: 0 },
+      uBowl: { value: new THREE.Vector2(0, 0) },
+      uPunt: { value: new THREE.Vector2(0, 0) },
+      uBubbles: { value: Array.from({ length: 24 }, () => new THREE.Vector4(0, 0, 0, 0)) },
       uBase: { value: 0.016 },
       uHeight: { value: 0.108 },
       uWaterY: { value: 0.071 },
@@ -150,6 +159,9 @@ export class ProductScene {
       uCausticColor: { value: new THREE.Color(1.0, 0.96, 0.9) },
       uCaustic: { value: 0.1 },
       uShadowDir: { value: new THREE.Vector2(-keyDir.x, -keyDir.z).normalize() },
+      uPhoto: { value: 0 },
+      uGlassInside: { value: 0 },
+      uPoolR: { value: 0.24 },
       uKeyDir: { value: keyDir },
       uCloud: { value: 0 },
       uCloudColor: { value: new THREE.Color(0.72, 0.71, 0.69) },
@@ -175,8 +187,8 @@ export class ProductScene {
    * width = larghezza lungo la circonferenza (m), y = quota del centro (m).
    */
   setEtch({ texture, aspect }, { width = 0.042, y = 0.038, strength = 0.85 } = {}) {
-    const r = this.u.uROut.value
     const u = this.u
+    const r = u.uROut.value + u.uTaper.value * (y - u.uWaterY.value) // raggio del vetro a quella quota
     u.uEtch.value = texture
     u.uEtchRect.value.set(Math.PI / 2, y, width / r / 2, width / aspect / 2)
     u.uEtchOn.value = strength
@@ -259,7 +271,11 @@ export class ProductScene {
     this.renderer.render(this.screen, this.screenCamera)
   }
 
-  /** Bicchiere e superficie dell'acqua da glass.glb (misure negli extras). */
+  /**
+   * Bicchiere e superficie dell'acqua da glass.glb (misure negli extras, in metri). Il bicchiere di
+   * bicchiere_3d.py e' un tronco di cono: raggi esterni in alto e alla base (r_top, r_bot), parete,
+   * fondo interno a coppa, incavo sotto e le bollicine sulla parete; senza, un cilindro (r_out, r_in).
+   */
   setGlass(root) {
     let glass = null
     let water = null
@@ -271,18 +287,30 @@ export class ProductScene {
     if (!glass || !water) throw new Error('glass.glb: mancano Bicchiere o Acqua_Superficie')
     const g = glass.userData
     const u = this.u
-    u.uROut.value = g.r_out ?? 0.037
-    u.uRIn.value = g.r_in ?? 0.0348
     u.uBase.value = g.base ?? 0.016
     u.uHeight.value = g.height ?? 0.108
     u.uWaterY.value = g.water_level ?? 0.071
     u.uMeniscus.value = g.meniscus ?? 0.0014
+    const cone = g.r_top != null && g.r_bot != null && g.wall != null
+    const taper = cone ? (g.r_top - g.r_bot) / u.uHeight.value : 0
+    // raggi della parete al pelo dell'acqua (gli shader li allargano o stringono con uTaper)
+    u.uTaper.value = taper
+    u.uROut.value = cone ? g.r_bot + taper * u.uWaterY.value : g.r_out ?? 0.037
+    u.uRIn.value = cone ? u.uROut.value - g.wall : g.r_in ?? 0.0348
+    u.uBowl.value.set(g.bowl_r ?? 0, g.sag ?? 0)
+    u.uPunt.value.set(g.punt_r ?? 0, g.punt_d ?? 0)
+    // bollicine: [angolo, quota, raggio] per ognuna, in fila
+    const b = g.bubbles ?? []
+    u.uBubbles.value.forEach((v, i) => (i * 3 + 2 < b.length ? v.set(b[i * 3], b[i * 3 + 1], b[i * 3 + 2], 0) : v.set(0, 0, 0, 0)))
     this.waterY = u.uWaterY.value
     this.aboveWater.constant = -this.waterY
     this.belowWater.constant = this.waterY
     this.glassInfo = {
-      rOut: u.uROut.value,
+      // ingombro: il raggio piu' grande (al bordo); rIn al pelo dell'acqua
+      rOut: cone ? g.r_top : u.uROut.value,
       rIn: u.uRIn.value,
+      rBase: cone ? g.r_bot : u.uROut.value,
+      taper,
       base: u.uBase.value,
       height: u.uHeight.value,
       waterY: this.waterY,
@@ -296,7 +324,9 @@ export class ProductScene {
         side: THREE.DoubleSide,
         transparent: true,
         premultipliedAlpha: true,
-        depthWrite: false,
+        // la profondita' del vetro lontano dice alla lente dove lo strato posteriore mostra il
+        // bicchiere stesso: attraverso l'acqua li' si vede lo studio, non il retro del vetro
+        depthWrite: true,
       }),
     )
     this.glassBack.renderOrder = 50
@@ -321,17 +351,145 @@ export class ProductScene {
     for (const m of [this.glassBack, this.lens, this.water]) m.frustumCulled = false
     this.back.add(this.glassBack, this.water)
     this.front.add(this.lens)
+    // bicchiere renderizzato da Blender (studio scuro): inclinazioni e campo delle immagini
+    this.impMeta = g.imp_n ? { e0: g.imp_e0, step: g.imp_step, n: g.imp_n, w: g.imp_w, h: g.imp_h, cy: g.imp_cy } : null
+    this.wantImpostor()
   }
 
-  /** Colori dello studio dal tema del prodotto (fondo quasi nero tinto, alone, nuvola). */
+  /**
+   * Studio scuro: scarica (una volta) le immagini del bicchiere renderizzato (vetro/<studio>/) e
+   * prepara il quadro su cui si disegnano. resolveUrl(file): indirizzo di un file dei modelli (lo
+   * imposta il motore).
+   */
+  wantImpostor() {
+    const m = this.impMeta
+    const set = this.studioKind
+    if (set === 'dark' || !set || !m || this.impSet === set) return
+    // un altro studio: via le immagini dell'altro (si torna al vetro calcolato finche' non arrivano)
+    this.dropImpostor()
+    this.impSet = set
+    const url = this.resolveUrl ?? ((file) => `/models/nutrexlab/${file}`)
+    const small = this.quality.tier === 'low' ? '_m' : ''
+    const files = Array.from({ length: m.n }, (_, k) => `vetro/${set}/vetro_e${String(Math.round(m.e0 + m.step * k)).padStart(2, '0')}${small}.webp`)
+    // decodifica fuori dal thread principale; alfa non premoltiplicata, righe dal basso come le texture
+    const loader = new THREE.ImageBitmapLoader().setOptions({ imageOrientation: 'flipY', premultiplyAlpha: 'none' })
+    const job = (this.impLoading = Promise.all(files.map((f) => loader.loadAsync(url(f)))).then((bitmaps) => {
+      if (this.disposed || this.impLoading !== job) return bitmaps.forEach((b) => b.close?.())
+      this.impTextures = bitmaps.map((b) => {
+        const t = new THREE.Texture(b)
+        t.colorSpace = THREE.SRGBColorSpace
+        t.flipY = false
+        t.premultiplyAlpha = false
+        t.minFilter = THREE.LinearMipmapLinearFilter
+        t.generateMipmaps = true
+        t.anisotropy = 4
+        t.needsUpdate = true
+        return t
+      })
+      const deg = Math.PI / 180
+      const mat = this.material({
+        vertexShader: impostorVertex,
+        fragmentShader: impostorFragment,
+        uniforms: {
+          tImp0: { value: this.impTextures[0] },
+          tImp1: { value: this.impTextures[1] },
+          tImp2: { value: this.impTextures[2] },
+          tImp3: { value: this.impTextures[3] },
+          tImp4: { value: this.impTextures[4] },
+          uImpE0: { value: m.e0 * deg },
+          uImpStep: { value: m.step * deg },
+          uImpFrame: { value: new THREE.Vector3(m.w, m.h, m.cy) },
+        },
+        transparent: true,
+        premultipliedAlpha: true,
+        depthTest: false,
+        depthWrite: false,
+        toneMapped: false,
+      })
+      // quadro rivolto alla camera, piu' grande del bicchiere visto da qualunque parte
+      this.impostor = new THREE.Mesh(new THREE.PlaneGeometry(0.28, 0.28), mat)
+      this.impostor.position.set(0, m.cy, 0)
+      this.impostor.frustumCulled = false
+      this.over.add(this.impostor)
+      this.applyStudio()
+    }))
+    job.catch(() => {}) // (senza immagini resta il vetro calcolato)
+  }
+
+  /** Libera le immagini del bicchiere renderizzato (cambio di studio, fine). */
+  dropImpostor() {
+    for (const t of this.impTextures ?? []) {
+      t.image?.close?.()
+      t.dispose()
+    }
+    this.impTextures = null
+    if (this.impostor) {
+      this.over.remove(this.impostor)
+      this.impostor.geometry.dispose()
+      this.impostor.material.dispose()
+      this.impostor = null
+    }
+    this.impLoading = null
+    this.impSet = null
+  }
+
+  /** Bicchiere renderizzato pronto per lo studio attuale? Allora niente vetro calcolato. */
+  get impostorOn() {
+    return !!this.impostor && this.impSet === this.studioKind
+  }
+
+  applyStudio() {
+    const on = this.impostorOn
+    for (const o of [this.lens, this.glassBack, this.water]) if (o) o.visible = !on
+    // la polvere dentro il bicchiere (anche sopra l'acqua) va nello strato interno, che il bicchiere
+    // renderizzato mostra sopra la sua immagine
+    this.u.uGlassInside.value = on ? 1 : 0
+  }
+
+  /** Le 5 immagini attorno all'inclinazione della camera sul centro del bicchiere. */
+  updateImpostor(cam) {
+    const m = this.impMeta
+    const u = this.impostor.material.uniforms
+    this.impostor.quaternion.copy(cam.quaternion)
+    const v = (this._impV ??= new THREE.Vector3()).copy(cam.position).sub(this.impostor.position)
+    const e = (Math.asin(v.y / v.length()) * 180) / Math.PI
+    const k0 = Math.min(Math.max(Math.round((e - m.e0) / m.step) - 2, 0), Math.max(0, m.n - 5))
+    for (let i = 0; i < 5; i++) u[`tImp${i}`].value = this.impTextures[Math.min(k0 + i, m.n - 1)]
+    u.uImpE0.value = ((m.e0 + m.step * k0) * Math.PI) / 180
+  }
+
+  /**
+   * Colori dello studio dal tema del prodotto (fondo quasi nero tinto, alone, nuvola). Con
+   * studio: 'scuro' lo studio del render di Blender, con il bicchiere renderizzato: piano illuminato
+   * attorno al bicchiere (pool * poolGain, raggio poolR), ombra lunga verso destra-davanti, riflessi
+   * dalla stanza della foto, niente vignettatura.
+   */
   setTheme(t) {
     const u = this.u
+    const kind = t.studio === 'scuro' ? 'scuro' : 'dark'
+    const photo = kind !== 'dark'
     u.uBgLow.value.set(t.bgLow)
     u.uBgGlow.value.set(t.bgGlow)
-    u.uPool.value.set(t.pool)
+    u.uPool.value.set(t.pool).multiplyScalar(t.poolGain ?? 1)
+    u.uPoolR.value = t.poolR ?? 0.24
     u.uCloudColor.value.set(t.cloud)
+    u.uPhoto.value = photo ? 1 : 0
+    this.keyShadow ??= u.uShadowDir.value.clone()
+    if (photo) u.uShadowDir.value.set(0.36, 0.93).normalize()
+    else u.uShadowDir.value.copy(this.keyShadow)
+    // (studi della foto: niente vignettatura, come nel render; il bicchiere si disegna dopo)
+    this.outputMaterial.uniforms.uVignette.value = photo ? 0 : 0.5
     this.clearColor.set(t.bgLow)
-    this.lighting.setTheme(t.rim)
+    // ambiente dei riflessi dell'altro studio: stessa misura, cambia solo la texture
+    if (this.lighting.rebuild(kind)) {
+      u.envMap.value = this.lighting.envTexture
+      this.back.environment = this.lighting.envTexture
+      this.inside.environment = this.lighting.envTexture
+    }
+    this.lighting.setTheme(t.rim, kind)
+    this.studioKind = kind
+    this.wantImpostor()
+    this.applyStudio()
   }
 
   // ---------------------------------------------------------------------------
@@ -368,6 +526,7 @@ export class ProductScene {
     this.u.uTime.value = time
     cam.updateMatrixWorld()
     this.u.uViewProj.value.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)
+    this.u.uInvViewProj.value.copy(this.u.uViewProj.value).invert()
 
     r.setRenderTarget(this.insideRT)
     r.setClearColor(0x000000, 0)
@@ -383,6 +542,11 @@ export class ProductScene {
     this.blit(this.copyMaterial, this.mainRT)
     r.render(this.front, cam)
     this.blit(this.outputMaterial, null)
+    // studio scuro: il bicchiere renderizzato, sopra lo schermo (i suoi pixel restano quelli del render)
+    if (this.impostorOn) {
+      this.updateImpostor(cam)
+      r.render(this.over, cam)
+    }
   }
 
   /** Abbassa la risoluzione se il dispositivo non tiene i 60 fps (media su ~1 s). */
@@ -412,6 +576,8 @@ export class ProductScene {
    */
   async warmup(pause = null) {
     const r = this.renderer
+    // studio scuro: prima le immagini del bicchiere (scaricate mentre si preparava il resto)
+    if (this.impLoading) await this.impLoading.catch(() => {})
     const compile = (scene, camera, target) => {
       r.setRenderTarget(target)
       const job = r.compileAsync ? r.compileAsync(scene, camera) : (r.compile(scene, camera), null)
@@ -431,6 +597,7 @@ export class ProductScene {
         this.quad.material = this.outputMaterial
         return compile(this.screen, this.screenCamera, null)
       },
+      () => (this.impostor ? compile(this.over, this.camera, null) : null),
     ]
     // il browser le compila in parallelo (KHR_parallel_shader_compile) mentre si avviano le altre
     const jobs = []
@@ -461,15 +628,19 @@ export class ProductScene {
       pass(this.inside, this.insideRT),
       pass(this.back, this.backRT),
       pass(this.front, this.mainRT),
+      // immagini del bicchiere renderizzato: una per passo (caricarle sulla GPU costa qualche ms)
+      ...(this.impTextures ?? []).map((t) => () => r.initTexture(t)),
     ]
   }
 
   dispose() {
     // (anche a meta' preparazione: init() puo' non esserci ancora stato)
+    this.disposed = true
+    this.dropImpostor()
     for (const rt of [this.backRT, this.insideRT, this.mainRT]) rt?.dispose()
     this.copyMaterial?.dispose()
     this.lighting?.dispose()
-    for (const s of [this.back, this.inside, this.front, this.screen]) {
+    for (const s of [this.back, this.inside, this.front, this.screen, this.over]) {
       s.traverse((o) => {
         if (o.geometry) o.geometry.dispose()
         if (o.material) [].concat(o.material).forEach((m) => m.dispose())

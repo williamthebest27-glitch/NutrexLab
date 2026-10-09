@@ -33,6 +33,11 @@ export interface ProductExperienceTheme {
   /** compressa e puntini */
   tablet?: string
   speckle?: string
+  /** 'scuro': studio del render di Blender con il bicchiere renderizzato (immagini in vetro/scuro/) */
+  studio?: 'dark' | 'scuro'
+  /** luce sul piano: intensita' (moltiplica pool) e raggio della pozza attorno al bicchiere (m) */
+  poolGain?: number
+  poolR?: number
 }
 
 /** [testo grande, testo piccolo, evidenziata] di un'etichetta agganciata al 3D (evidenziata: titolo nel colore d'accento). */
@@ -174,4 +179,5 @@ export interface SiteTheme {
   dust?: string
 }
 
-export declare function themeFromSite(theme: SiteTheme): Required<ProductExperienceTheme>
+/** { studio: 'scuro' }: lo studio del render di Blender con il bicchiere renderizzato. */
+export declare function themeFromSite(theme: SiteTheme, options?: { studio?: 'dark' | 'scuro' }): ProductExperienceTheme

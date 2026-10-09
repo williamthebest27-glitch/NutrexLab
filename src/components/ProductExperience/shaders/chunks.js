@@ -55,34 +55,88 @@ vec2 pe_uv(vec3 p) {
 `
 
 /**
- * Geometria del bicchiere (cilindro verticale centrato sull'origine) e del fondale.
- * pe_cylIn / pe_cylOut: distanza lungo il raggio fino alla superficie del cilindro di raggio r,
- * entrando da fuori / uscendo da dentro (1e9 se non la incontra).
+ * Geometria del bicchiere (tronco di cono verticale centrato sull'origine, piu' largo in alto) e del
+ * fondale. uROut / uRIn: raggi esterno e interno della parete al pelo dell'acqua; uTaper: di quanto
+ * si allarga la parete per ogni metro di altezza (0 = cilindro).
+ * pe_cylIn / pe_cylOut: distanza lungo il raggio fino alla parete che al pelo dell'acqua ha raggio r,
+ * entrando da fuori / uscendo da dentro (1e9 se non la incontra). pe_wallN: normale della parete.
+ * Fondo: interno a coppa (uBowl: raggio della coppa, quanto scende al centro), sotto l'incavo dello
+ * stampo (uPunt: raggio, profondita'); a zero sono piani.
  */
 export const GLASS = /* glsl */ `
 uniform float uROut;
 uniform float uRIn;
+uniform float uTaper;
 uniform float uBase;
 uniform float uHeight;
 uniform float uWaterY;
 uniform float uWallZ;
+uniform vec2 uBowl;
+uniform vec2 uPunt;
+float pe_rOut(float y) { return uROut + uTaper * (y - uWaterY); }
+float pe_rIn(float y) { return uRIn + uTaper * (y - uWaterY); }
+vec3 pe_wallN(vec3 p) {
+  vec2 n = normalize(p.xz + vec2(1e-7, 0.0));
+  return normalize(vec3(n.x, -uTaper, n.y));
+}
+// parete: x^2 + z^2 = (r + k (y - uWaterY))^2
 float pe_cylIn(vec3 o, vec3 d, float r) {
-  float a = dot(d.xz, d.xz);
+  float k = uTaper;
+  float ro = r + k * (o.y - uWaterY);
+  float a = dot(d.xz, d.xz) - k * k * d.y * d.y;
   if (a < 1e-9) return 1e9;
-  float b = dot(o.xz, d.xz);
-  float c = dot(o.xz, o.xz) - r * r;
+  float b = dot(o.xz, d.xz) - k * ro * d.y;
+  float c = dot(o.xz, o.xz) - ro * ro;
   float h = b * b - a * c;
   if (h < 0.0) return 1e9;
   float t = (-b - sqrt(h)) / a;
   return t > 1e-6 ? t : 1e9;
 }
 float pe_cylOut(vec3 o, vec3 d, float r) {
-  float a = dot(d.xz, d.xz);
+  float k = uTaper;
+  float ro = r + k * (o.y - uWaterY);
+  float a = dot(d.xz, d.xz) - k * k * d.y * d.y;
   if (a < 1e-9) return 1e9;
-  float b = dot(o.xz, d.xz);
-  float c = dot(o.xz, o.xz) - r * r;
+  float b = dot(o.xz, d.xz) - k * ro * d.y;
+  float c = dot(o.xz, o.xz) - ro * ro;
   float h = max(b * b - a * c, 0.0);
   return max((-b + sqrt(h)) / a, 0.0);
+}
+/** Raggio nell'acqua che scende verso il fondo interno a coppa: distanza (1e9 se sale), normale verso l'alto. */
+float pe_bowl(vec3 o, vec3 d, out vec3 n) {
+  n = vec3(0.0, 1.0, 0.0);
+  if (d.y > -1e-5) return 1e9;
+  if (uBowl.y < 1e-6) return (uBase - o.y) / d.y;
+  // calotta sferica: passa per il centro (uBase - sag) e per il bordo della coppa (uBase)
+  float R = (uBowl.x * uBowl.x + uBowl.y * uBowl.y) / (2.0 * uBowl.y);
+  vec3 c = vec3(0.0, uBase - uBowl.y + R, 0.0);
+  vec3 oc = o - c;
+  float b = dot(oc, d);
+  float h = b * b - (dot(oc, oc) - R * R);
+  float t = -b + sqrt(max(h, 0.0));
+  n = normalize(c - (o + d * t));
+  return t;
+}
+/**
+ * Raggio dentro il fondo pieno che scende verso il piano d'appoggio: punto del pavimento che vede.
+ * Nell'incavo il vetro non tocca il pavimento: il raggio esce nell'aria (rifrazione) e scende ancora.
+ * tir = 1 se resta intrappolato (riflessione totale sulla calotta).
+ */
+vec3 pe_bottomSeen(vec3 o, vec3 d, out float tir) {
+  tir = 0.0;
+  float dy = min(d.y, -1e-4);
+  vec3 F = o + d * (-o.y / dy);
+  if (uPunt.y < 1e-6 || dot(F.xz, F.xz) > uPunt.x * uPunt.x) return F;
+  float R = (uPunt.x * uPunt.x + uPunt.y * uPunt.y) / (2.0 * uPunt.y);
+  vec3 c = vec3(0.0, uPunt.y - R, 0.0);
+  vec3 oc = o - c;
+  float b = dot(oc, d);
+  float h = b * b - (dot(oc, oc) - R * R);
+  if (h < 0.0) return F;
+  vec3 H = o + d * (-b - sqrt(h));
+  vec3 T = refract(d, normalize(H - c), 1.5);
+  if (dot(T, T) < 0.01) { tir = 1.0; return F; }
+  return H + T * (H.y / max(-T.y, 0.05));
 }
 /** Punto in cui un raggio uscito dal bicchiere incontra pavimento (y = 0) o parete di fondo. */
 vec3 pe_backdropHit(vec3 o, vec3 d) {
@@ -105,6 +159,8 @@ uniform vec3 uCausticColor;
 uniform float uCaustic;
 uniform float uTime;
 uniform vec2 uShadowDir;
+uniform float uPhoto;   // 1 = studio della foto (bicchiere renderizzato): ombra lunga, niente caustica
+uniform float uPoolR;   // raggio della pozza di luce sul piano attorno al bicchiere (m)
 /** Alone morbido dietro al bicchiere: un ellissoide 3D, continuo tra pavimento e parete. */
 float pe_glow(vec3 p) {
   vec3 d = (p - vec3(0.0, 0.17, uWallZ + 0.08)) * vec3(1.0 / 0.8, 1.0 / 0.52, 1.0 / 0.95);
@@ -114,28 +170,32 @@ vec3 pe_floor(vec3 p) {
   vec2 q = p.xz;
   float r = length(q);
   vec2 pc = q - vec2(0.0, -0.03);
-  float pool = exp(-dot(pc, pc) / (0.24 * 0.24));
+  float pool = exp(-dot(pc, pc) / (uPoolR * uPoolR));
   float far = exp(-dot(q, q) / (1.2 * 1.2));
   vec3 c = uBgLow * (0.4 + 0.6 * far) + uBgGlow * pe_glow(vec3(p.x, 0.0, p.z)) + uPool * pool;
-  // ombra di contatto sotto il bordo del bicchiere
-  float ao = smoothstep(uROut * 0.86, uROut * 1.5, r);
-  c *= mix(0.18, 1.0, ao);
-  // ombra della luce principale (alto a sinistra, davanti): verso destra-dietro
+  // ombra di contatto sotto il bordo del bicchiere (raggio alla base)
+  float rB = pe_rOut(0.0);
+  float ao = smoothstep(rB * mix(0.86, 0.94, uPhoto), rB * mix(1.5, 1.3, uPhoto), r);
+  c *= mix(mix(0.18, 0.42, uPhoto), 1.0, ao);
+  // ombra della luce principale (alto a sinistra, davanti: verso destra-dietro; studio della foto:
+  // controluce alto dietro a sinistra, ombra lunga e morbida verso destra-davanti, come nel render)
   vec2 sd = normalize(uShadowDir);
   vec2 sp = vec2(dot(q, sd), dot(q, vec2(-sd.y, sd.x)));
-  float u = sp.x - uROut * 0.9;
-  float len = 0.1;
-  float shadow = exp(-pow(sp.y / (uROut * 1.05), 2.0)) * smoothstep(-uROut, 0.0, u) * exp(-max(u, 0.0) / len);
-  c *= 1.0 - 0.55 * shadow;
+  float u = sp.x - uROut * mix(0.9, 0.55, uPhoto);
+  float len = mix(0.1, 0.12, uPhoto);
+  float wide = uROut * mix(1.05, 0.95, uPhoto) * (1.0 + 0.35 * uPhoto * max(u, 0.0) / 0.1);
+  float shadow = exp(-pow(sp.y / wide, 2.0)) * smoothstep(-uROut, 0.0, u) * exp(-max(u, 0.0) / len);
+  c *= 1.0 - mix(0.55, 0.92, uPhoto) * shadow;
   // caustica: macchia di luce concentrata dall'acqua dentro l'ombra, che vibra con la superficie
   float wob = 0.7 + 0.3 * sin(uTime * 1.7 + sp.y * 260.0) * sin(uTime * 1.1 + sp.x * 170.0);
   float core = exp(-pow(sp.y / (uROut * 0.16), 2.0) - pow((u - 0.03) / 0.028, 2.0));
   float halo = exp(-pow(sp.y / (uROut * 0.5), 2.0) - pow((u - 0.034) / 0.045, 2.0));
-  c += uCausticColor * uCaustic * (core * wob + halo * 0.2);
+  c += uCausticColor * uCaustic * (1.0 - 0.85 * uPhoto) * (core * wob + halo * 0.2);
   return c;
 }
 vec3 pe_wall(vec3 p) {
-  float far = exp(-(p.x * p.x) / (1.2 * 1.2)) * smoothstep(1.6, 0.0, p.y);
+  // (studio della foto: la parete resta illuminata anche in alto, come il fondale del render)
+  float far = exp(-(p.x * p.x) / (1.2 * 1.2)) * mix(smoothstep(1.6, 0.0, p.y), 0.9, uPhoto);
   return uBgLow * (0.4 + 0.6 * far) + uBgGlow * pe_glow(p);
 }
 vec3 pe_studio(vec3 p) {

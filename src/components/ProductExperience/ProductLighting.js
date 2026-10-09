@@ -6,7 +6,10 @@ import * as THREE from 'three'
   Ambiente (riflessi): uno studio nero con due strisce verticali alte dietro al bicchiere (i bordi del
   vetro si accendono, come nel "dark field" della still life), un softbox morbido dall'alto, la chiave
   davanti a sinistra e un riempimento debolissimo. Viene generato una volta sola con PMREM: niente
-  immagini HDR da scaricare.
+  immagini HDR da scaricare. Studio scuro del bicchiere renderizzato (tema con studio: 'scuro'): le
+  luci del render di Blender (sezione bicchiere/blender/bicchiere_3d.py), controluce alto dietro a
+  sinistra, softbox sopra, due bandiere scure ai lati, stanza grigio scuro con il piano chiaro. Li' si
+  riflettono capsule, compresse e misurino.
 
   Luci per gli oggetti opachi (misurino, polvere, capsula, compressa): chiave morbida, controluce
   che separa i bordi dal fondo (tinta col colore del prodotto) e una luce dall'alto.
@@ -34,14 +37,22 @@ void main() {
 }
 `
 const roomFragment = /* glsl */ `
+uniform vec3 uLow;
+uniform vec3 uHigh;
+uniform vec3 uFloor;
 varying vec3 vDir;
 void main() {
-  // stanza quasi nera: appena piu' chiara in alto, il pavimento piu' scuro
+  // stanza scura: appena piu' chiara in alto, il pavimento piu' scuro (chiara: pareti grigie, piano bianco)
   float y = vDir.y;
-  vec3 c = mix(vec3(0.004, 0.004, 0.005), vec3(0.03, 0.03, 0.034), smoothstep(-0.2, 0.9, y));
+  vec3 c = mix(uLow, uHigh, smoothstep(-0.2, 0.9, y)) + uFloor * smoothstep(0.0, -0.3, y);
   gl_FragColor = vec4(c, 1.0);
 }
 `
+/** Toni della stanza dell'ambiente: in basso, in alto, piano. */
+const ROOM = {
+  dark: { low: [0.004, 0.004, 0.005], high: [0.03, 0.03, 0.034], floor: [0, 0, 0] },
+  scuro: { low: [0.06, 0.06, 0.062], high: [0.035, 0.035, 0.037], floor: [0.5, 0.5, 0.5] },
+}
 
 /** Lato delle facce del cubo dell'ambiente (PMREM). */
 const ENV_SIZE = 256
@@ -50,17 +61,25 @@ export class ProductLighting {
   constructor(renderer) {
     this.renderer = renderer
     this.rigs = []
+    this.kind = 'dark'
     this.studio = this.buildStudio()
     this.pmrem = new THREE.PMREMGenerator(renderer)
   }
 
-  /** Lo studio che si riflette nel vetro: stanza quasi nera e pannelli luminosi. */
-  buildStudio() {
+  /** Lo studio che si riflette nel vetro: stanza (scura o chiara) e pannelli luminosi. */
+  buildStudio(kind = 'dark') {
     const scene = new THREE.Scene()
     const disposables = []
+    const tone = ROOM[kind] ?? ROOM.dark
+    const v3 = (a) => ({ value: new THREE.Vector3(...a) })
     const room = new THREE.Mesh(
       new THREE.SphereGeometry(10, 48, 24),
-      new THREE.ShaderMaterial({ vertexShader: roomVertex, fragmentShader: roomFragment, side: THREE.BackSide }),
+      new THREE.ShaderMaterial({
+        vertexShader: roomVertex,
+        fragmentShader: roomFragment,
+        side: THREE.BackSide,
+        uniforms: { uLow: v3(tone.low), uHigh: v3(tone.high), uFloor: v3(tone.floor) },
+      }),
     )
     scene.add(room)
     disposables.push(room.geometry, room.material)
@@ -76,6 +95,17 @@ export class ProductLighting {
       scene.add(mesh)
       disposables.push(mesh.geometry, mat)
       return mesh
+    }
+    if (kind !== 'dark') {
+      // controluce alto dietro a sinistra, softbox sopra, striscia davanti a sinistra (riflesso lungo
+      // sulla parete), striscia tenue dietro a destra, bandiere nere ai lati
+      panel(2.2, 2.2, 3.2, '#fffaf4', [-0.6, 3.2, -2.4], [0, 0, 0])
+      panel(3.0, 2.4, 1.4, '#ffffff', [0, 4.2, 0.6], [0, 0, 0])
+      panel(0.5, 4.0, 4.0, '#fff8f0', [-3.0, 1.2, 2.6], [0, 0.4, 0])
+      panel(0.3, 4.0, 2.0, '#f6f8ff', [2.6, 1.0, -2.6], [0, 0.5, 0])
+      panel(1.2, 4.0, 0, '#000000', [3.4, 1.0, 1.4], [0, 0.4, 0])
+      panel(1.2, 4.0, 0, '#000000', [-3.6, 1.0, -0.6], [0, 0.4, 0])
+      return { scene, disposables }
     }
     // strisce verticali alte dietro al bicchiere (bordi luminosi del vetro)
     panel(0.34, 5.2, 11, '#fffaf3', [-2.7, 1.2, -2.3], [0, 0.6, 0])
@@ -137,6 +167,21 @@ export class ProductLighting {
     this.defines = envDefines(this.envTexture)
   }
 
+  /**
+   * Rigenera l'ambiente per l'altro studio ('dark' o 'scuro'). Stessa misura, quindi stessi define:
+   * gli shader non si ricompilano, cambia solo envTexture. Pochi ms di GPU.
+   */
+  rebuild(kind) {
+    if (kind === this.kind || !this.envTarget) return false
+    this.kind = kind
+    this.studio = this.buildStudio(kind)
+    this.pmrem = new THREE.PMREMGenerator(this.renderer)
+    const old = this.envTarget
+    this.build()
+    old.dispose()
+    return true
+  }
+
   /** Lo studio serve solo a generare l'ambiente. */
   releaseStudio() {
     this.pmrem?.dispose()
@@ -173,11 +218,19 @@ export class ProductLighting {
     return new THREE.Vector3(-2.4, 1.9, 1.3).normalize()
   }
 
-  /** Controluce nel colore del prodotto (il resto dello studio resta neutro). */
-  setTheme(rimColor) {
+  /**
+   * Controluce nel colore del prodotto (il resto dello studio resta neutro). Nello studio chiaro i
+   * prodotti bianchi si modellano con la luce dall'alto: controluce piu' deboli.
+   */
+  setTheme(rimColor, kind = 'dark') {
+    const light = kind !== 'dark'
     for (const rig of this.rigs) {
       rig.rim.color.set(rimColor)
       rig.rim2.color.set(rimColor).lerp(new THREE.Color(0xffffff), 0.5)
+      rig.rim.intensity = light ? 0.6 : 1.8
+      rig.rim2.intensity = light ? 0.45 : 1.1
+      rig.top.intensity = light ? 0.9 : 0.45
+      rig.fill.intensity = light ? 0.5 : 0.3
     }
   }
 

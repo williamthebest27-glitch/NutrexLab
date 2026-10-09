@@ -22,7 +22,10 @@ uniform float uT;
 uniform float uTime;
 uniform float uWaterY;
 uniform float uRIn;
+uniform float uTaper;      // la parete si allarga verso l'alto (tronco di cono)
 uniform float uBase;
+uniform float uHeight;
+uniform float uGlassInside; // 1: bicchiere renderizzato (studio chiaro)
 uniform float uGravity;
 uniform float uDrag;
 uniform float uFlutter;
@@ -102,7 +105,7 @@ void main() {
     pos = vec3(xz.x, hit.y + (plunge.y - sink) * wet - 0.0004, xz.y) + drift;
     // dentro il bicchiere, sopra il fondo
     float r = length(pos.xz);
-    float rMax = uRIn - 0.0016;
+    float rMax = uRIn + uTaper * (pos.y - uWaterY) - 0.0016;
     if (r > rMax) pos.xz *= rMax / r;
     pos.y = clamp(pos.y, uBase + 0.0008, uWaterY - 0.0003);
     // dissoluzione graduale: ognuno con i suoi tempi, pochi restano sospesi
@@ -117,9 +120,14 @@ void main() {
   pos += vec3(sin(uTime * 0.83 + aSeed.x * 50.0), 0.6 * sin(uTime * 0.61 + aSeed.y * 50.0), cos(uTime * 0.71 + aSeed.z * 50.0))
          * (under > 0.5 ? 0.00035 : 0.00008) * uLive;
 
-  bool inWater = pos.y < uWaterY && length(pos.xz) < uRIn;
+  float rInHere = uRIn + uTaper * (pos.y - uWaterY);
+  bool inWater = pos.y < uWaterY && length(pos.xz) < rInHere;
+  // bicchiere renderizzato (uGlassInside): nello strato interno anche quello che sta nel bicchiere
+  // sopra l'acqua e appena sopra l'apertura (il bicchiere lo mostra sopra la sua immagine); lo strato
+  // posteriore resta com'e' e si vede dove il bicchiere non c'e'
+  bool inGlass = uGlassInside > 0.5 && pos.y < uHeight + 0.06 && length(pos.xz) < rInHere;
   #ifdef REGION_BELOW
-    if (!inWater) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; return; }
+    if (!inWater && !inGlass) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; return; }
   #else
     if (inWater) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; return; }
   #endif
@@ -166,6 +174,7 @@ uniform float uT;
 uniform float uTime;
 uniform float uWaterY;
 uniform float uRIn;
+uniform float uTaper;      // la parete si allarga verso l'alto (tronco di cono)
 uniform float uBase;
 uniform float uSwirl;
 uniform float uSink;
@@ -188,7 +197,7 @@ void main() {
   vec3 pos = vec3(xz.x, aStart.y - depth, xz.y) + drift;
   pos += vec3(sin(uTime * 0.37 + aSeed.x * 9.0), 0.4 * sin(uTime * 0.29 + aSeed.y * 9.0), cos(uTime * 0.33 + aSeed.z * 9.0)) * 0.0008;
   float r = length(pos.xz);
-  float rMax = uRIn - 0.004;
+  float rMax = uRIn + uTaper * (pos.y - uWaterY) - 0.004;
   if (r > rMax) pos.xz *= rMax / r;
   pos.y = clamp(pos.y, uBase + 0.004, uWaterY - 0.002);
   float dur = mix(uDissolve.x, uDissolve.y, aSeed.w);
@@ -239,6 +248,7 @@ uniform float uT;
 uniform float uTime;
 uniform float uWaterY;
 uniform float uRIn;
+uniform float uTaper;      // la parete si allarga verso l'alto (tronco di cono)
 uniform float uPixel;
 varying float vAlpha;
 void main() {
@@ -246,7 +256,7 @@ void main() {
   float rise = tau * (0.012 + 0.02 * aSeed.x);
   vec3 pos = aStart + vec3(sin(tau * 9.0 + aSeed.y * 30.0) * 0.0006, rise, cos(tau * 8.0 + aSeed.z * 30.0) * 0.0006);
   pos += vec3(sin(uTime * 7.0 + aSeed.x * 20.0), 0.0, cos(uTime * 6.0 + aSeed.y * 20.0)) * 0.00015;
-  bool alive = tau > 0.0 && pos.y < uWaterY - 0.0004 && length(pos.xz) < uRIn;
+  bool alive = tau > 0.0 && pos.y < uWaterY - 0.0004 && length(pos.xz) < uRIn + uTaper * (pos.y - uWaterY);
   if (!alive) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vAlpha = 0.0; return; }
   vec4 mv = viewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mv;

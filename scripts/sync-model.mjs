@@ -21,7 +21,8 @@ const files = [
   ['../../prodotti/Vitamina B12/web/barattolo.glb', 'vitamina-b12.glb'],
   ['../../prodotti/Vitamina C/web/barattolo.glb', 'vitamina-c.glb'],
   ['../../prodotti/Vitamina D3-K2/web/barattolo.glb', 'vitamina-d3-k2.glb'],
-  // sezione del bicchiere (Website/sezione bicchiere/blender/esperienza_3d.py, compressi Draco)
+  // sezione del bicchiere (Website/sezione bicchiere/blender: bicchiere_3d.py il bicchiere,
+  // esperienza_3d.py misurino, capsula e compressa; compressi Draco)
   ['../sezione bicchiere/web/glass.glb', 'nutrexlab/glass.glb'],
   ['../sezione bicchiere/web/scoop.glb', 'nutrexlab/scoop.glb'],
   ['../sezione bicchiere/web/capsule.glb', 'nutrexlab/capsule.glb'],
@@ -40,6 +41,23 @@ for (const [from, name] of files) {
   console.log(`[sync-model] ${name} aggiornato`)
 }
 
+// bicchiere renderizzato dello studio scuro (bicchiere_3d.py --impostor, blender/impostori_web.py):
+// un'immagine per inclinazione della camera, per computer e per telefoni (_m)
+const VETRO = ['scuro']
+for (const studio of VETRO) {
+  const srcDir = resolve(root, '../sezione bicchiere/web/vetro', studio)
+  if (!existsSync(srcDir)) continue
+  const dstDir = resolve(root, 'public/models/nutrexlab/vetro', studio)
+  mkdirSync(dstDir, { recursive: true })
+  for (const f of readdirSync(srcDir).filter((f) => f.endsWith('.webp'))) {
+    const src = resolve(srcDir, f)
+    const dst = resolve(dstDir, f)
+    if (existsSync(dst) && statSync(dst).mtimeMs >= statSync(src).mtimeMs) continue
+    copyFileSync(src, dst)
+    console.log(`[sync-model] nutrexlab/vetro/${studio}/${f} aggiornato`)
+  }
+}
+
 // versione di ogni modello (hash del contenuto) per src/products.js e il precaricamento in index.html:
 // l'indirizzo del file cambia solo quando cambia il barattolo, cosi' il browser non mostra mai
 // un modello vecchio rimasto in cache (e quelli invariati restano in cache).
@@ -50,6 +68,14 @@ for (const dir of ['', 'nutrexlab/']) {
   if (!existsSync(abs)) continue
   for (const f of readdirSync(abs).filter((f) => f.endsWith('.glb')).sort()) {
     versions[dir + f.slice(0, -4)] = createHash('sha1').update(readFileSync(resolve(abs, f))).digest('hex').slice(0, 10)
+  }
+}
+// (immagini del bicchiere renderizzato: chiave con cartella ed estensione, es. "nutrexlab/vetro/scuro/vetro_e12.webp")
+for (const studio of VETRO) {
+  const abs = resolve(root, 'public/models/nutrexlab/vetro', studio)
+  if (!existsSync(abs)) continue
+  for (const f of readdirSync(abs).filter((f) => f.endsWith('.webp')).sort()) {
+    versions[`nutrexlab/vetro/${studio}/${f}`] = createHash('sha1').update(readFileSync(resolve(abs, f))).digest('hex').slice(0, 10)
   }
 }
 const versionsFile = resolve(root, 'src/model-versions.json')

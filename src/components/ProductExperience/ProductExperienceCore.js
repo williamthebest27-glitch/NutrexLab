@@ -469,6 +469,7 @@ export class ProductExperience {
         if (this.destroyed) return
         // contesto WebGL, gia' alla misura dello stage (cambiarla dopo fa aspettare la GPU)
         const scene = new ProductScene(this.canvas, this.quality, this.stageSize())
+        scene.resolveUrl = (file) => this.modelUrl(file) // (immagini del bicchiere renderizzato)
         this.canvas.addEventListener('webglcontextlost', (e) => {
           e.preventDefault()
           if (!this.destroyed) this.useFallback()

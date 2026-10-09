@@ -227,7 +227,8 @@ function ritualOptions(p) {
     aside: p.maintenance ?? 0,
     productName: p.name,
     productNote: p.note,
-    theme: themeFromSite(p.theme),
+    // studio scuro: il bicchiere e' il render di Blender (sezione bicchiere/blender/bicchiere_3d.py)
+    theme: themeFromSite(p.theme, { studio: 'scuro' }),
     copy: { ...own, ...(benefits ? { benefits } : {}), pins: { ...pins, ...(own.pins ?? {}) } },
     // immagine statica con i colori del prodotto (senza WebGL e mentre la scena 3D si carica)
     poster: (layout) => `/images/nutrexlab/esperienza-${p.id}${layout === 'mobile' ? '-mobile' : ''}.webp`,

@@ -74,14 +74,17 @@ void main() {
   vec4 ins = texture2D(tInside, clamp(pe_uv(P + T * 0.012), vec2(0.002), vec2(0.998)));
 
   // sotto: fondo del bicchiere e pavimento, oppure la parete se il raggio la incontra prima
-  float tb = (uBase - P.y) / min(T.y, -1e-4);
+  vec3 Nb;
+  float tb = pe_bowl(P, T, Nb);
   vec3 B = P + T * tb;
   vec3 deep;
   float depth = tb;
-  if (length(B.xz) < uRIn) {
-    vec3 T3 = refract(T, vec3(0.0, 1.0, 0.0), 1.333 / 1.5);
-    vec3 Fl = B + T3 * (B.y / max(-T3.y, 0.05));
-    deep = pe_floor(Fl) * 0.85 + pe_env(reflect(T, vec3(0.0, 1.0, 0.0)), 0.2) * 0.02;
+  if (length(B.xz) < pe_rIn(B.y)) {
+    // fondo interno a coppa, fondo pieno, pavimento (o l'incavo sotto il fondo)
+    vec3 T3 = refract(T, Nb, 1.333 / 1.5);
+    float tir;
+    vec3 Fl = pe_bottomSeen(B, T3, tir);
+    deep = pe_floor(Fl) * (0.85 - 0.5 * tir) + pe_env(reflect(T, Nb), 0.2) * 0.02;
   } else {
     float tw = pe_cylOut(P, T, uRIn);
     depth = tw;
