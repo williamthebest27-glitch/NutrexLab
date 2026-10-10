@@ -11,9 +11,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/** La pagina "Grazie" del negozio per questo ordine. */
+/** La pagina "Grazie" del negozio per questo ordine (nella lingua della pagina di pagamento). */
 function nutrex_headless_thanks_url( $order ) {
-	return add_query_arg( 'numero', rawurlencode( $order->get_order_number() ), nutrex_headless_shop_url( '/ordine' ) );
+	return nutrex_headless_lang_url( add_query_arg( 'numero', rawurlencode( $order->get_order_number() ), nutrex_headless_shop_url( '/ordine' ) ) );
 }
 
 /**
@@ -56,7 +56,7 @@ add_action(
 		printf(
 			'<p class="nutrex-headless-return"><a class="button" href="%s">%s</a></p>',
 			esc_url( nutrex_headless_thanks_url( $order ) ),
-			esc_html__( 'Torna su Nutrex Lab', 'nutrex-headless' )
+			esc_html( nutrex_headless_t( 'Torna su Nutrex Lab' ) )
 		);
 	},
 	5

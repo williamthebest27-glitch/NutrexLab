@@ -105,6 +105,174 @@ body.nutrex-look :is(h1, h2, h3, h4, legend, input, select, textarea, button) {
   stroke-width: 1.6;
 }
 
+.nx-top__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* lingua (includes/i18n.php): pillola con bandiera e sigla, tendina con le cinque lingue, come sul sito */
+.nx-lang {
+  position: relative;
+}
+
+body.nutrex-look .nx-lang__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  margin: 0;
+  padding: 0 12px 0 10px;
+  border: 1px solid rgba(14, 12, 17, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--nx-ink);
+  box-shadow: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 0.4s ease,
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.nutrex-look .nx-lang__btn:hover,
+body.nutrex-look .nx-lang__btn:focus-visible {
+  border-color: rgba(14, 12, 17, 0.4);
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--nx-ink);
+}
+
+.nx-lang__btn:active {
+  transform: scale(0.96);
+}
+
+.nx-lang.is-busy .nx-lang__btn {
+  opacity: 0.6;
+}
+
+.nx-lang__flag {
+  flex: none;
+  width: 22px;
+  height: 15px;
+  clip-path: inset(0 round 3px);
+}
+
+.nx-lang__code {
+  font: 500 12px/1 var(--nx-mono);
+  letter-spacing: 0.14em;
+}
+
+.nx-lang__chev {
+  width: 9px;
+  height: 6px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nx-lang.is-open .nx-lang__chev {
+  transform: rotate(180deg);
+}
+
+.nx-lang__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  width: 220px;
+  padding-top: 10px;
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0s linear 0.32s;
+}
+
+.nx-lang.is-open .nx-lang__menu {
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.nx-lang__card {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 7px;
+  list-style: none;
+  border: 1px solid rgba(14, 12, 17, 0.11);
+  border-radius: 20px;
+  background: rgba(241, 240, 243, 0.92);
+  box-shadow:
+    0 30px 60px -30px rgba(14, 12, 17, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  backdrop-filter: blur(18px) saturate(1.35);
+  opacity: 0;
+  transform: translateY(-10px) scale(0.96);
+  transform-origin: 100% 0;
+  transition:
+    opacity 0.28s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nx-lang.is-open .nx-lang__card {
+  opacity: 1;
+  transform: none;
+}
+
+.nx-lang__card li {
+  margin: 0;
+  padding: 0;
+}
+
+body.nutrex-look a.nx-lang__opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  color: var(--nx-ink);
+  font: 450 17px/1.1 var(--nx-sans);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.35s ease;
+}
+
+.nx-lang__opt .nx-lang__flag {
+  width: 26px;
+  height: 18px;
+}
+
+body.nutrex-look a.nx-lang__opt:hover,
+body.nutrex-look a.nx-lang__opt:focus-visible {
+  outline: none;
+  background: rgba(14, 12, 17, 0.07);
+  color: var(--nx-ink);
+}
+
+body.nutrex-look a.nx-lang__opt.is-on {
+  font-weight: 650;
+}
+
+/* la lingua attiva: il punto del colore di Nutrex */
+.nx-lang__opt.is-on::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--nx-berry);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-lang__card {
+    transform: none !important;
+  }
+}
+
 .nx-main {
   padding-top: clamp(28px, 4vw, 56px);
   padding-bottom: clamp(48px, 6vw, 88px);
@@ -876,5 +1044,60 @@ body.nutrex-look .nxa-promemoria__accedi {
 
   .nx-top__safe {
     font-size: 11px;
+  }
+
+  .nx-top__right {
+    gap: 12px;
+  }
+
+  /* telefono: solo la bandiera in un cerchio, come sul sito */
+  body.nutrex-look .nx-lang__btn {
+    justify-content: center;
+    width: 38px;
+    padding: 0;
+  }
+
+  .nx-lang__btn .nx-lang__code,
+  .nx-lang__btn .nx-lang__chev {
+    display: none;
+  }
+
+  .nx-lang__btn .nx-lang__flag {
+    width: 20px;
+    height: 14px;
+  }
+
+  .nx-lang__menu {
+    width: 190px;
+  }
+}
+
+/* telefoni stretti: logo, "pagamento sicuro" e lingua in una riga in tutte le lingue */
+@media (max-width: 400px) {
+  .nx-top,
+  .nx-top__right {
+    gap: 10px;
+  }
+
+  .nx-top__logo img {
+    width: 108px;
+  }
+
+  .nx-top__safe {
+    gap: 6px;
+    letter-spacing: 0.06em;
+  }
+}
+
+/* schermi piccolissimi: il lucchetto senza la scritta */
+@media (max-width: 359px) {
+  .nx-top__safe {
+    font-size: 0;
+    letter-spacing: 0;
+  }
+
+  .nx-top__safe svg {
+    width: 18px;
+    height: 18px;
   }
 }

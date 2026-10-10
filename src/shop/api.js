@@ -52,6 +52,6 @@ export const api = {
   review: (review) => call('/api/recensioni', { method: 'POST', body: review }),
   /** messaggio della pagina Contatti (arriva a info@nutrexlab.it) */
   contact: (message) => call('/api/contatto', { method: 'POST', body: message }),
-  /** indirizzo del checkout di WooCommerce con i prodotti del carrello */
-  checkoutUrl: () => call('/api/checkout', { method: 'POST', body: {} }),
+  /** indirizzo del checkout di WooCommerce con i prodotti del carrello, nella lingua del sito */
+  checkoutUrl: (lang) => call('/api/checkout', { method: 'POST', body: { lang } }),
 }

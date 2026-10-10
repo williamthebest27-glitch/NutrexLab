@@ -174,9 +174,30 @@ thedoubletwenty.
 - Chi ha un account lo usa dall'area clienti Nutrex (`/account` su nutrexlab.it); al pagamento chi non ha fatto
   l'accesso vede il promemoria "Registrati e risparmi un ulteriore 5% sul primo ordine" e il link "Accedi",
   che riportano al pagamento.
+- Pagamento, "Ordine ricevuto" e area clienti sono nella lingua scelta sul sito (italiano, inglese, francese,
+  tedesco, spagnolo); in alto c'e' la stessa scelta della lingua del sito (bandiera e tendina). Vedi "Lingue".
 
 ## Da sapere
 
+- **Lingue** (plugin 2.4): "Procedi al pagamento" e i link del sito a `/account` portano la lingua del sito
+  (`nutrex_lang=de` nell'indirizzo di thedoubletwenty); da li' resta nel cookie `nutrex_lang` di thedoubletwenty
+  e in alto nella pagina si cambia con la bandiera. Solo le pagine Nutrex (pagamento, "Ordine ricevuto", "Paga
+  l'ordine", area clienti) e le richieste che fanno cambiano lingua: il resto di thedoubletwenty e la bacheca
+  restano in italiano. I link verso nutrexlab.it (carrello, "Torna su Nutrex Lab", termini, privacy, `/ordine`
+  dopo il pagamento) portano `?lang=`, cosi' il sito resta nella stessa lingua.
+  - Testi di WooCommerce, dei metodi di pagamento e di WordPress (campi, spedizione, "Effettua ordine",
+    ordini, indirizzi...): arrivano dai loro **pacchetti di lingua**, che devono essere installati su
+    thedoubletwenty per inglese (en_GB; senza, l'inglese di base), francese (fr_FR), tedesco (de_DE) e spagnolo
+    (es_ES): Impostazioni > Generali > Lingua del sito, scegli la lingua e salva (il pacchetto si scarica), poi
+    rimetti Italiano e salva; infine Bacheca > Aggiornamenti > "Aggiorna le traduzioni" scarica quelli di
+    WooCommerce e dei plugin. Senza pacchetto quei testi si vedono in inglese.
+  - Testi del plugin (titoli, promemoria del 5%, registrazione, area "invita un amico", errori):
+    `wordpress/nutrex-headless/lang/<lingua>.json`, la chiave e' il testo italiano (`npm test` controlla che
+    ogni testo abbia la traduzione in tutte le lingue, con gli stessi segnaposto).
+  - Restano come scritti nel pannello di WooCommerce (quindi in italiano) i nomi dati a mano a metodi di
+    pagamento e spedizioni (es. "Bonifico bancario", "Spedizione gratuita").
+  - Le **email** restano in italiano come prima (anche quelle partite durante un pagamento in un'altra lingua):
+    i testi delle email Nutrex sono in italiano e un'email non mescola mai due lingue.
 - **Coupon**: si creano in WooCommerce > Marketing > Coupon. Un coupon senza limiti vale su entrambi i
   negozi; per limitarlo a Nutrex: Restrizioni di utilizzo > Categorie prodotto = Nutrex Lab.
 - **Offerte quantita'** (2 pezzi -5%, 4 pezzi -10%, 10 pezzi -15%): le applica WooCommerce nel carrello
@@ -230,6 +251,8 @@ thedoubletwenty.
 | Il modulo contatti dice "Invio non riuscito" | plugin non aggiornato, oppure la posta non parte (vedi "Stato" nelle impostazioni) |
 | Nell'importazione la colonna "Slug" non e' abbinata | plugin precedente alla 2.1: aggiornalo e ripeti l'importazione (senza, lo slug viene dal nome e il prodotto perde colori e link 3D del sito) |
 | Un prezzo cambiato non si vede subito | cache di qualche secondo (al massimo un minuto): nel carrello e nel checkout e' gia' quello nuovo |
+| Pagamento o area clienti in un'altra lingua con alcuni testi in inglese | manca il pacchetto di lingua di WordPress o WooCommerce per quella lingua (vedi "Lingue" in "Da sapere") |
+| Pagamento o area clienti sempre in italiano | plugin precedente alla 2.4, oppure la pagina e' rimasta nella cache di thedoubletwenty o di Cloudflare (deve essere esclusa: la pagina e' diversa per ogni cliente) |
 | Su Google compaiono pagine di thedoubletwenty per i prodotti o le categorie Nutrex | plugin precedente alla 2.3.2 (passaggio temporaneo 302): aggiornalo; Google sposta le pagine su nutrexlab.it in qualche settimana |
 
 ## Sviluppo in locale
@@ -280,7 +303,7 @@ automatiche del codice del server (senza WooCommerce).
 | Codice del server | `server/`: `woo.js` (Store API), `catalog.js` (prodotti e categoria del negozio, correlati, recensioni), `cart.js`, `checkout.js`, `product-page.js`, `plugin.js` (chiamate al plugin), `contact.js`, `reviews.js`, `session.js` (cookie del carrello), `http.js`, `errors.js` (messaggi per il cliente), `env.js` (variabili) |
 | Indirizzi | `vercel.json`: `/prodotto/<slug>` -> `api/product-page`, `/sitemap.xml` -> `api/sitemap`; in locale lo stesso lo fa `vite.config.js` |
 | Browser | `src/shop/` (`api.js`, `cart.js` carrello condiviso tra le schede, `card.js` scheda prodotto, `config.js` recapiti, offerte quantita' e metodi di pagamento, `money.js`, `themes.js` colori per slug), `src/pages/` (script delle pagine) |
-| Plugin WordPress | `wordpress/nutrex-headless/`: `includes/separation.php` (negozi separati), `checkout-page.php` (pagina di pagamento Nutrex), `checkout-look.php` (cornice Nutrex, senza menu e stili del sito ospite), `checkout-handoff.php` (dal carrello del sito), `frontend-links.php`, `emails.php` + `email-look.php` + `templates/emails/` (email Nutrex), `mail.php` (invio da info@nutrexlab.it), `contact.php`, `reviews.php`, `account.php` (area clienti: sconto primo ordine, invita un amico), `settings.php`, `import.php`; `templates/emails/nutrex-account.php` (email di account) |
+| Plugin WordPress | `wordpress/nutrex-headless/`: `includes/separation.php` (negozi separati), `checkout-page.php` (pagina di pagamento Nutrex), `checkout-look.php` (cornice Nutrex, senza menu e stili del sito ospite), `checkout-handoff.php` (dal carrello del sito), `frontend-links.php`, `emails.php` + `email-look.php` + `templates/emails/` (email Nutrex), `mail.php` (invio da info@nutrexlab.it), `contact.php`, `reviews.php`, `account.php` (area clienti: sconto primo ordine, invita un amico), `i18n.php` (lingue di pagamento e area clienti, scelta della lingua; traduzioni in `lang/`), `settings.php`, `import.php`; `templates/emails/nutrex-account.php` (email di account) |
 | WooCommerce di prova | `wordpress/sviluppo/` |
 | Prove automatiche | `tests/` (`npm test`) |
 
@@ -290,7 +313,7 @@ background) e 10 s in memoria nella funzione, pagina prodotto 120 s (prezzi e sc
 sitemap 1 ora, carrello mai. La cache di SiteGround su thedoubletwenty teneva le letture dei prodotti per ore:
 le richieste del negozio hanno un parametro `_nx` sempre diverso che la salta (`server/woo.js`).
 
-Il passaggio al pagamento porta a `WOOCOMMERCE_URL/?nutrex-checkout=1&items=<id>:<quantita>,...&coupons=...`:
+Il passaggio al pagamento porta a `WOOCOMMERCE_URL/?nutrex-checkout=1&items=<id>:<quantita>,...&coupons=...&nutrex_lang=<lingua>`:
 il plugin mette da parte l'eventuale carrello di thedoubletwenty del visitatore (torna com'era alla sua
 prima pagina di thedoubletwenty), mette nel carrello gli stessi prodotti (solo della categoria Nutrex) e
 coupon e apre la pagina di pagamento Nutrex. I prezzi non passano dall'indirizzo: li calcola WooCommerce.

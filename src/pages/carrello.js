@@ -4,7 +4,7 @@ import { api } from '../shop/api.js'
 import { cart } from '../shop/cart.js'
 import { money } from '../shop/money.js'
 import { colorVars, productUrl, pieces, esc } from '../shop/themes.js'
-import { t, onLang } from '../i18n/index.js'
+import { t, onLang, lang } from '../i18n/index.js'
 import { localizeCartItem, localizeProduct } from '../i18n/data.js'
 
 /*
@@ -217,7 +217,7 @@ checkoutBtn.addEventListener('click', async () => {
   label.textContent = t('Ti porto al pagamento…')
   checkoutMsg.textContent = ''
   try {
-    const { url } = await api.checkoutUrl()
+    const { url } = await api.checkoutUrl(lang())
     window.location.assign(url)
   } catch (err) {
     checkoutBtn.classList.remove('is-busy')

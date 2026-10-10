@@ -241,7 +241,7 @@ function nutrex_headless_account_redirect( $redirect ) {
 		return get_permalink( nutrex_headless_checkout_page_id() );
 	}
 	if ( 'carrello' === $torna ) {
-		return nutrex_headless_shop_url( '/carrello' );
+		return nutrex_headless_lang_url( nutrex_headless_shop_url( '/carrello' ) );
 	}
 	return nutrex_headless_account_url();
 }
@@ -438,17 +438,17 @@ add_action(
 		}
 		$cfg = nutrex_headless_account_config();
 		echo '<div class="nxa-vantaggio">'
-			. '<span class="nxa-vantaggio__label">Il tuo vantaggio</span>'
+			. '<span class="nxa-vantaggio__label">' . esc_html( nutrex_headless_t( 'Il tuo vantaggio' ) ) . '</span>'
 			. '<strong class="nxa-vantaggio__num">&minus;' . esc_html( nutrex_headless_pct( $cfg['sconto_membri'] ) ) . '%</strong>'
-			. '<span class="nxa-vantaggio__testo">Sul tuo primo ordine: si applica da solo al pagamento.</span>'
+			. '<span class="nxa-vantaggio__testo">' . esc_html( nutrex_headless_t( 'Sul tuo primo ordine: si applica da solo al pagamento.' ) ) . '</span>'
 			. '</div>';
 		if ( nutrex_headless_codice_invito_corrente() ) {
-			echo '<p class="nxa-invitato"><span aria-hidden="true">&#10003;</span> Hai ricevuto un invito: registrandoti, chi ti ha invitato riceve un bonus del '
-				. esc_html( nutrex_headless_pct( $cfg['bonus_amico'] ) ) . '%.</p>';
+			echo '<p class="nxa-invitato"><span aria-hidden="true">&#10003;</span> '
+				. esc_html( nutrex_headless_t( 'Hai ricevuto un invito: registrandoti, chi ti ha invitato riceve un bonus del {n}%.', array( 'n' => nutrex_headless_pct( $cfg['bonus_amico'] ) ) ) ) . '</p>';
 		}
 		$campi = array(
-			'nutrex_nome'    => array( 'Nome', 'given-name', 'form-row-first' ),
-			'nutrex_cognome' => array( 'Cognome', 'family-name', 'form-row-last' ),
+			'nutrex_nome'    => array( nutrex_headless_t( 'Nome' ), 'given-name', 'form-row-first' ),
+			'nutrex_cognome' => array( nutrex_headless_t( 'Cognome' ), 'family-name', 'form-row-last' ),
 		);
 		foreach ( $campi as $nome => $c ) {
 			echo '<p class="woocommerce-form-row form-row ' . esc_attr( $c[2] ) . '">'
@@ -470,21 +470,26 @@ add_action(
 		$cfg    = nutrex_headless_account_config();
 		$codice = isset( $_POST['nutrex_ref'] ) ? sanitize_text_field( wp_unslash( $_POST['nutrex_ref'] ) ) : nutrex_headless_codice_invito_corrente(); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		echo '<p class="woocommerce-form-row form-row form-row-wide">'
-			. '<label for="reg_nutrex_password2">Conferma password&nbsp;<span class="required" aria-hidden="true">*</span></label>'
+			. '<label for="reg_nutrex_password2">' . esc_html( nutrex_headless_t( 'Conferma password' ) ) . '&nbsp;<span class="required" aria-hidden="true">*</span></label>'
 			. '<input type="password" class="woocommerce-Input woocommerce-Input--text input-text" name="nutrex_password2" id="reg_nutrex_password2" autocomplete="new-password" required aria-required="true" />'
 			. '</p>';
 		echo '<p class="woocommerce-form-row form-row form-row-wide nxa-codice-amico">'
-			. '<label for="reg_nutrex_ref">Codice amico&nbsp;<span class="optional">(facoltativo)</span></label>'
+			. '<label for="reg_nutrex_ref">' . esc_html( nutrex_headless_t( 'Codice amico' ) ) . '&nbsp;<span class="optional">' . esc_html( nutrex_headless_t( '(facoltativo)' ) ) . '</span></label>'
 			. '<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="nutrex_ref" id="reg_nutrex_ref"'
 			. ' value="' . esc_attr( $codice ) . '" placeholder="' . esc_attr( $cfg['prefisso'] ) . 'XXXXX" maxlength="16"'
 			. ' autocomplete="off" autocapitalize="characters" spellcheck="false" />'
-			. '<span class="nxa-codice-amico__nota">Chi ti ha dato il codice riceve un bonus del ' . esc_html( nutrex_headless_pct( $cfg['bonus_amico'] ) ) . '% appena ti registri.</span>'
+			. '<span class="nxa-codice-amico__nota">' . esc_html( nutrex_headless_t( 'Chi ti ha dato il codice riceve un bonus del {n}% appena ti registri.', array( 'n' => nutrex_headless_pct( $cfg['bonus_amico'] ) ) ) ) . '</span>'
 			. '</p>';
 		echo '<p class="form-row nxa-privacy">'
 			. '<label class="woocommerce-form__label woocommerce-form__label-for-checkbox">'
 			. '<input type="checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox" name="nutrex_privacy" value="1"' . checked( ! empty( $_POST['nutrex_privacy'] ), true, false ) . ' required aria-required="true" /> ' // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			. '<span>Ho letto e accetto la <a href="' . esc_url( nutrex_headless_shop_url( '/privacy-policy' ) ) . '" target="_blank" rel="noopener">Privacy Policy</a>'
-			. ' e i <a href="' . esc_url( nutrex_headless_shop_url( '/termini-e-condizioni' ) ) . '" target="_blank" rel="noopener">Termini e condizioni</a> di Nutrex Lab.'
+			. '<span>' . nutrex_headless_t(
+				'Ho letto e accetto la {privacy} e i {termini} di Nutrex Lab.',
+				array(
+					'privacy' => '<a href="' . esc_url( nutrex_headless_lang_url( nutrex_headless_shop_url( '/privacy-policy' ) ) ) . '" target="_blank" rel="noopener">' . esc_html( nutrex_headless_t( 'Privacy Policy' ) ) . '</a>',
+					'termini' => '<a href="' . esc_url( nutrex_headless_lang_url( nutrex_headless_shop_url( '/termini-e-condizioni' ) ) ) . '" target="_blank" rel="noopener">' . esc_html( nutrex_headless_t( 'Termini e condizioni' ) ) . '</a>',
+				)
+			)
 			. '&nbsp;<span class="required" aria-hidden="true">*</span></span>'
 			. '</label></p>';
 		echo '<input type="hidden" name="nutrex_account" value="1" />';
@@ -519,22 +524,22 @@ add_filter(
 		}
 		$messaggi = array();
 		if ( '' === nutrex_headless_postato( 'nutrex_nome' ) ) {
-			$messaggi[] = '<strong>Nome</strong>: scrivi il tuo nome.';
+			$messaggi[] = nutrex_headless_t( '<strong>Nome</strong>: scrivi il tuo nome.' );
 		}
 		if ( '' === nutrex_headless_postato( 'nutrex_cognome' ) ) {
-			$messaggi[] = '<strong>Cognome</strong>: scrivi il tuo cognome.';
+			$messaggi[] = nutrex_headless_t( '<strong>Cognome</strong>: scrivi il tuo cognome.' );
 		}
 		$p1 = isset( $_POST['password'] ) ? (string) wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$p2 = isset( $_POST['nutrex_password2'] ) ? (string) wp_unslash( $_POST['nutrex_password2'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( $p1 !== $p2 ) {
-			$messaggi[] = '<strong>Password</strong>: le due password non coincidono.';
+			$messaggi[] = nutrex_headless_t( '<strong>Password</strong>: le due password non coincidono.' );
 		}
 		$scritto = trim( nutrex_headless_postato( 'nutrex_ref' ) );
 		if ( '' !== $scritto && ! nutrex_headless_utente_da_codice( $scritto ) ) {
-			$messaggi[] = '<strong>Codice amico</strong>: &laquo;' . esc_html( nutrex_headless_pulisci_codice( $scritto ) ) . '&raquo; non esiste. Controllalo, oppure lascia vuoto il campo.';
+			$messaggi[] = nutrex_headless_t( '<strong>Codice amico</strong>: &laquo;{codice}&raquo; non esiste. Controllalo, oppure lascia vuoto il campo.', array( 'codice' => esc_html( nutrex_headless_pulisci_codice( $scritto ) ) ) );
 		}
 		if ( empty( $_POST['nutrex_privacy'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$messaggi[] = 'Per creare l&rsquo;account accetta la <strong>Privacy Policy</strong> e i <strong>Termini e condizioni</strong>.';
+			$messaggi[] = nutrex_headless_t( 'Per creare l&rsquo;account accetta la <strong>Privacy Policy</strong> e i <strong>Termini e condizioni</strong>.' );
 		}
 		if ( $messaggi ) {
 			$errori->add( 'nutrex_registrazione', implode( '<br>', $messaggi ) );
@@ -811,20 +816,20 @@ add_filter(
 		}
 		if ( nutrex_headless_e_membri( $coupon->get_code() ) ) {
 			if ( ! is_user_logged_in() ) {
-				throw new Exception( 'Lo sconto del primo ordine è riservato a chi ha un account Nutrex Lab: accedi o registrati.', 100 );
+				throw new Exception( nutrex_headless_t( 'Lo sconto del primo ordine è riservato a chi ha un account Nutrex Lab: accedi o registrati.' ), 100 );
 			}
 			if ( ! nutrex_headless_primo_ordine_libero( get_current_user_id() ) ) {
-				throw new Exception( 'Lo sconto per chi si registra vale sul primo ordine, e l&rsquo;hai già usato.', 100 );
+				throw new Exception( nutrex_headless_t( 'Lo sconto per chi si registra vale sul primo ordine, e l&rsquo;hai già usato.' ), 100 );
 			}
 			return $valido;
 		}
 		$proprietario = nutrex_headless_proprietario_bonus( $coupon );
 		if ( get_current_user_id() !== $proprietario ) {
-			throw new Exception( 'Questo bonus appartiene a un altro account.', 100 );
+			throw new Exception( nutrex_headless_t( 'Questo bonus appartiene a un altro account.' ), 100 );
 		}
 		foreach ( WC()->cart->get_applied_coupons() as $altro ) {
 			if ( strtolower( $altro ) !== strtolower( $coupon->get_code() ) && nutrex_headless_proprietario_bonus( $altro ) ) {
-				throw new Exception( 'Puoi usare un solo bonus amico per ordine: gli altri restano per i prossimi.', 100 );
+				throw new Exception( nutrex_headless_t( 'Puoi usare un solo bonus amico per ordine: gli altri restano per i prossimi.' ), 100 );
 			}
 		}
 		return $valido;
@@ -909,10 +914,10 @@ add_filter(
 			return $etichetta;
 		}
 		if ( nutrex_headless_e_membri( $coupon->get_code() ) ) {
-			return 'Sconto primo ordine &minus;' . nutrex_headless_pct( $coupon->get_amount() ) . '%';
+			return nutrex_headless_t( 'Sconto primo ordine &minus;{n}%', array( 'n' => nutrex_headless_pct( $coupon->get_amount() ) ) );
 		}
 		if ( nutrex_headless_proprietario_bonus( $coupon ) ) {
-			return 'Bonus amico &minus;' . nutrex_headless_pct( $coupon->get_amount() ) . '%';
+			return nutrex_headless_t( 'Bonus amico &minus;{n}%', array( 'n' => nutrex_headless_pct( $coupon->get_amount() ) ) );
 		}
 		return $etichetta;
 	},
@@ -970,8 +975,14 @@ add_action(
 		}
 		$cfg = nutrex_headless_account_config();
 		nutrex_headless_intestazione(
-			'Accedi o crea il tuo account',
-			'Con un account hai il ' . nutrex_headless_pct( $cfg['sconto_membri'] ) . '% sul primo ordine e un link personale per invitare i tuoi amici: per ognuno che si registra, un bonus del ' . nutrex_headless_pct( $cfg['bonus_amico'] ) . '% per te.'
+			nutrex_headless_t( 'Accedi o crea il tuo account' ),
+			nutrex_headless_t(
+				'Con un account hai il {m}% sul primo ordine e un link personale per invitare i tuoi amici: per ognuno che si registra, un bonus del {b}% per te.',
+				array(
+					'm' => nutrex_headless_pct( $cfg['sconto_membri'] ),
+					'b' => nutrex_headless_pct( $cfg['bonus_amico'] ),
+				)
+			)
 		);
 	},
 	5
@@ -982,7 +993,7 @@ foreach ( array( 'woocommerce_before_lost_password_form', 'woocommerce_before_lo
 		$nutrex_headless_hook,
 		function () {
 			if ( nutrex_headless_on_account_page() ) {
-				nutrex_headless_intestazione( 'Password dimenticata?' );
+				nutrex_headless_intestazione( nutrex_headless_t( 'Password dimenticata?' ) );
 			}
 		},
 		5
@@ -993,7 +1004,7 @@ add_action(
 	'woocommerce_before_reset_password_form',
 	function () {
 		if ( nutrex_headless_on_account_page() ) {
-			nutrex_headless_intestazione( 'Scegli una nuova password' );
+			nutrex_headless_intestazione( nutrex_headless_t( 'Scegli una nuova password' ) );
 		}
 	},
 	5
@@ -1010,11 +1021,11 @@ add_action(
 		if ( '' === $endpoint ) {
 			$utente = wp_get_current_user();
 			$nome   = $utente->first_name ? $utente->first_name : $utente->display_name;
-			nutrex_headless_intestazione( $nome ? 'Ciao, ' . $nome : 'Ciao!' );
+			nutrex_headless_intestazione( $nome ? nutrex_headless_t( 'Ciao, {nome}', array( 'nome' => $nome ) ) : nutrex_headless_t( 'Ciao!' ) );
 			return;
 		}
 		$titolo = WC()->query->get_endpoint_title( $endpoint );
-		nutrex_headless_intestazione( $titolo ? wp_strip_all_tags( $titolo ) : 'Il tuo account' );
+		nutrex_headless_intestazione( $titolo ? wp_strip_all_tags( $titolo ) : nutrex_headless_t( 'Il tuo account' ) );
 	},
 	5
 );
@@ -1026,7 +1037,7 @@ add_filter(
 			return $voci;
 		}
 		if ( isset( $voci['dashboard'] ) ) {
-			$voci['dashboard'] = 'Il tuo account';
+			$voci['dashboard'] = nutrex_headless_t( 'Il tuo account' );
 		}
 		unset( $voci['downloads'] );
 		return $voci;
@@ -1105,69 +1116,85 @@ function nutrex_headless_dashboard() {
 	$totale = ( $primo ? $cfg['sconto_membri'] : 0 ) + ( $liberi ? $cfg['bonus_amico'] : 0 );
 	$m      = nutrex_headless_pct( $cfg['sconto_membri'] );
 	$b      = nutrex_headless_pct( $cfg['bonus_amico'] );
-	$reg    = 1 === $amici['registrati'] ? '1 amico registrato' : $amici['registrati'] . ' amici registrati';
+	$reg    = nutrex_headless_tp( $amici['registrati'], '{n} amico registrato', '{n} amici registrati', array( 'n' => number_format_i18n( $amici['registrati'] ) ) );
 
 	echo '<div class="nxa-dash">';
 	if ( (int) get_user_meta( $uid, 'nutrex_headless_benvenuto', true ) ) {
 		delete_user_meta( $uid, 'nutrex_headless_benvenuto' );
 		echo '<div class="nxa-benvenuto" role="status"><span class="nxa-benvenuto__segno" aria-hidden="true">&#10003;</span>'
-			. '<div><strong>Benvenuto in Nutrex Lab.</strong><span>'
-			. ( $primo ? 'Il tuo sconto del ' . esc_html( $m ) . '% sul primo ordine è attivo: si applica da solo al pagamento.' : 'Il tuo account è pronto.' )
+			. '<div><strong>' . esc_html( nutrex_headless_t( 'Benvenuto in Nutrex Lab.' ) ) . '</strong><span>'
+			. esc_html( $primo ? nutrex_headless_t( 'Il tuo sconto del {n}% sul primo ordine è attivo: si applica da solo al pagamento.', array( 'n' => $m ) ) : nutrex_headless_t( 'Il tuo account è pronto.' ) )
 			. '</span></div></div>';
 	}
 
 	if ( $liberi ) {
-		$bonus_stato  = '<span class="nxa-stato is-on">Disponibile</span>';
-		$bonus_nota   = $reg . ( $liberi > 1 ? ' · ' . $liberi . ' bonus, uno per ordine' : '' );
+		$bonus_stato  = '<span class="nxa-stato is-on">' . esc_html( nutrex_headless_t( 'Disponibile' ) ) . '</span>';
+		$bonus_nota   = $reg . ( $liberi > 1 ? ' · ' . nutrex_headless_t( '{n} bonus, uno per ordine', array( 'n' => number_format_i18n( $liberi ) ) ) : '' );
 		$bonus_spento = '';
 	} else {
-		$bonus_stato  = '<span class="nxa-stato">Da sbloccare</span>';
-		$bonus_nota   = $amici['registrati'] ? $reg : 'Invita un amico qui sotto';
+		$bonus_stato  = '<span class="nxa-stato">' . esc_html( nutrex_headless_t( 'Da sbloccare' ) ) . '</span>';
+		$bonus_nota   = $amici['registrati'] ? $reg : nutrex_headless_t( 'Invita un amico qui sotto' );
 		$bonus_spento = ' nxa-card--spento';
 	}
 
-	echo '<section class="nxa-vantaggi" aria-label="I tuoi vantaggi">';
+	echo '<section class="nxa-vantaggi" aria-label="' . esc_attr( nutrex_headless_t( 'I tuoi vantaggi' ) ) . '">';
 	echo '<article class="nxa-card' . ( $primo ? '' : ' nxa-card--spento' ) . '">'
-		. '<span class="nxa-card__label">Sconto primo ordine</span>'
+		. '<span class="nxa-card__label">' . esc_html( nutrex_headless_t( 'Sconto primo ordine' ) ) . '</span>'
 		. '<strong class="nxa-card__num">&minus;' . esc_html( $m ) . '%</strong>'
-		. '<span class="nxa-card__piede">' . ( $primo ? '<span class="nxa-stato is-on">Attivo</span>' : '<span class="nxa-stato">Usato</span>' ) . 'sul tuo primo ordine</span>'
+		. '<span class="nxa-card__piede">' . ( $primo ? '<span class="nxa-stato is-on">' . esc_html( nutrex_headless_t( 'Attivo' ) ) . '</span>' : '<span class="nxa-stato">' . esc_html( nutrex_headless_t( 'Usato' ) ) . '</span>' ) . esc_html( nutrex_headless_t( 'sul tuo primo ordine' ) ) . '</span>'
 		. '</article>';
 	echo '<article class="nxa-card' . esc_attr( $bonus_spento ) . '">'
-		. '<span class="nxa-card__label">Bonus amici</span>'
+		. '<span class="nxa-card__label">' . esc_html( nutrex_headless_t( 'Bonus amici' ) ) . '</span>'
 		. '<strong class="nxa-card__num">+' . esc_html( $b ) . '%</strong>'
 		. '<span class="nxa-card__piede">' . $bonus_stato . esc_html( $bonus_nota ) . '</span>' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		. '</article>';
 	echo '<article class="nxa-card nxa-card--totale' . ( $totale ? '' : ' nxa-card--spento' ) . '">'
-		. '<span class="nxa-card__label">I tuoi vantaggi</span>'
+		. '<span class="nxa-card__label">' . esc_html( nutrex_headless_t( 'I tuoi vantaggi' ) ) . '</span>'
 		. '<strong class="nxa-card__num">' . esc_html( nutrex_headless_pct( $totale ) ) . '%</strong>'
 		. '<span class="nxa-card__piede">'
-		. ( $totale ? '<span class="nxa-stato is-on">Disponibile</span>sul prossimo ordine' : '<span class="nxa-stato">Per ora nessuno</span>invita un amico: ' . esc_html( $b ) . '% per ognuno' )
+		. ( $totale
+			? '<span class="nxa-stato is-on">' . esc_html( nutrex_headless_t( 'Disponibile' ) ) . '</span>' . esc_html( nutrex_headless_t( 'sul prossimo ordine' ) )
+			: '<span class="nxa-stato">' . esc_html( nutrex_headless_t( 'Per ora nessuno' ) ) . '</span>' . esc_html( nutrex_headless_t( 'invita un amico: {n}% per ognuno', array( 'n' => $b ) ) ) )
 		. '</span></article>';
 	echo '</section>';
 
 	if ( $link ) {
-		$testo = 'Ti consiglio Nutrex Lab: registrati con il mio link, oppure con il mio codice ' . $codice . ', e avrai il ' . $m . '% di sconto sul primo ordine.';
+		$testo = nutrex_headless_t(
+			'Ti consiglio Nutrex Lab: registrati con il mio link, oppure con il mio codice {codice}, e avrai il {n}% di sconto sul primo ordine.',
+			array(
+				'codice' => $codice,
+				'n'      => $m,
+			)
+		);
 		echo '<section class="nxa-invita" aria-labelledby="nxa-invita-t" data-nxa-messaggio="' . esc_attr( $testo ) . '">'
-			. '<div class="nxa-invita__testo"><span class="nxa__occhiello">Invita un amico</span>'
-			. '<h3 id="nxa-invita-t">Condividi il tuo link personale</h3>'
-			. '<p>Per ogni amico che si registra con il tuo link ricevi subito un bonus del ' . esc_html( $b ) . '% da usare su un ordine. Il tuo amico, come tutti i nuovi iscritti, ha il ' . esc_html( $m ) . '% sul primo ordine.</p></div>'
+			. '<div class="nxa-invita__testo"><span class="nxa__occhiello">' . esc_html( nutrex_headless_t( 'Invita un amico' ) ) . '</span>'
+			. '<h3 id="nxa-invita-t">' . esc_html( nutrex_headless_t( 'Condividi il tuo link personale' ) ) . '</h3>'
+			. '<p>' . esc_html(
+				nutrex_headless_t(
+					'Per ogni amico che si registra con il tuo link ricevi subito un bonus del {b}% da usare su un ordine. Il tuo amico, come tutti i nuovi iscritti, ha il {m}% sul primo ordine.',
+					array(
+						'b' => $b,
+						'm' => $m,
+					)
+				)
+			) . '</p></div>'
 			. '<div class="nxa-invita__azione">'
-			. '<label class="nxa-link__label" for="nxa-link">Il tuo link personale</label>'
+			. '<label class="nxa-link__label" for="nxa-link">' . esc_html( nutrex_headless_t( 'Il tuo link personale' ) ) . '</label>'
 			. '<input class="nxa-link" id="nxa-link" type="text" readonly value="' . esc_attr( $link ) . '" data-nxa-link />'
 			. '<div class="nxa-azioni">'
-			. '<button type="button" class="nxa-btn nxa-btn--pieno" data-nxa-copia><span data-nxa-testo>Copia link</span></button>'
+			. '<button type="button" class="nxa-btn nxa-btn--pieno" data-nxa-copia><span data-nxa-testo>' . esc_html( nutrex_headless_t( 'Copia link' ) ) . '</span></button>'
 			. '<a class="nxa-btn" href="' . esc_url( 'https://wa.me/?text=' . rawurlencode( $testo . ' ' . $link ) ) . '" target="_blank" rel="noopener">WhatsApp</a>'
-			. '<button type="button" class="nxa-btn" data-nxa-condividi><span data-nxa-testo>Condividi</span></button>'
+			. '<button type="button" class="nxa-btn" data-nxa-condividi><span data-nxa-testo>' . esc_html( nutrex_headless_t( 'Condividi' ) ) . '</span></button>'
 			. '</div>'
-			. '<p class="nxa-codice">Oppure dagli il tuo codice <button type="button" class="nxa-codice__b" data-nxa-copia-codice="' . esc_attr( $codice ) . '" title="Copia il codice"><span data-nxa-testo>' . esc_html( $codice ) . '</span></button></p>'
+			. '<p class="nxa-codice">' . esc_html( nutrex_headless_t( 'Oppure dagli il tuo codice' ) ) . ' <button type="button" class="nxa-codice__b" data-nxa-copia-codice="' . esc_attr( $codice ) . '" title="' . esc_attr( nutrex_headless_t( 'Copia il codice' ) ) . '"><span data-nxa-testo>' . esc_html( $codice ) . '</span></button></p>'
 			. '</div></section>';
 	}
 
 	echo '<section class="nxa-risultati" aria-labelledby="nxa-risultati-t">'
-		. '<span class="nxa__occhiello" id="nxa-risultati-t">I tuoi risultati</span><dl>'
-		. '<div><dt>Amici invitati</dt><dd>' . esc_html( number_format_i18n( $visite ) ) . '</dd></div>'
-		. '<div><dt>Registrazioni</dt><dd>' . esc_html( number_format_i18n( $amici['registrati'] ) ) . '</dd></div>'
-		. '<div><dt>Bonus ottenuti</dt><dd>' . esc_html( nutrex_headless_pct( $bonus['tutti'] * $cfg['bonus_amico'] ) ) . '%</dd></div>'
+		. '<span class="nxa__occhiello" id="nxa-risultati-t">' . esc_html( nutrex_headless_t( 'I tuoi risultati' ) ) . '</span><dl>'
+		. '<div><dt>' . esc_html( nutrex_headless_t( 'Amici invitati' ) ) . '</dt><dd>' . esc_html( number_format_i18n( $visite ) ) . '</dd></div>'
+		. '<div><dt>' . esc_html( nutrex_headless_t( 'Registrazioni' ) ) . '</dt><dd>' . esc_html( number_format_i18n( $amici['registrati'] ) ) . '</dd></div>'
+		. '<div><dt>' . esc_html( nutrex_headless_t( 'Bonus ottenuti' ) ) . '</dt><dd>' . esc_html( nutrex_headless_pct( $bonus['tutti'] * $cfg['bonus_amico'] ) ) . '%</dd></div>'
 		. '</dl></section>';
 	echo '</div>';
 }
@@ -1179,13 +1206,18 @@ add_action(
 		if ( ! nutrex_headless_on_account_page() || ! is_user_logged_in() ) {
 			return;
 		}
+		$detti = array(
+			'copiato' => nutrex_headless_t( 'Copiato ✓' ),
+			'tieni'   => nutrex_headless_t( 'Tieni premuto sul link' ),
+		);
 		?>
 		<script id="nutrex-headless-account">
 		(function () {
 			var dash = document.querySelector('.nxa-dash'); if (!dash) return;
 			var link = dash.querySelector('[data-nxa-link]');
+			var detti = <?php echo wp_json_encode( $detti ); ?>;
 			function detto(btn, testo) { var s = btn.querySelector('[data-nxa-testo]'); if (!s) return; var prima = s.textContent; s.textContent = testo; setTimeout(function () { s.textContent = prima; }, 1800); }
-			function copia(testo, btn) { (navigator.clipboard ? navigator.clipboard.writeText(testo) : Promise.reject()).then(function () { detto(btn, 'Copiato ✓'); }, function () { if (link) { link.focus(); link.select(); } detto(btn, 'Tieni premuto sul link'); }); }
+			function copia(testo, btn) { (navigator.clipboard ? navigator.clipboard.writeText(testo) : Promise.reject()).then(function () { detto(btn, detti.copiato); }, function () { if (link) { link.focus(); link.select(); } detto(btn, detti.tieni); }); }
 			dash.addEventListener('click', function (e) {
 				var b = e.target.closest('[data-nxa-copia]'); if (b && link) return copia(link.value, b);
 				var c = e.target.closest('[data-nxa-copia-codice]'); if (c) return copia(c.getAttribute('data-nxa-copia-codice'), c);
@@ -1207,14 +1239,14 @@ function nutrex_headless_promemoria_html() {
 		return '';
 	}
 	$p = nutrex_headless_pct( nutrex_headless_account_config()['sconto_membri'] );
-	return '<aside class="nxa-promemoria" aria-label="Sconto per chi si registra">'
+	return '<aside class="nxa-promemoria" aria-label="' . esc_attr( nutrex_headless_t( 'Sconto per chi si registra' ) ) . '">'
 		. '<strong class="nxa-promemoria__num">&minus;' . esc_html( $p ) . '%</strong>'
-		. '<div class="nxa-promemoria__testo"><span class="nxa-promemoria__label">Con un account Nutrex Lab</span>'
-		. '<p class="nxa-promemoria__titolo">Registrati e risparmi un ulteriore ' . esc_html( $p ) . '% sul primo ordine</p>'
-		. '<p class="nxa-promemoria__sotto">Si aggiunge agli altri sconti, già su questo ordine.</p></div>'
+		. '<div class="nxa-promemoria__testo"><span class="nxa-promemoria__label">' . esc_html( nutrex_headless_t( 'Con un account Nutrex Lab' ) ) . '</span>'
+		. '<p class="nxa-promemoria__titolo">' . esc_html( nutrex_headless_t( 'Registrati e risparmi un ulteriore {n}% sul primo ordine', array( 'n' => $p ) ) ) . '</p>'
+		. '<p class="nxa-promemoria__sotto">' . esc_html( nutrex_headless_t( 'Si aggiunge agli altri sconti, già su questo ordine.' ) ) . '</p></div>'
 		. '<div class="nxa-promemoria__azioni">'
-		. '<a class="nxa-promemoria__btn" href="' . esc_url( nutrex_headless_account_url( array( 'torna' => 'pagamento', 'vista' => 'registrati' ) ) ) . '">Crea il tuo account</a>'
-		. '<span class="nxa-promemoria__accedi">Hai già un account? <a href="' . esc_url( nutrex_headless_account_url( array( 'torna' => 'pagamento' ) ) ) . '">Accedi</a></span>'
+		. '<a class="nxa-promemoria__btn" href="' . esc_url( nutrex_headless_account_url( array( 'torna' => 'pagamento', 'vista' => 'registrati' ) ) ) . '">' . esc_html( nutrex_headless_t( 'Crea il tuo account' ) ) . '</a>'
+		. '<span class="nxa-promemoria__accedi">' . esc_html( nutrex_headless_t( 'Hai già un account?' ) ) . ' <a href="' . esc_url( nutrex_headless_account_url( array( 'torna' => 'pagamento' ) ) ) . '">' . esc_html( nutrex_headless_t( 'Accedi' ) ) . '</a></span>'
 		. '</div></aside>';
 }
 

@@ -64,6 +64,7 @@ produce in `dist/` le pagine; su un hosting solo statico il sito si vede ma il n
 | Foto dei barattoli da caricare in WooCommerce | `public/images/prodotti/<id>.webp`: si rifanno da `/tools/foto-prodotti.html` (con `npm run dev`) |
 | Pagine del negozio | `integratori.html` (+ categorie in `integratori/`), `prodotto.html`, `carrello.html`, `ordine.html`, `contatti.html` + `src/pages/` + `src/styles/pages.css` |
 | Collegamento a WooCommerce (catalogo, carrello, checkout, pagina prodotto per Google) | `api/` + `server/` |
+| Pagamento e Account (sul WooCommerce) nelle lingue del sito: testi del plugin | `wordpress/nutrex-headless/lang/<lingua>.json` (la chiave e' il testo italiano, `npm test` controlla che ci siano tutti); i testi di WooCommerce arrivano dai suoi pacchetti di lingua, vedi "Lingue" in [HEADLESS_COMMERCE_SETUP.md](HEADLESS_COMMERCE_SETUP.md) |
 | Plugin da installare su WooCommerce | `wordpress/nutrex-headless/` |
 | Movimenti del barattolo, camera e luci per ogni scena | `src/choreography.js` (keyframe per desktop e mobile) |
 | Prodotti del menu (nome, modello 3D, colori, misura nella hero, punti dell'etichetta) | `src/products.js` |
@@ -163,10 +164,10 @@ prodotti accanto a Carrello.
 | Categorie | `/integratori/collagene`, `/integratori/vitamine-e-minerali`, `/integratori/estratti-vegetali` | i prodotti della categoria, testi e domande frequenti (`src/seo/catalog.js`) |
 | Chi siamo | `/chi-siamo` | il marchio, la linea, l'azienda (solo dati veri) |
 | Prodotto | `/prodotto/<slug>` | foto, prezzo (offerta barrata), disponibilita' con i pezzi in magazzino ("820 disponibili", dal testo delle scorte di WooCommerce), varianti, quantita', "Aggiungi al carrello", offerte quantita' (le stesse di WooCommerce), metodi di pagamento, descrizione e caratteristiche, recensioni (lettura e invio) e prodotti correlati; titolo e dati strutturati per Google preparati sul server |
-| Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento" (porta dritto al pagamento sicuro di WooCommerce); vuoto: invito al negozio. `/pagamenti` (la vecchia pagina di riepilogo, tolta) porta qui |
+| Carrello | `/carrello` | quantita', rimozione, coupon, totali calcolati da WooCommerce, "Procedi al pagamento" (porta dritto al pagamento sicuro di WooCommerce, nella lingua del sito); vuoto: invito al negozio. `/pagamenti` (la vecchia pagina di riepilogo, tolta) porta qui |
 | Grazie | `/ordine?numero=N` | dopo il pagamento: numero dell'ordine WooCommerce; svuota il carrello del sito |
 | Contatti | `/contatti` | recapiti e modulo che invia il messaggio a info@nutrexlab.it (`/api/contatto` -> plugin su WooCommerce) |
-| Account | `/account` | porta all'area clienti Nutrex sul WooCommerce (`/account-nutrex-lab/`, cornice Nutrex): accesso, registrazione, ordini Nutrex, indirizzi, sconto del 5% sul primo ordine, invita un amico; `?ref=` porta con se' l'invito, `?torna=carrello` riporta al carrello |
+| Account | `/account` | porta all'area clienti Nutrex sul WooCommerce (`/account-nutrex-lab/`, cornice Nutrex): accesso, registrazione, ordini Nutrex, indirizzi, sconto del 5% sul primo ordine, invita un amico; `?ref=` porta con se' l'invito, `?torna=carrello` riporta al carrello, `?lang=` la lingua (i link del sito a `/account` la aggiungono da soli) |
 
 Gli indirizzi sono senza `.html` (`cleanUrls` in `vercel.json`; in locale li gestisce Vite).
 Il carrello e' quello di WooCommerce (sessione nel cookie `nx_cart`): lo stesso in tutte le pagine e

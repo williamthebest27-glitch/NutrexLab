@@ -189,9 +189,9 @@ add_action(
 			nutrex_headless_is_product( $item['product_id'] ) ? $nutrex++ : $other++;
 		}
 		if ( $nutrex && $other ) {
-			wc_add_notice( __( 'Nel carrello ci sono prodotti che non si possono acquistare insieme: controlla il carrello e riprova.', 'nutrex-headless' ), 'error' );
+			wc_add_notice( nutrex_headless_t( 'Nel carrello ci sono prodotti che non si possono acquistare insieme: controlla il carrello e riprova.' ), 'error' );
 		} elseif ( $other && ( nutrex_headless_on_checkout_page() || ! empty( $_SERVER['HTTP_X_NUTREX_CHECKOUT'] ) ) ) {
-			wc_add_notice( __( 'Il carrello è cambiato: torna al carrello di Nutrex Lab e riprova.', 'nutrex-headless' ), 'error' );
+			wc_add_notice( nutrex_headless_t( 'Il carrello è cambiato: torna al carrello di Nutrex Lab e riprova.' ), 'error' );
 		}
 	}
 );

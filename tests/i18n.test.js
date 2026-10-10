@@ -178,3 +178,46 @@ describe('traduzioni', () => {
   })
 })
 
+
+// ---------------------------------------------------------------------------
+// plugin WordPress (pagamento e area clienti su WooCommerce): i testi di nutrex_headless_t() e
+// nutrex_headless_tp() nei file PHP, tradotti in wordpress/nutrex-headless/lang/<lingua>.json
+const PLUGIN = join(ROOT, 'wordpress/nutrex-headless')
+const phpFiles = (dir) =>
+  readdirSync(join(PLUGIN, dir))
+    .filter((f) => f.endsWith('.php'))
+    .map((f) => join(dir, f))
+const PHP_STR = `'((?:[^'\\\\]|\\\\.)*)'`
+const phpText = (s) => s.replace(/\\(['\\])/g, '$1')
+const pluginTexts = new Map()
+for (const file of [...phpFiles('includes'), ...phpFiles('templates'), 'nutrex-headless.php']) {
+  const src = readFileSync(join(PLUGIN, file), 'utf8')
+  for (const m of src.matchAll(new RegExp(`nutrex_headless_t\\(\\s*${PHP_STR}`, 'g'))) pluginTexts.set(phpText(m[1]), file)
+  for (const m of src.matchAll(new RegExp(`nutrex_headless_tp\\([^,]+,\\s*${PHP_STR}\\s*,\\s*${PHP_STR}`, 'g'))) {
+    pluginTexts.set(phpText(m[1]), file)
+    pluginTexts.set(phpText(m[2]), file)
+  }
+}
+const pluginDicts = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(readFileSync(join(PLUGIN, `lang/${l}.json`), 'utf8'))]))
+
+describe('traduzioni del plugin WordPress (pagamento e area clienti)', () => {
+  test(`ci sono testi da controllare (${pluginTexts.size})`, () => assert.ok(pluginTexts.size > 60))
+
+  for (const l of LANGS) {
+    test(`${l}: ogni testo ha la traduzione, con gli stessi segnaposto {x} e tag HTML`, () => {
+      const dict = pluginDicts[l]
+      const bad = []
+      for (const [it, file] of pluginTexts) {
+        const tr = dict[it]
+        if (typeof tr !== 'string' || !tr.trim()) bad.push(`manca (${file}): ${it.slice(0, 80)}`)
+        else if (placeholders(it).join() !== placeholders(tr).join()) bad.push(`segnaposto: ${it.slice(0, 80)}`)
+        else if (tags(it).join() !== tags(tr).join()) bad.push(`tag: ${it.slice(0, 80)}`)
+      }
+      assert.deepEqual(bad, [])
+    })
+
+    test(`${l}: nessuna traduzione di un testo che non c'e' piu'`, () => {
+      assert.deepEqual(Object.keys(pluginDicts[l]).filter((it) => !pluginTexts.has(it)), [])
+    })
+  }
+})
