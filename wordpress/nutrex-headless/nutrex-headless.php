@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Nutrex Headless
- * Description:       Collega WooCommerce al negozio nutrexlab.it tenendo separati i due negozi: Nutrex Lab ha la sua pagina di pagamento, il suo carrello, la sua area clienti (sconto primo ordine, invita un amico) e le sue email (da info@nutrexlab.it); i prodotti Nutrex non compaiono e non si comprano su questo sito; pagine, carrello e ordini di questo sito non cambiano. In comune restano prodotti, magazzino, metodi di pagamento, sconti e Amazon MCF.
- * Version:           2.3.2
+ * Description:       Collega WooCommerce al negozio nutrexlab.it tenendo separati i due negozi: Nutrex Lab ha la sua pagina di pagamento, il suo carrello, la sua area clienti (sconto primo ordine, invita un amico) e le sue email (da info@nutrexlab.it); pagamento e area clienti sono nelle lingue del sito (italiano, inglese, francese, tedesco, spagnolo); i prodotti Nutrex non compaiono e non si comprano su questo sito; pagine, carrello e ordini di questo sito non cambiano. In comune restano prodotti, magazzino, metodi di pagamento, sconti e Amazon MCF.
+ * Version:           2.4.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
@@ -22,8 +22,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NUTREX_HEADLESS_VERSION', '2.3.2' );
+define( 'NUTREX_HEADLESS_VERSION', '2.4.0' );
 define( 'NUTREX_HEADLESS_FILE', __FILE__ );
+
+// lingue delle pagine Nutrex: subito, prima che WordPress carichi le traduzioni
+require_once __DIR__ . '/includes/i18n.php';
 
 add_action(
 	'plugins_loaded',

@@ -33,7 +33,7 @@ add_action(
 		}
 		nocache_headers();
 
-		$back    = nutrex_headless_shop_url( '/carrello' );
+		$back    = nutrex_headless_lang_url( nutrex_headless_shop_url( '/carrello' ) );
 		$items   = array_filter( explode( ',', sanitize_text_field( wp_unslash( $_GET['items'] ?? '' ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$coupons = array_filter( array_map( 'wc_format_coupon_code', explode( ',', sanitize_text_field( wp_unslash( $_GET['coupons'] ?? '' ) ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$page    = nutrex_headless_category_ids() ? nutrex_headless_ensure_checkout_page() : 0;

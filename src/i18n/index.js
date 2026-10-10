@@ -213,6 +213,22 @@ export function setMeta({ title, description } = {}) {
 }
 
 // ---------------------------------------------------------------------------
+// link all'area clienti
+
+/**
+ * I link all'area clienti (/account: sta sul WooCommerce, api/account.js) portano la lingua del sito
+ * (?lang=de), cosi' l'area clienti si apre nella stessa lingua. Anche l'italiano: chi torna all'italiano
+ * ritrova l'area clienti in italiano.
+ */
+function langLinks() {
+  for (const a of document.querySelectorAll('a[href^="/account"]')) {
+    const url = new URL(a.getAttribute('href'), location.origin)
+    url.searchParams.set('lang', current)
+    a.setAttribute('href', url.pathname + url.search + url.hash)
+  }
+}
+
+// ---------------------------------------------------------------------------
 // cambio lingua
 
 /** Si viene avvisati a ogni cambio di lingua (dopo che l'HTML e' gia' tradotto). */
@@ -249,6 +265,7 @@ export async function setLang(l) {
   saveLang(l)
   mark()
   translateDom(document)
+  langLinks()
   setMeta()
   notify()
 }
@@ -285,6 +302,7 @@ export const ready = (async () => {
   }
   mark()
   translateDom(document)
+  langLinks()
   setMeta()
   html.classList.remove('i18n-wait')
   // chi si e' gia' iscritto (prima che la lingua fosse pronta) ridisegna nella lingua scelta

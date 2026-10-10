@@ -19,6 +19,7 @@ const { sessionCookies, readSession } = await import('../server/session.js')
 const productsApi = await import('../api/products.js')
 const cartApi = await import('../api/cart.js')
 const checkoutApi = await import('../api/checkout.js')
+const accountApi = await import('../api/account.js')
 const contactApi = await import('../api/contatto.js')
 const reviewsApi = await import('../api/recensioni.js')
 const sitemapApi = await import('../api/sitemap.js')
@@ -167,7 +168,16 @@ describe('carrello e passaggio al checkout', () => {
     assert.equal(u.searchParams.get('nutrex-checkout'), '1')
     assert.equal(u.searchParams.get('items'), '101:2,110:1')
     assert.equal(u.searchParams.get('coupons'), 'prova10')
+    assert.equal(u.searchParams.get('nutrex_lang'), null)
     assert.doesNotMatch(url, /price|8980|1690/)
+  })
+
+  test('il checkout si apre nella lingua del sito (solo le lingue del sito)', async () => {
+    const lang = async (l) => new URL((await checkoutUrl(token, { lang: l })).url).searchParams.get('nutrex_lang')
+    assert.equal(await lang('de'), 'de')
+    assert.equal(await lang('it'), 'it')
+    assert.equal(await lang('xx'), null)
+    assert.equal(await lang('<b>'), null)
   })
 
   test('quantita\' a zero toglie il prodotto; svuota', async () => {
@@ -209,6 +219,21 @@ describe('funzioni Vercel', () => {
     const res = await checkoutApi.POST(new Request('https://negozio.test/api/checkout', { method: 'POST', headers: { cookie } }))
     assert.equal(res.status, 200)
     assert.equal(new URL((await res.json()).url).searchParams.get('items'), '110:3')
+
+    // con la lingua del sito
+    const fr = await checkoutApi.POST(new Request('https://negozio.test/api/checkout', { method: 'POST', headers: { cookie }, body: JSON.stringify({ lang: 'fr' }) }))
+    assert.equal(new URL((await fr.json()).url).searchParams.get('nutrex_lang'), 'fr')
+  })
+
+  test('/account: all\'area clienti Nutrex con invito, vista, ritorno e lingua; mai in cache', async () => {
+    const res = await accountApi.GET(new Request('https://negozio.test/account?ref=NX-7K92X&vista=registrati&torna=carrello&lang=es&altro=1'))
+    assert.equal(res.status, 302)
+    assert.equal(res.headers.get('cache-control'), 'private, no-store')
+    const to = new URL(res.headers.get('location'))
+    assert.equal(to.origin + to.pathname, `${WOO_URL}/account-nutrex-lab/`)
+    assert.deepEqual(Object.fromEntries(to.searchParams), { ref: 'NX-7K92X', vista: 'registrati', torna: 'carrello', nutrex_lang: 'es' })
+    const bad = await accountApi.GET(new Request('https://negozio.test/account?lang=xx'))
+    assert.equal(new URL(bad.headers.get('location')).searchParams.get('nutrex_lang'), null)
   })
 
   test('senza categoria (o con una sbagliata) il negozio resta chiuso', async () => {

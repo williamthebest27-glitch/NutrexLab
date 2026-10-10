@@ -345,14 +345,17 @@ add_filter(
 add_filter(
 	'pre_get_document_title',
 	function ( $title ) {
-		$titles = array(
-			'checkout' => __( 'Pagamento sicuro', 'nutrex-headless' ),
-			'received' => __( 'Ordine ricevuto', 'nutrex-headless' ),
-			'pay'      => __( 'Pagamento dell\'ordine', 'nutrex-headless' ),
-			'account'  => __( 'Il tuo account', 'nutrex-headless' ),
-		);
 		$look = nutrex_headless_look();
-		return $look ? $titles[ $look ] . ' | Nutrex Lab' : $title;
+		if ( ! $look ) {
+			return $title;
+		}
+		$titles = array(
+			'checkout' => nutrex_headless_t( 'Pagamento sicuro' ),
+			'received' => nutrex_headless_t( 'Ordine ricevuto' ),
+			'pay'      => nutrex_headless_t( 'Pagamento dell\'ordine' ),
+			'account'  => nutrex_headless_t( 'Il tuo account' ),
+		);
+		return $titles[ $look ] . ' | Nutrex Lab';
 	},
 	PHP_INT_MAX
 );
@@ -368,10 +371,10 @@ add_filter(
 /** Titolo grande della pagina. */
 function nutrex_headless_look_title() {
 	$titles = array(
-		'checkout' => __( 'Pagamento', 'nutrex-headless' ),
-		'received' => __( 'Ordine ricevuto', 'nutrex-headless' ),
-		'pay'      => __( 'Pagamento dell\'ordine', 'nutrex-headless' ),
-		'account'  => __( 'Account', 'nutrex-headless' ),
+		'checkout' => nutrex_headless_t( 'Pagamento' ),
+		'received' => nutrex_headless_t( 'Ordine ricevuto' ),
+		'pay'      => nutrex_headless_t( 'Pagamento dell\'ordine' ),
+		'account'  => nutrex_headless_t( 'Account' ),
 	);
 	return $titles[ nutrex_headless_look() ] ?? '';
 }

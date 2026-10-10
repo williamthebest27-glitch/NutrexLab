@@ -115,7 +115,7 @@ add_action(
 			return;
 		}
 		if ( ! nutrex_headless_is_nutrex_cart() ) {
-			wp_redirect( nutrex_headless_shop_url( '/carrello' ), 302, 'Nutrex Headless' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
+			wp_redirect( nutrex_headless_lang_url( nutrex_headless_shop_url( '/carrello' ) ), 302, 'Nutrex Headless' ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 			exit;
 		}
 	},
@@ -196,18 +196,18 @@ add_filter(
 
 // ---------------------------------------------------------------------------- sulla pagina
 
-// carrello, negozio, termini, privacy e account: le pagine di nutrexlab.it
+// carrello, negozio, termini, privacy e account: le pagine di nutrexlab.it (nella lingua della pagina)
 add_filter(
 	'woocommerce_get_cart_url',
 	function ( $url ) {
-		return nutrex_headless_on_checkout_page() ? nutrex_headless_shop_url( '/carrello' ) : $url;
+		return nutrex_headless_on_checkout_page() ? nutrex_headless_lang_url( nutrex_headless_shop_url( '/carrello' ) ) : $url;
 	}
 );
 
 add_filter(
 	'woocommerce_return_to_shop_redirect',
 	function ( $url ) {
-		return nutrex_headless_on_checkout_page() ? nutrex_headless_shop_url( '/acquista' ) : $url;
+		return nutrex_headless_on_checkout_page() ? nutrex_headless_lang_url( nutrex_headless_shop_url( '/acquista' ) ) : $url;
 	}
 );
 
@@ -225,7 +225,7 @@ add_filter(
 			(int) get_option( 'wp_page_for_privacy_policy' )    => '/privacy-policy',
 		);
 		unset( $pages[0] );
-		return isset( $pages[ (int) $page_id ] ) ? nutrex_headless_shop_url( $pages[ (int) $page_id ] ) : $link;
+		return isset( $pages[ (int) $page_id ] ) ? nutrex_headless_lang_url( nutrex_headless_shop_url( $pages[ (int) $page_id ] ) ) : $link;
 	},
 	20,
 	2
@@ -234,7 +234,7 @@ add_filter(
 add_filter(
 	'privacy_policy_url',
 	function ( $url ) {
-		return nutrex_headless_on_checkout_page() ? nutrex_headless_shop_url( '/privacy-policy' ) : $url;
+		return nutrex_headless_on_checkout_page() ? nutrex_headless_lang_url( nutrex_headless_shop_url( '/privacy-policy' ) ) : $url;
 	}
 );
 
