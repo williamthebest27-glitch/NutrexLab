@@ -1,3 +1,5 @@
+import { stripLang } from '../i18n/langs.js'
+
 /**
  * Navbar (tutte le pagine):
  * - la voce della pagina aperta e' segnata (aria-current; Acquista anche in categorie, prodotti e carrello)
@@ -10,9 +12,9 @@ export function initNavMenu() {
   document.querySelectorAll('[data-nav-sub]').forEach(setupSub)
 }
 
-/** '/integratori.html' e '/integratori/' diventano '/integratori' */
+/** '/integratori.html', '/integratori/' e '/de/integratori' diventano '/integratori' */
 function cleanPath(p) {
-  p = p.replace(/\/index\.html$/, '/').replace(/\.html$/, '')
+  p = stripLang(p.split(/[?#]/)[0]).replace(/\/index\.html$/, '/').replace(/\.html$/, '')
   return p.length > 1 ? p.replace(/\/$/, '') : '/'
 }
 

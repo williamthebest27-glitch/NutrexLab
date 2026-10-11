@@ -1,4 +1,4 @@
-import { onLang, t } from '../i18n/index.js'
+import { onLang, t, sourceText } from '../i18n/index.js'
 
 /**
  * Voci del menu principale: due strati di lettere sovrapposti.
@@ -21,7 +21,7 @@ function build(a, text) {
 export function initNavLinks() {
   const links = [...document.querySelectorAll('[data-nav-link]')]
   for (const a of links) {
-    a._it ??= a.textContent.trim()
+    a._it ??= sourceText(a) // testo italiano (anche nelle pagine arrivate gia' tradotte)
     build(a, t(a._it))
   }
   onLang(() => links.forEach((a) => build(a, t(a._it))))

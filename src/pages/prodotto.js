@@ -11,7 +11,7 @@ import { benefitsHtml, qualityHtml } from '../shop/quality.js'
 import { labelThumbHtml, openLabel, refreshLabel } from '../shop/labels.js'
 import { BRAND, productBySlug, categoryFor, categoryPath } from '../seo/catalog.js'
 import { faqHtml } from '../seo/render.js'
-import { t, tp, onLang, translateDom, setMeta, formatNumber, formatDate, locale } from '../i18n/index.js'
+import { t, tp, onLang, translateDom, setMeta, formatNumber, formatDate, locale, pagePath } from '../i18n/index.js'
 import { localizeProduct, category as localCategory, shop as localShop } from '../i18n/data.js'
 
 /*
@@ -65,7 +65,7 @@ const initial = (() => {
     return null
   }
 })()
-const slug = initial?.slug ?? decodeURIComponent(location.pathname.split('/').filter(Boolean)[1] ?? '')
+const slug = initial?.slug ?? decodeURIComponent(pagePath().split('/').filter(Boolean)[1] ?? '')
 
 // ---------------------------------------------------------------------------
 // variazioni
@@ -257,9 +257,9 @@ function render() {
       <ul class="pp__related-grid" data-related-grid></ul>
     </section>`
   translateDom(root)
-  // il titolo lo scrive il server (src/seo/catalog.js); senza pagina preparata dal server si mette qui
-  // (in italiano: setMeta lo traduce, anche cambiando lingua)
-  if (!initial?.product) setMeta({ title: seo?.title ?? `${base.name} | ${BRAND}`, ...(seo?.description ? { description: seo.description } : {}) })
+  // il titolo lo scrive il server (src/seo/catalog.js), lo stesso; qui si passa quello italiano (setMeta lo
+  // traduce, anche cambiando lingua in una pagina arrivata gia' tradotta, /de/prodotto/...)
+  setMeta({ title: seo?.title ?? `${base.name} | ${BRAND}`, ...(seo?.description ? { description: seo.description } : {}) })
   update()
   renderReviews()
   renderRelated()

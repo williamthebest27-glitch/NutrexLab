@@ -72,4 +72,17 @@ export default {
   "Privacy Policy di Nutrex Lab: quali dati raccogliamo, perche', per quanto tempo e quali sono i tuoi diritti (GDPR).": "Datenschutzerklärung von Nutrex Lab: welche Daten wir erheben, warum, wie lange und welche Rechte du hast (DSGVO).",
   "Cookie Policy | Nutrex Lab": "Cookie-Richtlinie | Nutrex Lab",
   "Cookie Policy di Nutrex Lab: usiamo solo cookie tecnici per il carrello e la navigazione, nessuna profilazione.": "Cookie-Richtlinie von Nutrex Lab: Wir verwenden nur technische Cookies für Warenkorb und Navigation, kein Profiling.",
+  // anteprime social, dati strutturati per Google e pagina prodotto preparata sul server (server/product-page.js)
+  "Nutrex Lab: integratori alimentari made in Italy": "Nutrex Lab: Nahrungsergänzungsmittel made in Italy",
+  "Integratori alimentari prodotti in Italia: collagene, vitamine e minerali, estratti vegetali titolati.": "In Italien hergestellte Nahrungsergänzungsmittel: Kollagen, Vitamine und Mineralstoffe, standardisierte Pflanzenextrakte.",
+  "Integratori alimentari Nutrex Lab": "Nahrungsergänzungsmittel von Nutrex Lab",
+  "Chi c’è dietro Nutrex Lab, come nascono le formule e dove vengono prodotte.": "Wer hinter Nutrex Lab steht, wie die Formeln entstehen und wo sie hergestellt werden.",
+  "Contatti | Nutrex Lab": "Kontakt | Nutrex Lab",
+  "Recapiti e modulo di contatto di Nutrex Lab.": "Kontaktdaten und Kontaktformular von Nutrex Lab.",
+  "Integratori alimentari": "Nahrungsergänzungsmittel",
+  "Voto medio {voto} su 5 ({n} recensione)": "Durchschnittliche Bewertung {voto} von 5 ({n} Rezension)",
+  "Voto medio {voto} su 5 ({n} recensioni)": "Durchschnittliche Bewertung {voto} von 5 ({n} Rezensionen)",
+  "Della stessa linea": "Aus derselben Linie",
+  "Tutti gli integratori Nutrex Lab": "Alle Nahrungsergänzungsmittel von Nutrex Lab",
+  "{nome}, integratore alimentare Nutrex Lab prodotto in Italia.": "{nome}, Nahrungsergänzungsmittel von Nutrex Lab, hergestellt in Italien.",
 }

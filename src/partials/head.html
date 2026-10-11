@@ -23,14 +23,24 @@
   }
 </style>
 <script>
-  // lingua scelta dal visitatore (src/i18n/langs.js): finche' i testi non sono tradotti restano nascosti,
-  // cosi' non si vede l'italiano per un attimo (al massimo 4 secondi, poi si mostrano comunque)
+  // lingua della pagina (src/i18n/langs.js): quella dell'indirizzo (/de/...), di ?lang= o, senza prefisso,
+  // quella scelta in passato (cookie nx_lang). Se non e' quella in cui e' scritto l'HTML (data-src-lang) i testi
+  // restano nascosti finche' non sono tradotti, cosi' non si vede l'altra lingua per un attimo (al massimo
+  // 4 secondi, poi si mostrano comunque)
   ;(function () {
     var h = document.documentElement
+    var re = /^(it|en|fr|de|es)$/
     try {
+      var src = h.getAttribute('data-src-lang') || 'it'
+      var m = /^\/(en|fr|de|es)(\/|$)/.exec(location.pathname)
       var l = new URLSearchParams(location.search).get('lang')
-      if (l !== 'it' && !/^(en|fr|de|es)$/.test(l || '')) l = localStorage.getItem('nx_lang')
-      if (/^(en|fr|de|es)$/.test(l || '')) {
+      if (!re.test(l || '')) l = m ? m[1] : null
+      if (!l) {
+        var c = /(?:^|;\s*)nx_lang=([a-z]{2})/.exec(document.cookie)
+        l = c ? c[1] : localStorage.getItem('nx_lang')
+      }
+      if (!re.test(l || '')) l = 'it'
+      if (l !== src) {
         h.lang = l
         h.classList.add('i18n-wait')
         setTimeout(function () {

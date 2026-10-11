@@ -1,4 +1,5 @@
 import { ORIGIN, BRAND, COMPANY, RETURNS, absolute, productPath } from './catalog.js'
+import { LANGS, LANG_INFO } from '../i18n/langs.js'
 
 /*
   Dati strutturati (JSON-LD, schema.org) di Nutrex Lab. Solo dati veri e visibili nella pagina:
@@ -63,7 +64,7 @@ export function organization() {
   }
 }
 
-/** Il sito (nome del sito nei risultati di Google). */
+/** Il sito (nome del sito nei risultati di Google), in tutte le lingue del sito. */
 export function website() {
   return {
     '@type': 'WebSite',
@@ -71,7 +72,7 @@ export function website() {
     url: `${ORIGIN}/`,
     name: BRAND,
     alternateName: ['NutrexLab', 'nutrexlab.it'],
-    inLanguage: 'it-IT',
+    inLanguage: LANGS.map((l) => LANG_INFO[l].locale),
     publisher: { '@id': IDS.org },
   }
 }

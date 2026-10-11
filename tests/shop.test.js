@@ -265,7 +265,7 @@ describe('pagina prodotto per Google e social', () => {
 
   test('titolo e descrizione curati, canonical sul dominio principale, dati strutturati con le varianti', async () => {
     const product = await getProduct('collagene')
-    const html = renderProductPage(template, { product, slug: 'collagene' })
+    const html = await renderProductPage(template, { product, slug: 'collagene' })
     assert.match(html, /<title>Collagene Marino in Polvere 10\.000 mg \| Nutrex Lab<\/title>/)
     assert.equal(html.match(/<title>/g).length, 1, 'un solo titolo')
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.nutrexlab\.it\/prodotto\/collagene" \/>/)
@@ -296,14 +296,14 @@ describe('pagina prodotto per Google e social', () => {
 
   test('voto medio solo con recensioni vere', async () => {
     const product = await getProduct('magnesio')
-    const ld = node(graphOf(renderProductPage(template, { product, slug: 'magnesio' })), 'Product')
+    const ld = node(graphOf(await renderProductPage(template, { product, slug: 'magnesio' })), 'Product')
     assert.deepEqual(ld.aggregateRating, { '@type': 'AggregateRating', ratingValue: '4.5', reviewCount: 2, bestRating: 5, worstRating: 1 })
   })
 
   test('prodotto senza dati SEO: titolo dal nome, descrizione dalla breve descrizione tagliata', async () => {
     const product = await getProduct('magnesio')
     const other = { ...product, slug: 'nuovo', summary: 'Parola '.repeat(60).trim() }
-    const html = renderProductPage(template, { product: other, slug: 'nuovo' })
+    const html = await renderProductPage(template, { product: other, slug: 'nuovo' })
     assert.match(html, /<title>Magnesio \| Nutrex Lab<\/title>/)
     const description = /<meta name="description" content="([^"]*)"/.exec(html)[1]
     assert.ok(description.length <= 160 && description.endsWith('…'))
@@ -314,7 +314,7 @@ describe('pagina prodotto per Google e social', () => {
   test('testi con "</script>" o "$&" non rompono la pagina', async () => {
     const product = await getProduct('magnesio')
     const tricky = { ...product, slug: 'nuovo', name: 'Magnesio $& $\' </script><script>alert(1)</script>', summary: 'Prezzo $` speciale' }
-    const html = renderProductPage(template, { product: tricky, slug: 'nuovo' })
+    const html = await renderProductPage(template, { product: tricky, slug: 'nuovo' })
     assert.equal(html.match(/<\/script>/g).length, 2, 'solo le chiusure dei due script del server')
     assert.equal(html.split('<html>').length, 2, 'il modello non viene duplicato')
     assert.match(html, /<title>Magnesio \$&amp; \$&#39; &lt;\/script&gt;/)
@@ -325,14 +325,14 @@ describe('pagina prodotto per Google e social', () => {
   test('prodotto ancora senza prezzo: "Prezzo in arrivo", nessuna offerta per Google', async () => {
     const product = await getProduct('magnesio')
     const unpriced = { ...product, prices: { ...product.prices, price: 0, regular: 0, sale: 0 }, stock: { ...product.stock, purchasable: false } }
-    const html = renderProductPage(template, { product: unpriced, slug: 'magnesio' })
+    const html = await renderProductPage(template, { product: unpriced, slug: 'magnesio' })
     assert.equal(node(graphOf(html), 'Product').offers, undefined)
     assert.doesNotMatch(html, /product:price:amount|0,00/)
     assert.match(html, /<p>Prezzo in arrivo<\/p>/)
   })
 
-  test('prodotto non trovato: noindex, nessun canonical', () => {
-    const html = renderProductPage(template, { product: null, slug: 'niente', status: 404 })
+  test('prodotto non trovato: noindex, nessun canonical', async () => {
+    const html = await renderProductPage(template, { product: null, slug: 'niente', status: 404 })
     assert.match(html, /<meta name="robots" content="noindex" \/>/)
     assert.match(html, /<title>Prodotto non trovato \| Nutrex Lab<\/title>/)
     assert.doesNotMatch(html, /rel="canonical"/)
@@ -366,7 +366,7 @@ describe('sincronizzazione con WooCommerce', () => {
   test('pagina di un prodotto nuovo in una sottocategoria del sito: breadcrumb con la categoria', async () => {
     const product = await getProduct('magnesio')
     const fresh = { ...product, slug: 'omega-3', name: 'Omega 3', categories: [{ id: 30, name: 'Estratti vegetali', slug: 'estratti-vegetali' }] }
-    const html = renderProductPage('<html><head><title>x</title></head><body><!-- ssr:prodotto --></body></html>', { product: fresh, slug: 'omega-3' })
+    const html = await renderProductPage('<html><head><title>x</title></head><body><!-- ssr:prodotto --></body></html>', { product: fresh, slug: 'omega-3' })
     const graph = JSON.parse(/<script type="application\/ld\+json">(.*?)<\/script>/.exec(html)[1])['@graph']
     const crumbs = graph.find((n) => n['@type'] === 'BreadcrumbList').itemListElement.map((i) => i.name)
     assert.deepEqual(crumbs, ['Home', 'Integratori', 'Estratti vegetali', 'Omega 3'])
@@ -398,7 +398,7 @@ describe('sitemap', () => {
     assert.equal(res.status, 200)
     assert.match(res.headers.get('cache-control'), /s-maxage=300/)
     const xml = await res.text()
-    assert.equal((xml.match(/\/prodotto\//g) ?? []).length, 12)
+    assert.equal([...xml.matchAll(/<loc>https:\/\/www\.nutrexlab\.it\/prodotto\//g)].length, 12)
     assert.match(xml, /<image:loc>https:\/\/www\.nutrexlab\.it\/images\/prodotti\/vitamina-c\.webp<\/image:loc>/)
   })
 })
