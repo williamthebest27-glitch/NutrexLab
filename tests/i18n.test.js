@@ -14,23 +14,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const LANGS = ['en', 'fr', 'de', 'es']
 const imp = (p) => import(pathToFileURL(join(ROOT, p)).href)
 
-// ---------------------------------------------------------------------------
-// chiave di un testo: come norm() di src/i18n/index.js (spazi, entita', <br /> = <br>)
-const ENTITIES = {
-  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', middot: '·', rsquo: '’', lsquo: '‘', ldquo: '“',
-  rdquo: '”', hellip: '…', mdash: '—', ndash: '–', rarr: '→', minus: '−', times: '×', reg: '®', copy: '©',
-  micro: 'µ', agrave: 'à', egrave: 'è', eacute: 'é', igrave: 'ì', ograve: 'ò', ugrave: 'ù', Egrave: 'È',
-  ccedil: 'ç', ntilde: 'ñ', bull: '•',
-}
-const norm = (s) =>
-  String(s ?? '')
-    .normalize('NFC')
-    .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) =>
-      e[0] === '#' ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)) : (ENTITIES[e] ?? m),
-    )
-    .replace(/\s*\/>/g, '>')
-    .replace(/[\s ]+/g, ' ')
-    .trim()
+// chiave di un testo: la stessa della build e del server (src/i18n/static.js), come norm() del browser
+const { norm, i18nElements } = await imp('src/i18n/static.js')
 
 // testi che non si traducono: marchio, numeri e unita', sigle, indirizzi email
 const SKIP = /^(Nutrex Lab|[\d\s.,%/+-]+\s*(mg|g|µg|kg|ml|UI|GDU|GDU\/g)?|[A-Z0-9-]{2,12}|\S+@\S+|mg|g|µg|kg|ml)$/
@@ -49,33 +34,20 @@ for (const l of LANGS) {
 
 // ---------------------------------------------------------------------------
 // testi italiani del sito
-const TAG = /<([a-zA-Z][\w-]*)\b([^>]*)>/g
 const attr = (attrs, name) => new RegExp(`\\s${name}\\s*=\\s*"([^"]*)"`).exec(attrs)?.[1] ?? null
 
-/** Testi da tradurre in un HTML: contenuto degli elementi con data-i18n e attributi di data-i18n-attr. */
+/**
+ * Testi da tradurre in un HTML: contenuto degli elementi con data-i18n (e data-i18n-text) e attributi di
+ * data-i18n-attr. Gli stessi che traduce la build per le pagine /de/... (translateHtml di src/i18n/static.js).
+ */
 function fromHtml(html, where) {
-  const src = html.replace(/<!--[\s\S]*?-->/g, (c) => ' '.repeat(c.length))
   const out = []
-  for (const m of src.matchAll(TAG)) {
-    const [whole, tag, attrs] = m
-    for (const name of (attr(attrs, 'data-i18n-attr') ?? '').split(/[\s,]+/).filter(Boolean)) {
-      const v = attr(attrs, name)
-      if (v) out.push([v, `${where}: ${name} di <${tag}>`])
+  for (const el of i18nElements(html)) {
+    for (const name of el.names) {
+      const v = attr(el.attrs, name)
+      if (v) out.push([v, `${where}: ${name} di <${el.tag}>`])
     }
-    if (!/\sdata-i18n(\s|=|>|\/)/.test(`${attrs}>`)) continue
-    // fine dell'elemento: il tag di chiusura corrispondente (anche con elementi uguali dentro)
-    const open = new RegExp(`<${tag}\\b[^>]*>|</${tag}\\s*>`, 'gi')
-    open.lastIndex = m.index + whole.length
-    let depth = 1
-    let end = -1
-    for (let n; (n = open.exec(src)); ) {
-      depth += n[0][1] === '/' ? -1 : 1
-      if (depth === 0) {
-        end = n.index
-        break
-      }
-    }
-    if (end > 0) out.push([html.slice(m.index + whole.length, end), `${where}: <${tag}>`])
+    if (el.inner) out.push([el.inner.text, `${where}: <${el.tag}>`])
   }
   return out
 }
@@ -103,10 +75,11 @@ texts.push(...fromHtml(build.staticGrid('tutti'), 'griglia:tutti'), ...fromHtml(
 texts.push(...fromHtml(build.shopCategories(), 'categorie:tutti'), ...fromHtml(build.lineSection(), 'seo:linea'))
 for (const c of catalog.CATEGORIES) texts.push(...fromHtml(build.catalogMain(c.slug), `catalogo:${c.slug}`))
 
-// JavaScript: t('...') e tp(n, '...', '...') (src/i18n/index.js ha solo esempi nei commenti)
+// JavaScript: t('...') e tp(n, '...', '...') (src/i18n/index.js ha solo esempi nei commenti), anche nella
+// pagina prodotto preparata sul server (server/)
 const STR = String.raw`(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")`
 const unq = (a, b) => (a ?? b).replace(/\\(['"])/g, '$1')
-for (const f of files('src', '.js')) {
+for (const f of [...files('src', '.js'), ...files('server', '.js')]) {
   if (f.replace(/\\/g, '/').endsWith('src/i18n/index.js')) continue
   const src = readFileSync(join(ROOT, f), 'utf8')
   for (const m of src.matchAll(new RegExp(String.raw`\bt\(\s*` + STR, 'g'))) texts.push([unq(m[1], m[2]), `${f}: t()`])
@@ -134,6 +107,20 @@ const pe = await imp('src/components/ProductExperience/copy.js')
 walk([pe.DEFAULT_COPY, pe.STEPS, pe.SHOWCASE_STEPS], 'ProductExperience/copy.js')
 const { PAGES } = await imp('src/seo/pages.js')
 for (const [k, p] of Object.entries(PAGES)) texts.push([p.title, `src/seo/pages.js ${k}`], [p.description, `src/seo/pages.js ${k}`])
+// SEO nelle altre lingue (src/seo/localize.js): anteprime social e testi dei dati strutturati
+const JSONLD_TEXT = new Set(['name', 'description', 'text', 'caption', 'value'])
+function jsonldTexts(v, where, key = '') {
+  if (typeof v === 'string') {
+    if (key === 'category') v.split(' > ').forEach((part) => texts.push([part, where]))
+    else if (JSONLD_TEXT.has(key)) texts.push([v, where])
+  } else if (Array.isArray(v)) v.forEach((x) => jsonldTexts(x, where, key))
+  else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) jsonldTexts(x, where, k)
+}
+for (const [k, p] of Object.entries(PAGES)) {
+  if (p.socialTitle) texts.push([p.socialTitle, `src/seo/pages.js ${k}: socialTitle`])
+  jsonldTexts(p.jsonld, `src/seo/pages.js ${k}: dati strutturati`)
+}
+texts.push([catalog.SOCIAL_IMAGE.alt, 'src/seo/catalog.js: SOCIAL_IMAGE'])
 
 const wanted = new Map()
 for (const [it, where] of texts) if (it && needs(it) && !wanted.has(norm(it))) wanted.set(norm(it), where)

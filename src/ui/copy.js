@@ -1,7 +1,7 @@
 import gsap from 'gsap'
 import { COPY } from '../content.js'
 import { PRODUCTS } from '../products.js'
-import { localize, formatNumber, t, setMeta, sourceHtml } from '../i18n/index.js'
+import { localize, formatNumber, t, setMeta, sourceHtml, pageMeta } from '../i18n/index.js'
 
 /*
   Mette nella pagina i testi del prodotto (src/content.js).
@@ -245,12 +245,10 @@ export function applyCopy(id, { animate = false, parts = 'all' } = {}) {
   primo prodotto della linea; scegliendone un altro dal menu (o aprendo /?prodotto=...) la scheda del
   browser mostra il suo nome. Il canonical resta la homepage.
 */
-const HOME_META = { title: document.title, description: $('meta[name="description"]')?.getAttribute('content') }
-
 function applyTop(c, animate, id) {
   const home = id === PRODUCTS[0].id
   const it = COPY[id].meta // titolo e descrizione italiani: setMeta li traduce
-  setMeta(home ? HOME_META : { title: it.title, description: it.description })
+  setMeta(home ? pageMeta() : { title: it.title, description: it.description })
 
   hero(c.hero, animate)
 

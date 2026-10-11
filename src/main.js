@@ -33,7 +33,7 @@ import { LOGO } from './ui/logo-paths.js'
 import { COPY } from './content.js'
 import MODEL_VERSIONS from './model-versions.json'
 import { createProductExperience, themeFromSite } from './components/ProductExperience/index.js'
-import { ready as i18nReady, localize, t, formatNumber, onLang, translateDom } from './i18n/index.js'
+import { ready as i18nReady, localize, t, formatNumber, onLang, translateDom, localPath } from './i18n/index.js'
 import { DEFAULT_COPY, stepsFor } from './components/ProductExperience/copy.js'
 import { initLangPicker } from './i18n/picker.js'
 
@@ -610,7 +610,7 @@ function initBuy() {
   document.querySelectorAll('[data-buy]').forEach((a) =>
     a.addEventListener('click', (e) => {
       e.preventDefault()
-      window.location.assign(`/prodotto/${encodeURIComponent(product.id)}`)
+      window.location.assign(localPath(`/prodotto/${encodeURIComponent(product.id)}`))
     }),
   )
 }

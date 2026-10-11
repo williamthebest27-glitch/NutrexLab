@@ -57,6 +57,8 @@ produce in `dist/` le pagine; su un hosting solo statico il sito si vede ma il n
 | --- | --- |
 | Testi di ogni prodotto (hero, sipario, ingredienti, scienza, uso, shop, titolo della pagina) | `src/content.js` |
 | SEO: titoli e descrizioni per Google, categorie, domande frequenti, sezione "La linea" della homepage, dati dell'azienda | `src/seo/catalog.js` (dati) + `src/seo/pages.js` (pagine); vedi "SEO" qui sotto |
+| Lingue: traduzioni dei testi del sito (anche titoli e descrizioni per Google nelle altre lingue) | `src/i18n/locales/<lingua>/` (la chiave e' il testo italiano, `npm test` controlla che ci siano tutti); vedi "Lingue" qui sotto |
+| Quale lingua vede chi arriva da un paese (Germania -> tedesco...) | `src/i18n/geo.js` (paesi) + `middleware.js` |
 | Struttura delle sezioni della homepage | `index.html` |
 | Navbar, menu mobile, piè di pagina (uguali in tutte le pagine) | `src/partials/` (`nav.html`, `mnav.html`, `footer.html`, `head.html`) |
 | Prodotti, prezzi, offerte, varianti, magazzino, foto, descrizioni, coupon, spedizioni, IVA | nel pannello di WooCommerce (vedi [HEADLESS_COMMERCE_SETUP.md](HEADLESS_COMMERCE_SETUP.md)) |
@@ -118,6 +120,9 @@ uguale per tutti i prodotti).
 - `src/main.js` avvio: caricamento, intro, smooth scroll, navigazione, cambio prodotto
 - `src/products.js` + `src/theme.js` linea prodotti e temi colore (custom properties che sfumano)
 - `src/content.js` + `src/ui/copy.js` testi di ogni prodotto e loro inserimento nella pagina
+- `src/i18n/` lingue del sito: `langs.js` (lingue e indirizzi), `index.js` (traduzioni nel browser, cambio
+  lingua), `static.js` (traduzioni in build e sul server), `geo.js` (lingua per paese), `locales/` (testi);
+  `middleware.js` (lingua di chi apre il sito, su Vercel)
 - `src/ui/productMenu.js` menu prodotti della hero (pannello su desktop, tendina su mobile)
 - `src/ui/menuMorph.js` desktop: la scheda dei prodotti si richiude nel pulsante PRODOTTI scorrendo
   (esagoni che volano nel pulsante, pannello che diventa pillola) e si riapre tornando in cima
@@ -182,13 +187,51 @@ Pagina nuova: un file HTML accanto a `index.html` con `<!-- @head -->`, `<!-- @n
 `<!-- @mnav -->` e `<!-- @footer -->`, uno script in `src/pages/` che chiama `initPage()` e la voce
 in `vite.config.js` (`build.rolldownOptions.input`), altrimenti `npm run build` la ignora.
 
+## Lingue
+
+Il sito e' in italiano, inglese, francese, tedesco e spagnolo (`src/i18n/langs.js`), e ogni lingua ha i suoi
+indirizzi, cosi' Google trova e indicizza ogni versione e la mostra a chi cerca in quella lingua:
+
+| Lingua | Homepage | Una pagina | Un prodotto |
+| --- | --- | --- | --- |
+| Italiano | `/` | `/integratori` | `/prodotto/collagene` |
+| Inglese | `/en` | `/en/integratori` | `/en/prodotto/collagene` |
+| Francese | `/fr` | `/fr/integratori` | `/fr/prodotto/collagene` |
+| Tedesco | `/de` | `/de/integratori` | `/de/prodotto/collagene` |
+| Spagnolo | `/es` | `/es/integratori` | `/es/prodotto/collagene` |
+
+- **Pagine gia' tradotte**: `npm run build` scrive ogni pagina anche in `dist/<lingua>/` (la homepage in
+  `dist/<lingua>.html`), con testi, link, titolo, descrizione, canonical, Open Graph e dati strutturati nella
+  sua lingua (`src/seo/translate.js`, `src/i18n/static.js`); la pagina prodotto la traduce il server
+  (`server/product-page.js`). In sviluppo `/de/...` si prepara al volo. I testi senza traduzione restano in
+  italiano (la build lo scrive nel terminale, `npm test` li segnala).
+- **Google**: ogni pagina indica le sue versioni nelle altre lingue (`<link rel="alternate" hreflang>`, piu'
+  `x-default` verso l'inglese per chi cerca in un'altra lingua) e la sitemap elenca tutte le lingue con le
+  stesse versioni. Il canonical di ogni pagina e' quello della sua lingua.
+- **Lingua in base al paese** (`middleware.js` su Vercel, paesi in `src/i18n/geo.js`): chi apre un indirizzo
+  italiano (es. `https://www.nutrexlab.it/`) dalla Germania o dall'Austria va su `/de`, dalla Francia su `/fr`,
+  dalla Spagna o dall'America Latina su `/es`, dal Regno Unito, dagli Stati Uniti e dal resto del mondo su
+  `/en`; dall'Italia resta in italiano. Nei paesi con piu' lingue (Svizzera, Belgio, Canada...) decide la
+  lingua del browser, nei paesi con una lingua che il sito non ha la lingua del browser o l'inglese.
+  La lingua scelta dal selettore in alto vale sempre di piu' (cookie `nx_lang`, anche l'italiano). Motori di
+  ricerca e anteprime dei link non vengono mai spostati: vedono la pagina dell'indirizzo che aprono.
+  Un indirizzo con la lingua (`/fr/...`) mostra sempre quella lingua.
+- **Cambio lingua** dal selettore: la pagina si traduce senza ricaricare e l'indirizzo passa alla lingua
+  scelta (`/integratori` -> `/de/integratori`), cosi' come tutti i link del sito.
+- Nel codice del browser gli indirizzi scritti dal JavaScript si possono lasciare italiani (`/carrello`): i link
+  si portano da soli alla lingua; per una navigazione via codice c'e' `localPath('/carrello')` di
+  `src/i18n/index.js`, per il percorso della pagina senza la lingua `pagePath()`.
+- Pagina nuova: oltre alla voce in `vite.config.js`, l'indirizzo va in `config.matcher` di `middleware.js`
+  (`npm test` controlla che ci siano tutte).
+
 ## SEO
 
 Tutto in `src/seo/` (una sola fonte per build, server e browser): `catalog.js` (dominio, azienda,
 prodotti con titolo/descrizione/FAQ, categorie), `pages.js` (`<head>` di ogni pagina statica: nel file HTML
 `<!-- seo:chiave -->`), `schema.js` (dati strutturati), `build.js` (griglie gia' pronte, categorie, sezione
 "La linea" della homepage). La pagina prodotto la prepara il server (`server/product-page.js`), la sitemap
-`api/sitemap.js`, `public/robots.txt`. Canonical e indirizzi sempre su `https://www.nutrexlab.it`.
+`api/sitemap.js`, `public/robots.txt`. Canonical e indirizzi sempre su `https://www.nutrexlab.it`; nelle altre
+lingue (vedi "Lingue") titoli, descrizioni e dati strutturati arrivano dalle traduzioni di `src/i18n/locales/`.
 Logo per Google (dati strutturati): `public/logo.png` (512 x 512, il marchio di `nutrex-logo.svg`); icone del
 browser: `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png`. Le funzioni di Vercel girano a Francoforte
 (`regions` in `vercel.json`), vicino al WooCommerce (Paesi Bassi) e ai clienti italiani.

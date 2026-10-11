@@ -15,18 +15,26 @@
     { "source": "/acquista", "destination": "/integratori", "permanent": true },
     { "source": "/acquista.html", "destination": "/integratori", "permanent": true },
     { "source": "/pagamenti", "destination": "/carrello", "permanent": true },
-    { "source": "/pagamenti.html", "destination": "/carrello", "permanent": true }
+    { "source": "/pagamenti.html", "destination": "/carrello", "permanent": true },
+    { "source": "/:lang(en|fr|de|es)/acquista", "destination": "/:lang/integratori", "permanent": true },
+    { "source": "/:lang(en|fr|de|es)/acquista.html", "destination": "/:lang/integratori", "permanent": true },
+    { "source": "/:lang(en|fr|de|es)/pagamenti", "destination": "/:lang/carrello", "permanent": true },
+    { "source": "/:lang(en|fr|de|es)/pagamenti.html", "destination": "/:lang/carrello", "permanent": true },
+    { "source": "/it", "destination": "/", "permanent": true },
+    { "source": "/it/:path*", "destination": "/:path*", "permanent": true }
   ],
   "rewrites": [
     { "source": "/prodotto/:slug", "destination": "/api/product-page?slug=:slug" },
+    { "source": "/:lang(en|fr|de|es)/prodotto/:slug", "destination": "/api/product-page?slug=:slug&lang=:lang" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/googlef1435490fd6eb828.html", "destination": "/api/google-verify" },
     { "source": "/googlef1435490fd6eb828", "destination": "/api/google-verify" },
-    { "source": "/account", "destination": "/api/account" }
+    { "source": "/account", "destination": "/api/account" },
+    { "source": "/:lang(en|fr|de|es)/account", "destination": "/api/account?lang=:lang" }
   ],
   "regions": ["fra1"],
   "functions": {
-    "api/product-page.js": { "includeFiles": "dist/prodotto.html" }
+    "api/product-page.js": { "includeFiles": "dist/**/prodotto.html" }
   },
   "headers": [
     {
@@ -40,6 +48,10 @@
     },
     {
       "source": "/prodotto",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    },
+    {
+      "source": "/:lang(en|fr|de|es)/prodotto",
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
     },
     {

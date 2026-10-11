@@ -1,4 +1,4 @@
-import { LANG_INFO, DEFAULT_LANG, isLang, initialLang, saveLang } from './langs.js'
+import { LANG_INFO, DEFAULT_LANG, isLang, savedLang, saveLang, splitLang, withLang, isPagePath, stripLang } from './langs.js'
 
 /*
   Traduzioni del sito, applicate nel browser senza ricaricare la pagina.
@@ -14,7 +14,13 @@ import { LANG_INFO, DEFAULT_LANG, isLang, initialLang, saveLang } from './langs.
   console): cambiando un testo italiano va aggiornata anche la sua traduzione (npm test lo controlla).
 
   Ogni lingua e' un file a parte, scaricato solo quando serve. Cambiando lingua: setLang('de') carica il
-  file, traduce l'HTML della pagina e avvisa le pagine (onLang) che ridisegnano le loro parti.
+  file, traduce l'HTML della pagina, porta l'indirizzo e i link alla lingua (/integratori -> /de/integratori,
+  src/i18n/langs.js) e avvisa le pagine (onLang) che ridisegnano le loro parti.
+
+  Le pagine /de/..., /en/... arrivano gia' tradotte (build e server: src/i18n/static.js), con
+  <html data-src-lang="de"> e su ogni testo tradotto il numero della sua voce nel dizionario
+  (data-i18n="12", data-i18n-text="3", data-i18n-at="aria-label:40"): da li' si ritrova il testo italiano di
+  partenza (sourceHtml, sourceText, pageMeta), che resta la chiave di tutte le traduzioni.
 
   Fuori dal browser (build di Vite, src/seo/build.js che usa le schede di src/shop/card.js) non c'e' il
   DOM: la lingua resta l'italiano e t() restituisce il testo com'e'.
@@ -29,8 +35,11 @@ const LOADERS = {
 
 const browser = typeof document !== 'undefined'
 const html = browser ? document.documentElement : null
+// lingua in cui e' scritto l'HTML della pagina (le pagine /de/... arrivano gia' in tedesco)
+const srcLang = (browser && isLang(html.dataset.srcLang) && html.dataset.srcLang) || DEFAULT_LANG
 let current = DEFAULT_LANG
 let dict = null // Map: testo italiano normalizzato -> traduzione
+let srcEntries = null // [[italiano, traduzione], ...] della lingua dell'HTML (numeri data-i18n="12")
 const cache = new Map()
 const listeners = new Set()
 
@@ -38,6 +47,12 @@ export { LANG_INFO, isLang }
 export { LANGS } from './langs.js'
 export const lang = () => current
 export const locale = () => LANG_INFO[current].locale
+
+/** Percorso della pagina aperta senza il prefisso della lingua ('/de/integratori' -> '/integratori'). */
+export const pagePath = () => stripLang(location.pathname)
+
+/** Un percorso del sito nella lingua attuale ('/carrello' -> '/de/carrello'): per gli indirizzi scritti dal JavaScript. */
+export const localPath = (path) => withLang(path, current)
 
 /**
  * Chiave di un testo: spazi e a capo non contano (anche l'HTML: <br /> e <br> sono la stessa cosa), ne'
@@ -52,19 +67,28 @@ export function norm(s) {
   return squeeze(tpl.innerHTML)
 }
 
+/** Dizionario di una lingua: { map: testo italiano normalizzato -> traduzione, entries: [[italiano, traduzione], ...] }. */
 async function load(l) {
   if (l === DEFAULT_LANG) return null
   if (!cache.has(l)) {
     cache.set(
       l,
       LOADERS[l]().then((m) => {
+        const entries = []
+        for (const part of Object.values(m.default)) for (const e of Object.entries(part)) entries.push(e)
         const map = new Map()
-        for (const part of Object.values(m.default)) for (const [it, tr] of Object.entries(part)) map.set(norm(it), tr)
-        return map
+        for (const [it, tr] of entries) map.set(norm(it), tr)
+        return { map, entries }
       }),
     )
   }
   return cache.get(l)
+}
+
+/** Testo italiano della voce n del dizionario della lingua dell'HTML (null se il numero non c'e'). */
+function sourceEntry(n) {
+  if (!srcEntries || n == null || !/^\d+$/.test(n)) return null
+  return srcEntries[Number(n)]?.[0] ?? null
 }
 
 // ---------------------------------------------------------------------------
@@ -145,18 +169,38 @@ export const formatDate = (date) => new Intl.DateTimeFormat(locale(), { day: 'nu
 
 const ORIGINAL = new WeakMap()
 
-/** HTML e attributi italiani di un elemento (presi la prima volta, prima di ogni traduzione). */
+/** Attributi gia' tradotti nell'HTML: data-i18n-at="aria-label:40 alt:41" -> { 'aria-label': '40', alt: '41' }. */
+const translatedAttrs = (el) =>
+  Object.fromEntries(
+    (el.dataset.i18nAt ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((x) => x.split(':')),
+  )
+
+/**
+ * HTML e attributi italiani di un elemento (presi la prima volta, prima di ogni traduzione). Nelle pagine
+ * arrivate gia' tradotte il testo italiano e' quello della voce del dizionario indicata dall'elemento.
+ */
 function original(el) {
   let o = ORIGINAL.get(el)
   if (!o) {
     const split = el._split
     if (split) split.revert()
-    o = { html: el.innerHTML, attrs: {} }
+    const it = sourceEntry(el.dataset.i18n)
+    o = { html: it ?? el.innerHTML, attrs: {}, done: it != null ? srcLang : null }
+    for (const [attr, n] of Object.entries(translatedAttrs(el))) {
+      const v = sourceEntry(n)
+      if (v != null) o.attrs[attr] = v
+    }
     ORIGINAL.set(el, o)
     if (split) split.split()
   }
   return o
 }
+
+/** Testo italiano di una voce [data-i18n-text] (le voci del menu, src/ui/navLinks.js). */
+export const sourceText = (el) => sourceEntry(el.dataset.i18nText) ?? el.textContent.trim()
 
 /** HTML italiano di un elemento [data-i18n] (il testo di partenza, qualunque sia la lingua del sito). */
 export const sourceHtml = (el) => original(el).html
@@ -180,7 +224,8 @@ export function translateDom(root = document) {
   for (const el of all) {
     if (el._i18nLang === current) continue
     const o = original(el)
-    if (el.hasAttribute('data-i18n')) {
+    // testo arrivato gia' tradotto nella lingua giusta (pagine /de/...): resta com'e'
+    if (el.hasAttribute('data-i18n') && !(o.done === current && !el._i18nLang)) {
       const value = lookup(o.html) ?? o.html
       if (el.innerHTML !== value || el._i18nLang) setInner(el, value)
     }
@@ -200,9 +245,22 @@ export function translateDom(root = document) {
 // ---------------------------------------------------------------------------
 // titolo e descrizione della pagina
 
-const META = browser
-  ? { title: document.title, description: document.querySelector('meta[name="description"]')?.getAttribute('content') ?? '' }
-  : { title: '', description: '' }
+const descriptionTag = () => (browser ? document.querySelector('meta[name="description"]') : null)
+const META = browser ? { title: document.title, description: descriptionTag()?.getAttribute('content') ?? '' } : { title: '', description: '' }
+let PAGE_META = { ...META }
+
+/** Titolo e descrizione italiani con cui e' arrivata la pagina (anche se arrivata gia' tradotta). */
+export const pageMeta = () => ({ ...PAGE_META })
+
+/** Pagine arrivate gia' tradotte: titolo e descrizione italiani dalle voci del dizionario (<title data-i18n="5">). */
+function sourceMeta() {
+  if (!srcEntries) return
+  const title = sourceEntry(document.querySelector('title')?.dataset.i18n)
+  const description = sourceEntry(descriptionTag()?.dataset.i18n)
+  if (title != null) META.title = title
+  if (description != null) META.description = description
+  PAGE_META = { ...META }
+}
 
 /** Titolo della scheda e descrizione nella lingua (le pagine che li cambiano passano quelli italiani). */
 export function setMeta({ title, description } = {}) {
@@ -213,19 +271,70 @@ export function setMeta({ title, description } = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// link all'area clienti
+// link della lingua
 
-/**
- * I link all'area clienti (/account: sta sul WooCommerce, api/account.js) portano la lingua del sito
- * (?lang=de), cosi' l'area clienti si apre nella stessa lingua. Anche l'italiano: chi torna all'italiano
- * ritrova l'area clienti in italiano.
- */
-function langLinks() {
-  for (const a of document.querySelectorAll('a[href^="/account"]')) {
-    const url = new URL(a.getAttribute('href'), location.origin)
+/*
+  I link alle pagine del sito portano alla stessa lingua (/integratori -> /de/integratori), anche quelli
+  scritti dal JavaScript dopo (schede dei prodotti, carrello...): li sistema un MutationObserver, attivo
+  solo fuori dall'italiano. I link all'area clienti (/account: sta sul WooCommerce, api/account.js) portano
+  la lingua (?lang=de), cosi' l'area clienti si apre nella stessa lingua (anche l'italiano).
+*/
+function localizeLink(a) {
+  const href = a.getAttribute('href')
+  if (!href || href[0] !== '/') return
+  let next = href
+  if (/^(\/(en|fr|de|es))?\/account(?=[/?#]|$)/.test(href)) {
+    const url = new URL(stripLang(href.split(/[?#]/)[0]) + href.slice(href.split(/[?#]/)[0].length), location.origin)
     url.searchParams.set('lang', current)
-    a.setAttribute('href', url.pathname + url.search + url.hash)
+    next = url.pathname + url.search + url.hash
+  } else if (isPagePath(href)) {
+    next = withLang(href, current)
   }
+  if (next !== href) a.setAttribute('href', next)
+}
+
+function localizeLinks(root = document) {
+  if (root.tagName === 'A') localizeLink(root)
+  for (const a of root.querySelectorAll?.('a[href]') ?? []) localizeLink(a)
+}
+
+let linkObserver = null
+function watchLinks() {
+  if (current === DEFAULT_LANG) {
+    linkObserver?.disconnect()
+    linkObserver = null
+    return
+  }
+  if (linkObserver || typeof MutationObserver === 'undefined') return
+  linkObserver = new MutationObserver((records) => {
+    for (const r of records) {
+      if (r.type === 'attributes') {
+        if (r.target.tagName === 'A') localizeLink(r.target)
+        continue
+      }
+      for (const node of r.addedNodes) {
+        if (node.nodeType !== 1) continue
+        if (node.tagName === 'A') localizeLink(node)
+        else if (node.firstElementChild) localizeLinks(node)
+      }
+    }
+  })
+  linkObserver.observe(html, { subtree: true, childList: true, attributes: true, attributeFilter: ['href'] })
+}
+
+/** L'indirizzo della pagina nella lingua attuale (senza ricaricare: /integratori <-> /de/integratori). */
+function syncUrl() {
+  try {
+    const next = withLang(location.pathname, current)
+    if (next !== location.pathname) history.replaceState(history.state, '', next + location.search + location.hash)
+  } catch {
+    // indirizzo non modificabile: resta com'e'
+  }
+}
+
+function applyLinks() {
+  localizeLinks(document)
+  watchLinks()
 }
 
 // ---------------------------------------------------------------------------
@@ -261,48 +370,58 @@ export async function setLang(l) {
   const next = await job
   if (job !== switching) return // nel frattempo e' stata scelta un'altra lingua
   current = l
-  dict = next
+  dict = next?.map ?? null
   saveLang(l)
   mark()
   translateDom(document)
-  langLinks()
+  applyLinks()
+  syncUrl()
   setMeta()
   notify()
 }
 
 /*
-  All'apertura: la lingua scelta (o di ?lang=) si applica prima di mostrare la pagina. Lo script
-  nell'<head> (src/partials/head.html) nasconde i testi traducibili finche' non e' pronta
-  (classe i18n-wait). ready si risolve con la lingua pronta: le pagine lo aspettano prima di disegnare.
+  All'apertura: la lingua dell'indirizzo (/de/...: la pagina e' gia' tradotta), ?lang= di un link (pagamento
+  e area clienti sul WooCommerce: la scelta resta e l'indirizzo passa alla lingua), altrimenti quella scelta
+  in passato (cookie nx_lang; su Vercel il middleware ha gia' portato alla pagina della lingua), altrimenti
+  l'italiano. Se la lingua non e' quella dell'HTML la pagina si traduce prima di mostrarla: lo script
+  nell'<head> (src/partials/head.html) nasconde i testi traducibili finche' non e' pronta (classe
+  i18n-wait). ready si risolve con la lingua pronta: le pagine lo aspettano prima di disegnare.
 */
 export const ready = (async () => {
   if (!browser) return DEFAULT_LANG
-  const l = initialLang()
-  // ?lang= di un link: la scelta resta nella memoria del browser e l'indirizzo torna pulito (cosi', cambiata
-  // la lingua dal selettore, ricaricando la pagina non torna quella del link)
+  let l = splitLang(location.pathname).lang ?? DEFAULT_LANG
   try {
     const url = new URL(location.href)
+    const q = url.searchParams.get('lang')
     if (url.searchParams.has('lang')) {
-      if (isLang(url.searchParams.get('lang'))) saveLang(l) // anche ?lang=it: vale la lingua del link
+      if (isLang(q)) {
+        saveLang(q) // anche ?lang=it: vale la lingua del link
+        l = q
+      }
       url.searchParams.delete('lang')
       history.replaceState(history.state, '', url)
+    } else if (!splitLang(location.pathname).lang) {
+      l = savedLang() ?? DEFAULT_LANG
     }
   } catch {
-    // indirizzo non modificabile: resta com'e'
+    // indirizzo non leggibile: la lingua dell'indirizzo
   }
   try {
-    if (l !== DEFAULT_LANG) {
-      dict = await load(l)
-      current = l
-    }
+    const [target, source] = await Promise.all([load(l), srcLang === DEFAULT_LANG ? null : load(srcLang)])
+    srcEntries = source?.entries ?? null
+    dict = target?.map ?? null
+    current = l
   } catch (err) {
     console.error('[i18n] lingua non disponibile', err)
-    current = DEFAULT_LANG
-    dict = null
+    current = srcLang
+    dict = (await load(srcLang).catch(() => null))?.map ?? null
   }
+  sourceMeta()
   mark()
   translateDom(document)
-  langLinks()
+  applyLinks()
+  syncUrl()
   setMeta()
   html.classList.remove('i18n-wait')
   // chi si e' gia' iscritto (prima che la lingua fosse pronta) ridisegna nella lingua scelta

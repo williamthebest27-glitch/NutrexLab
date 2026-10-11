@@ -184,7 +184,8 @@ thedoubletwenty.
   e in alto nella pagina si cambia con la bandiera. Solo le pagine Nutrex (pagamento, "Ordine ricevuto", "Paga
   l'ordine", area clienti) e le richieste che fanno cambiano lingua: il resto di thedoubletwenty e la bacheca
   restano in italiano. I link verso nutrexlab.it (carrello, "Torna su Nutrex Lab", termini, privacy, `/ordine`
-  dopo il pagamento) portano `?lang=`, cosi' il sito resta nella stessa lingua.
+  dopo il pagamento) portano `?lang=`, cosi' il sito resta nella stessa lingua (nutrexlab.it li porta alla
+  pagina di quella lingua, es. `/ordine?lang=de` -> `/de/ordine`: `middleware.js`).
   - Testi di WooCommerce, dei metodi di pagamento e di WordPress (campi, spedizione, "Effettua ordine",
     ordini, indirizzi...): arrivano dai loro **pacchetti di lingua**, che devono essere installati su
     thedoubletwenty per inglese (en_GB; senza, l'inglese di base), francese (fr_FR), tedesco (de_DE) e spagnolo

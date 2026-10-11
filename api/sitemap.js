@@ -1,6 +1,7 @@
 import { route } from '../server/http.js'
 import { listProducts } from '../server/catalog.js'
 import { ORIGIN, CATEGORIES, PRODUCTS, SHOP, categoryPath, productPath, productImage } from '../src/seo/catalog.js'
+import { LANGS, FALLBACK_LANG, withLang } from '../src/i18n/langs.js'
 
 /*
   GET /sitemap.xml  (riscritto qui da vercel.json): solo indirizzi canonici e indicizzabili, sempre sul
@@ -8,6 +9,9 @@ import { ORIGIN, CATEGORIES, PRODUCTS, SHOP, categoryPath, productPath, productI
   prodotti pubblicati in WooCommerce (non quelli nascosti dal catalogo), con le loro foto (sitemap
   immagini di Google). Carrello, pagamento, ordine e account non ci sono: sono noindex o reindirizzano.
   Se WooCommerce non risponde restano i 12 prodotti della linea (src/seo/catalog.js), in cache per poco.
+  Ogni pagina c'e' in tutte le lingue del sito (/, /en, /fr, /de, /es: src/i18n/langs.js), e ogni voce
+  elenca le sue versioni nelle altre lingue (xhtml:link hreflang, piu' x-default verso l'inglese), come
+  i link alternate nel <head> delle pagine.
 */
 
 const PAGES = [
@@ -35,11 +39,14 @@ async function shopProducts() {
   return out
 }
 
-function entry(path, images = []) {
+/** Una voce per lingua: indirizzo della lingua, versioni in tutte le lingue, foto. */
+function entries(path, images = []) {
   const imgs = [...new Set(images.filter(Boolean))]
     .map((src) => `\n    <image:image><image:loc>${esc(/^https?:/i.test(src) ? src : `${ORIGIN}${src}`)}</image:loc></image:image>`)
     .join('')
-  return `  <url>\n    <loc>${esc(`${ORIGIN}${path}`)}</loc>${imgs}\n  </url>`
+  const alt = (hreflang, l) => `\n    <xhtml:link rel="alternate" hreflang="${hreflang}" href="${esc(`${ORIGIN}${withLang(path, l)}`)}" />`
+  const links = LANGS.map((l) => alt(l, l)).join('') + alt('x-default', FALLBACK_LANG)
+  return LANGS.map((l) => `  <url>\n    <loc>${esc(`${ORIGIN}${withLang(path, l)}`)}</loc>${links}${imgs}\n  </url>`)
 }
 
 export const GET = route('sitemap', async (request) => {
@@ -54,8 +61,8 @@ export const GET = route('sitemap', async (request) => {
   }
   const xml =
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
-    [...PAGES.map((p) => entry(p)), ...products.map((p) => entry(productPath(p.slug), p.images))].join('\n') +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
+    [...PAGES.flatMap((p) => entries(p)), ...products.flatMap((p) => entries(productPath(p.slug), p.images))].join('\n') +
     '\n</urlset>\n'
   return new Response(request.method === 'HEAD' ? null : xml, {
     headers: {

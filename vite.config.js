@@ -1,10 +1,13 @@
-import { readFileSync } from 'node:fs'
-import { resolve, sep } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { defineConfig } from 'vite'
 import { PAGES } from './src/seo/pages.js'
 import { headTags } from './src/seo/head.js'
 import { catalogMain, staticGrid, shopFaq, shopCategories, lineSection } from './src/seo/build.js'
+import { translatePage, finishItalian } from './src/seo/translate.js'
+import { PREFIXED, splitLang } from './src/i18n/langs.js'
+import langMiddleware, { config as langMiddlewareConfig } from './middleware.js'
 
 // versioni dei modelli 3D (scripts/sync-model.mjs) nello script di precaricamento di index.html
 const modelVersions = {
@@ -36,8 +39,9 @@ const partials = {
 
 /*
   SEO delle pagine statiche (dati in src/seo/): nel file HTML
-  - <!-- seo:chiave -->      -> titolo, descrizione, canonical, Open Graph, Twitter e dati strutturati
-                                della pagina "chiave" di src/seo/pages.js (solo dentro <head>: nulla di visibile)
+  - <!-- seo:chiave -->      -> titolo, descrizione, canonical, hreflang, Open Graph, Twitter e dati strutturati
+                                della pagina "chiave" di src/seo/pages.js (solo dentro <head>: nulla di visibile;
+                                tra <!--nx:seo:chiave--> e <!--/nx:seo-->, per rifarlo nelle altre lingue)
   - <!-- seo:linea -->       -> sezione "La linea Nutrex Lab" della homepage (prima del footer)
   - <!-- griglia:tutti -->   -> le schede dei prodotti della pagina Integratori, gia' nell'HTML
   - <!-- faq:integratori --> -> domande frequenti della pagina Integratori
@@ -56,10 +60,96 @@ const seo = {
         .replace(/<!--\s*categorie:tutti\s*-->/g, () => shopCategories())
         .replace(/<!--\s*seo:([a-z0-9-]+)\s*-->/g, (_, key) => {
           if (!PAGES[key]) throw new Error(`SEO: nessuna pagina "${key}" in src/seo/pages.js (${ctx.filename})`)
-          return headTags(PAGES[key])
+          return `<!--nx:seo:${key}-->${headTags(PAGES[key])}<!--/nx:seo-->`
         })
         .replace(/<!--\s*griglia:([a-z0-9-]+)\s*-->/g, (_, key) => staticGrid(key))
         .replace(/<!--\s*catalogo:([a-z0-9-]+)\s*-->/g, (_, key) => catalogMain(key)),
+  },
+}
+
+/*
+  Pagine nelle altre lingue (src/i18n/langs.js): /de/integratori, /en/chi-siamo, /fr (homepage)...
+  - build: dopo aver scritto le pagine italiane in dist/, ogni pagina si riscrive tradotta in dist/<lingua>/
+    (la homepage in dist/<lingua>.html), con il <head> della sua lingua (src/seo/translate.js). La pagina
+    d'errore resta una sola (Vercel la serve per ogni indirizzo: si traduce nel browser).
+  - sviluppo: /de/... si prepara al volo dalla pagina italiana, nello stesso modo.
+  Testi senza traduzione: avviso nel terminale (restano in italiano; npm test li segnala).
+*/
+const pageFile = (path) => {
+  const clean = path.replace(/\/index\.html$/, '/').replace(/\.html$/, '').replace(/(.)\/$/, '$1')
+  return clean === '/' ? 'index.html' : `${clean.slice(1)}.html`
+}
+
+function reportMissing(lang, file, missing) {
+  if (!missing.length) return
+  const list = missing.slice(0, 5).map((s) => `"${s.replace(/\s+/g, ' ').slice(0, 70)}"`).join(', ')
+  console.warn(`[i18n] ${lang}: ${missing.length} testi senza traduzione in ${file} (restano in italiano): ${list}${missing.length > 5 ? '...' : ''}`)
+}
+
+/*
+  Il middleware della lingua (middleware.js: ?lang= dei link e lingua scelta nel cookie; il paese in locale
+  non c'e') anche con npm run dev e npm run preview, sugli stessi indirizzi che usa Vercel.
+*/
+const matchers = langMiddlewareConfig.matcher.map((m) => new RegExp(`^${m.replace(/\/:path\*$/, '(?:/.*)?')}$`))
+const langRedirects = async (req, res, next) => {
+  const path = (req.url ?? '/').split('?')[0]
+  if (!matchers.some((re) => re.test(path))) return next()
+  try {
+    const headers = new Headers()
+    for (const [k, v] of Object.entries(req.headers)) if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(', ') : v)
+    const out = await langMiddleware(new Request(`http://${req.headers.host ?? '127.0.0.1'}${req.url}`, { method: req.method, headers }))
+    const location = out?.headers.get('location')
+    if (!location) return next()
+    const target = new URL(location)
+    res.statusCode = out.status
+    res.setHeader('Location', target.pathname + target.search)
+    const cookie = out.headers.get('set-cookie')
+    if (cookie) res.setHeader('Set-Cookie', cookie)
+    res.end()
+  } catch (err) {
+    next(err)
+  }
+}
+
+const i18nPages = {
+  name: 'i18n-pages',
+  configurePreviewServer(server) {
+    server.middlewares.use(langRedirects)
+  },
+  configureServer(server) {
+    server.middlewares.use(langRedirects)
+    server.middlewares.use(async (req, res, next) => {
+      const [pathname, search = ''] = (req.url ?? '/').split('?')
+      const { lang, path } = splitLang(pathname)
+      if (!lang || path.startsWith('/prodotto/') || !/text\/html|\*\/\*/.test(req.headers.accept ?? '*/*')) return next()
+      const file = pageFile(path)
+      if (file === '404.html' || !existsSync(resolve(file))) return next()
+      try {
+        const italian = await server.transformIndexHtml(`/${file}${search ? `?${search}` : ''}`, readFileSync(resolve(file), 'utf8'))
+        const { html, missing } = await translatePage(italian, lang)
+        reportMissing(lang, file, missing)
+        res.setHeader('Content-Type', 'text/html; charset=utf-8')
+        res.end(html)
+      } catch (err) {
+        next(err)
+      }
+    })
+  },
+  async writeBundle(options, bundle) {
+    const dir = options.dir ?? resolve('dist')
+    const pages = Object.keys(bundle).filter((f) => f.endsWith('.html'))
+    for (const file of pages) {
+      const italian = readFileSync(resolve(dir, file), 'utf8')
+      writeFileSync(resolve(dir, file), finishItalian(italian))
+      if (file === '404.html') continue
+      for (const lang of PREFIXED) {
+        const { html, missing } = await translatePage(italian, lang)
+        reportMissing(lang, file, missing)
+        const out = resolve(dir, file === 'index.html' ? `${lang}.html` : `${lang}/${file}`)
+        mkdirSync(dirname(out), { recursive: true })
+        writeFileSync(out, html)
+      }
+    }
   },
 }
 
@@ -94,11 +184,13 @@ function shopFunctions() {
     res.end(Buffer.from(await response.arrayBuffer()))
   }
 
-  // /prodotto/<slug> -> pagina prodotto, /sitemap.xml -> api/sitemap, /api/<nome> -> api/<nome>.js
+  // /prodotto/<slug> (anche /de/prodotto/<slug>) -> pagina prodotto, /sitemap.xml -> api/sitemap,
+  // /api/<nome> -> api/<nome>.js
   const route = (url) => {
-    const path = url.split('?')[0]
+    const { lang, path } = splitLang(url.split('?')[0])
     const product = /^\/prodotto\/([^/]+)\/?$/.exec(path)
-    if (product) return { name: 'product-page', query: `slug=${product[1]}` }
+    if (product) return { name: 'product-page', slug: product[1], lang: lang ?? 'it' }
+    if (lang) return null
     if (path === '/sitemap.xml') return { name: 'sitemap', query: '' }
     const api = /^\/api\/([a-z0-9-]+)\/?$/.exec(path)
     if (api) return { name: api[1], query: url.split('?')[1] ?? '' }
@@ -113,7 +205,7 @@ function shopFunctions() {
       if (r.name === 'product-page') {
         // il modello della pagina e' prodotto.html (in sviluppo trasformato da Vite)
         const [{ getProduct }, { renderProductPage }] = await Promise.all([load('/server/catalog.js'), load('/server/product-page.js')])
-        const slug = decodeURIComponent(r.query.replace(/^slug=/, ''))
+        const slug = decodeURIComponent(r.slug)
         let product = null
         let status = 200
         try {
@@ -122,7 +214,7 @@ function shopFunctions() {
           status = err?.status === 404 ? 404 : 503
           if (status === 503) console.error('[negozio:product-page]', err?.message)
         }
-        const html = renderProductPage(await productTemplate(req.url), { product, slug, status })
+        const html = await renderProductPage(await productTemplate(r.lang), { product, slug, status, lang: r.lang })
         res.statusCode = status
         res.setHeader('Content-Type', 'text/html; charset=utf-8')
         return res.end(html)
@@ -146,19 +238,23 @@ function shopFunctions() {
     name: 'shop-functions',
     configureServer(server) {
       const load = (file) => server.ssrLoadModule(file)
-      const template = (url) => server.transformIndexHtml(url, readFileSync('prodotto.html', 'utf8'))
+      // modello della pagina prodotto: prodotto.html trasformato da Vite (e tradotto nelle altre lingue)
+      const template = async (lang) => {
+        const html = await server.transformIndexHtml('/prodotto.html', readFileSync('prodotto.html', 'utf8'))
+        return (await translatePage(html, lang)).html
+      }
       server.middlewares.use(middleware(load, template))
     },
     configurePreviewServer(server) {
       const load = (file) => import(pathToFileURL(resolve(`.${file}`)).href)
-      const template = async () => readFileSync('dist/prodotto.html', 'utf8')
+      const template = async (lang) => readFileSync(lang === 'it' ? 'dist/prodotto.html' : `dist/${lang}/prodotto.html`, 'utf8')
       server.middlewares.use(middleware(load, template))
     },
   }
 }
 
 export default defineConfig({
-  plugins: [partials, seo, modelVersions, shopFunctions()],
+  plugins: [partials, seo, modelVersions, i18nPages, shopFunctions()],
   // piu' pagine: /integratori apre integratori.html, /integratori/collagene integratori/collagene.html
   // (anche con vite preview); un indirizzo sconosciuto da' 404
   appType: 'mpa',
