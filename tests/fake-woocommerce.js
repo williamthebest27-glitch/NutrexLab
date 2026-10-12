@@ -200,7 +200,7 @@ export function installFakeWoo() {
     if (path === '/products/categories') return page(CATEGORIES, params, 2) // a pagine piccole, come un negozio con tante categorie
     if (path === '/products') {
       let list = PRODUCTS.filter((p) => (params.get('type') === 'variation' ? p._variation : !p._variation))
-      if (params.has('slug')) list = list.filter((p) => p.slug === params.get('slug'))
+      if (params.has('slug')) list = list.filter((p) => params.get('slug').split(',').includes(p.slug))
       if (params.has('parent')) list = list.filter((p) => p.parent === Number(params.get('parent')))
       if (params.has('category')) {
         const ids = descendants(Number(params.get('category')))

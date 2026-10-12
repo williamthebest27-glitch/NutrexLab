@@ -243,6 +243,13 @@ Integratori, nella sitemap e nei dati per Google; per farlo entrare in una categ
 WooCommerce in una sottocategoria di Nutrex Lab con slug `collagene`, `vitamine-e-minerali` o
 `estratti-vegetali`. Solo titolo per Google, FAQ e la riga nella sezione "La linea" della homepage si
 aggiungono a mano in `src/seo/catalog.js` (e il barattolo 3D come in "Aggiungere un prodotto al menu").
+Se in WooCommerce lo slug di un prodotto della linea e' diverso da quello del sito (WordPress aggiunge un
+suffisso quando lo slug e' occupato: oggi `ashwagandha-nutrexlab`), va nel campo `woo` del prodotto in
+`catalog.js`: il sito resta su `/prodotto/ashwagandha` e il vecchio indirizzo fa un 301.
+
+Google Merchant Center (schede gratuite di Google Shopping): feed dei prodotti su
+`https://www.nutrexlab.it/feed/google.xml` (`api/merchant-feed.js`), da aggiungere in Merchant Center come
+feed programmato; la spedizione si imposta in Merchant Center.
 
 Mai usare le classi `line` e `char` in CSS: sono le righe e le lettere create da SplitText per le
 animazioni dei titoli (`src/ui/text.js`).

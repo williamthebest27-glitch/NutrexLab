@@ -27,6 +27,7 @@
     { "source": "/prodotto/:slug", "destination": "/api/product-page?slug=:slug" },
     { "source": "/:lang(en|fr|de|es)/prodotto/:slug", "destination": "/api/product-page?slug=:slug&lang=:lang" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/feed/google.xml", "destination": "/api/merchant-feed" },
     { "source": "/googlef1435490fd6eb828.html", "destination": "/api/google-verify" },
     { "source": "/googlef1435490fd6eb828", "destination": "/api/google-verify" },
     { "source": "/account", "destination": "/api/account" },

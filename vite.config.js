@@ -185,6 +185,7 @@ function shopFunctions() {
   }
 
   // /prodotto/<slug> (anche /de/prodotto/<slug>) -> pagina prodotto, /sitemap.xml -> api/sitemap,
+  // /feed/google.xml -> api/merchant-feed,
   // /api/<nome> -> api/<nome>.js
   const route = (url) => {
     const { lang, path } = splitLang(url.split('?')[0])
@@ -192,6 +193,7 @@ function shopFunctions() {
     if (product) return { name: 'product-page', slug: product[1], lang: lang ?? 'it' }
     if (lang) return null
     if (path === '/sitemap.xml') return { name: 'sitemap', query: '' }
+    if (path === '/feed/google.xml') return { name: 'merchant-feed', query: '' }
     const api = /^\/api\/([a-z0-9-]+)\/?$/.exec(path)
     if (api) return { name: api[1], query: url.split('?')[1] ?? '' }
     return null
@@ -213,6 +215,12 @@ function shopFunctions() {
         } catch (err) {
           status = err?.status === 404 ? 404 : 503
           if (status === 503) console.error('[negozio:product-page]', err?.message)
+        }
+        // slug di WooCommerce diverso da quello del sito: come api/product-page.js, 301 all'indirizzo del sito
+        if (product && product.slug !== slug) {
+          res.statusCode = 301
+          res.setHeader('Location', r.lang === 'it' ? `/prodotto/${product.slug}` : `/${r.lang}/prodotto/${product.slug}`)
+          return res.end()
         }
         const html = await renderProductPage(await productTemplate(r.lang), { product, slug, status, lang: r.lang })
         res.statusCode = status

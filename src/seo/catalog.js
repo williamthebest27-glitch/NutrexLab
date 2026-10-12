@@ -168,6 +168,8 @@ export const PRODUCTS = [
   },
   {
     slug: 'ashwagandha',
+    // in WooCommerce lo slug e' "ashwagandha-nutrexlab": il sito usa comunque /prodotto/ashwagandha (siteSlug qui sotto)
+    woo: ['ashwagandha-nutrexlab'],
     name: 'Ashwagandha KSM-66',
     label: 'Ashwagandha',
     note: 'KSM-66® · 600 mg',
@@ -589,6 +591,17 @@ export const productBySlug = (slug) => PRODUCTS.find((p) => p.slug === slug) ?? 
 export const categoryBySlug = (slug) => CATEGORIES.find((c) => c.slug === slug) ?? null
 export const categoryOf = (slug) => categoryBySlug(productBySlug(slug)?.category)
 export const productsIn = (category) => PRODUCTS.filter((p) => p.category === category)
+
+/*
+  Slug di WooCommerce diversi da quelli del sito (campo woo dei prodotti: WordPress aggiunge un suffisso
+  quando lo slug e' gia' occupato). Il sito usa sempre lo slug della linea (indirizzi, etichette, colori,
+  testi SEO); il server chiede a WooCommerce tutti e due, cosi' funziona anche se lo slug viene corretto.
+*/
+const WOO_ALIASES = new Map(PRODUCTS.flatMap((p) => (p.woo ?? []).map((w) => [w, p.slug])))
+/** Slug del sito per uno slug di WooCommerce ("ashwagandha-nutrexlab" -> "ashwagandha"). */
+export const siteSlug = (slug) => WOO_ALIASES.get(slug) ?? slug
+/** Gli slug con cui cercare un prodotto in WooCommerce: quello del sito e quelli del campo woo. */
+export const wooSlugs = (slug) => [...new Set([slug, ...(productBySlug(siteSlug(slug))?.woo ?? []), siteSlug(slug)])]
 
 export const categoryPath = (slug) => `/integratori/${slug}`
 export const productPath = (slug) => `/prodotto/${encodeURIComponent(slug)}`

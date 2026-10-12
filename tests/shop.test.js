@@ -2,7 +2,7 @@
 // npm test
 import { test, describe, before, after, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { installFakeWoo, WOO_URL } from './fake-woocommerce.js'
+import { installFakeWoo, WOO_URL, PRODUCTS as FAKE_PRODUCTS } from './fake-woocommerce.js'
 
 process.env.WOOCOMMERCE_URL = WOO_URL
 process.env.WOOCOMMERCE_CATEGORY = 'nutrex-lab'
@@ -11,7 +11,7 @@ process.env.SITE_URL = 'https://negozio.test'
 const { decode, safeHtml, listProducts, listCategories, getProduct, relatedProducts, listReviews } = await import('../server/catalog.js')
 const { cleanMessage } = await import('../server/contact.js')
 const { cleanReview } = await import('../server/reviews.js')
-const { cartAction, getCart } = await import('../server/cart.js')
+const { cartAction, getCart, normalizeCart } = await import('../server/cart.js')
 const { checkoutUrl } = await import('../server/checkout.js')
 const { publicError } = await import('../server/errors.js')
 const { renderProductPage } = await import('../server/product-page.js')
@@ -23,7 +23,9 @@ const accountApi = await import('../api/account.js')
 const contactApi = await import('../api/contatto.js')
 const reviewsApi = await import('../api/recensioni.js')
 const sitemapApi = await import('../api/sitemap.js')
-const { categoryFor, isSitePhoto, productTrail } = await import('../src/seo/catalog.js')
+const merchantFeedApi = await import('../api/merchant-feed.js')
+const productPageApi = await import('../api/product-page.js')
+const { categoryFor, isSitePhoto, productTrail, siteSlug, wooSlugs } = await import('../src/seo/catalog.js')
 
 let woo
 before(() => {
@@ -526,5 +528,70 @@ describe('moduli verso il plugin: contatti e recensioni', () => {
     } finally {
       woo.pluginReply = null
     }
+  })
+})
+
+describe('slug di WooCommerce diverso da quello del sito (ashwagandha-nutrexlab)', () => {
+  const alias = () => ({
+    ...FAKE_PRODUCTS.find((p) => p.slug === 'magnesio'),
+    id: 130,
+    slug: 'ashwagandha-nutrexlab',
+    name: 'Ashwagandha KSM-66',
+    sku: 'ASHWA &#8211; 03', // come lo SKU del collagene marino nella Store API
+    permalink: `${WOO_URL}/prodotto/ashwagandha-nutrexlab/`,
+    _order: 9,
+  })
+  before(() => FAKE_PRODUCTS.push(alias()))
+  after(() => FAKE_PRODUCTS.splice(FAKE_PRODUCTS.findIndex((p) => p.id === 130), 1))
+
+  test('slug del sito per gli slug di WooCommerce, e viceversa', () => {
+    assert.equal(siteSlug('ashwagandha-nutrexlab'), 'ashwagandha')
+    assert.equal(siteSlug('magnesio'), 'magnesio')
+    assert.deepEqual(wooSlugs('ashwagandha'), ['ashwagandha', 'ashwagandha-nutrexlab'])
+    assert.deepEqual(wooSlugs('ashwagandha-nutrexlab'), ['ashwagandha-nutrexlab', 'ashwagandha'])
+    assert.deepEqual(wooSlugs('magnesio'), ['magnesio'])
+  })
+
+  test('il prodotto si trova con tutti e due gli slug e ha sempre quello del sito (SKU senza entita HTML)', async () => {
+    const p = await getProduct('ashwagandha')
+    assert.equal(p.slug, 'ashwagandha')
+    assert.equal(p.sku, 'ASHWA – 03')
+    assert.equal((await getProduct('ashwagandha-nutrexlab')).slug, 'ashwagandha')
+  })
+
+  test('pagina prodotto: /prodotto/ashwagandha-nutrexlab -> 301 a /prodotto/ashwagandha, anche nelle lingue', async () => {
+    const res = await productPageApi.GET(new Request('https://www.nutrexlab.it/api/product-page?slug=ashwagandha-nutrexlab'))
+    assert.equal(res.status, 301)
+    assert.equal(res.headers.get('location'), '/prodotto/ashwagandha')
+    const de = await productPageApi.GET(new Request('https://www.nutrexlab.it/api/product-page?slug=ashwagandha-nutrexlab&lang=de'))
+    assert.equal(de.headers.get('location'), '/de/prodotto/ashwagandha')
+  })
+
+  test('carrello: lo slug viene dall\'indirizzo di WooCommerce ed e\' quello del sito', () => {
+    const cart = normalizeCart({ items: [{ key: 'k', id: 130, name: 'Ashwagandha', permalink: 'https://www.nutrexlab.it/prodotto/ashwagandha-nutrexlab', quantity: 1, prices: {} }] })
+    assert.equal(cart.items[0].slug, 'ashwagandha')
+  })
+})
+
+describe('feed per Google Merchant Center', () => {
+  test('prodotti semplici in vendita, con titolo SEO, prezzo, offerta, marchio e MPN', async () => {
+    const res = await merchantFeedApi.GET(new Request('https://www.nutrexlab.it/feed/google.xml'))
+    assert.equal(res.status, 200)
+    assert.match(res.headers.get('content-type'), /application\/xml/)
+    assert.equal(res.headers.get('x-robots-tag'), 'noindex')
+    const xml = await res.text()
+    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1])
+    assert.equal(items.length, 1, 'solo il magnesio: il collagene ha varianti, il nascosto non e\' nel catalogo')
+    const [magnesio] = items
+    assert.match(magnesio, /<g:id>SKU-110<\/g:id>/)
+    assert.match(magnesio, /<g:title>Nutrex Lab Magnesio Bisglicinato/)
+    assert.match(magnesio, /<g:link>https:\/\/www\.nutrexlab\.it\/prodotto\/magnesio<\/g:link>/)
+    assert.match(magnesio, /<g:price>19\.90 EUR<\/g:price>/)
+    assert.match(magnesio, /<g:sale_price>16\.90 EUR<\/g:sale_price>/)
+    assert.match(magnesio, /<g:availability>in_stock<\/g:availability>/)
+    assert.match(magnesio, /<g:brand>Nutrex Lab<\/g:brand>/)
+    assert.match(magnesio, /<g:mpn>SKU-110<\/g:mpn>/)
+    assert.match(magnesio, /<g:google_product_category>525<\/g:google_product_category>/)
+    assert.match(magnesio, /<g:product_type>Integratori alimentari &gt; Vitamine e minerali<\/g:product_type>/)
   })
 })

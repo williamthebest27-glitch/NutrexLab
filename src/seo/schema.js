@@ -35,6 +35,7 @@ export function organization() {
     '@type': 'OnlineStore',
     '@id': IDS.org,
     name: BRAND,
+    alternateName: 'NutrexLab',
     legalName: COMPANY.legalName,
     url: `${ORIGIN}/`,
     logo: { '@type': 'ImageObject', url: absolute(COMPANY.logo.src), width: COMPANY.logo.width, height: COMPANY.logo.height },

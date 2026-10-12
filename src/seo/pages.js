@@ -9,7 +9,8 @@ import { graph, organization, website, webPage, breadcrumbs, itemList, faqPage, 
 
 const HOME = {
   path: '/',
-  title: 'Integratori Alimentari Made in Italy | Nutrex Lab',
+  // il marchio in testa: chi cerca "nutrex lab" deve trovare subito la homepage
+  title: 'Nutrex Lab | Integratori Alimentari Made in Italy',
   socialTitle: 'Nutrex Lab: integratori alimentari made in Italy',
   description:
     'Collagene marino, vitamine C, B12 e D3 + K2, magnesio bisglicinato, ashwagandha KSM-66 e altri integratori Nutrex Lab prodotti in Italia. Scopri la linea.',

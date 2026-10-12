@@ -56,7 +56,7 @@ export default {
   "Acquista online gli integratori Nutrex Lab: collagene, vitamine e minerali, estratti vegetali titolati. 12 formule prodotte in Italia, spedite in 2-4 giorni.": "Compra online los complementos Nutrex Lab: colágeno, vitaminas y minerales, extractos vegetales estandarizados. 12 fórmulas hechas en Italia, enviadas en 2-4 días.",
   "Pagina non trovata | Nutrex Lab": "Página no encontrada | Nutrex Lab",
   "La pagina che cerchi non esiste o ha cambiato indirizzo: scopri gli integratori Nutrex Lab.": "La página que buscas no existe o ha cambiado de dirección: descubre los complementos Nutrex Lab.",
-  "Integratori Alimentari Made in Italy | Nutrex Lab": "Complementos alimenticios Made in Italy | Nutrex Lab",
+  "Nutrex Lab | Integratori Alimentari Made in Italy": "Nutrex Lab | Complementos alimenticios Made in Italy",
   "Collagene marino, vitamine C, B12 e D3 + K2, magnesio bisglicinato, ashwagandha KSM-66 e altri integratori Nutrex Lab prodotti in Italia. Scopri la linea.": "Colágeno marino, vitaminas C, B12 y D3 + K2, bisglicinato de magnesio, ashwagandha KSM-66 y otros complementos Nutrex Lab fabricados en Italia. Descubre la línea.",
   "Chi Siamo: Integratori Prodotti in Italia | Nutrex Lab": "Quiénes somos: complementos hechos en Italia | Nutrex Lab",
   "Nutrex Lab è un marchio italiano di integratori alimentari: 12 formule prodotte in Italia con standard GMP / ISO 9001 e dosi dichiarate in etichetta.": "Nutrex Lab es una marca italiana de complementos alimenticios: 12 fórmulas fabricadas en Italia con estándares GMP / ISO 9001 y dosis declaradas en la etiqueta.",

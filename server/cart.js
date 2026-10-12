@@ -1,6 +1,7 @@
 import { store } from './woo.js'
 import { decode, plain, assertSellable } from './catalog.js'
 import { ShopError } from './errors.js'
+import { siteSlug } from '../src/seo/catalog.js'
 
 /*
   Carrello di WooCommerce (Store API) per la sessione del cliente. Prezzi, sconti, spedizioni,
@@ -23,10 +24,11 @@ function currencyOf(t) {
   }
 }
 
-/** slug del prodotto dall'indirizzo (…/prodotto/<slug> o …/product/<slug>/) */
+/** slug del prodotto (quello del sito) dall'indirizzo (…/prodotto/<slug> o …/product/<slug>/) */
 const slugOf = (url) => {
   try {
-    return new URL(url).pathname.split('/').filter(Boolean).pop() ?? null
+    const slug = new URL(url).pathname.split('/').filter(Boolean).pop()
+    return slug ? siteSlug(slug) : null
   } catch {
     return null
   }
@@ -56,7 +58,7 @@ export function normalizeCart(c) {
       id: i.id,
       name: decode(i.name),
       slug: slugOf(i.permalink),
-      sku: i.sku || null,
+      sku: decode(i.sku) || null,
       quantity: i.quantity,
       limits: {
         min: i.quantity_limits?.minimum ?? 1,

@@ -91,7 +91,7 @@ for (const f of [...files('src', '.js'), ...files('server', '.js')]) {
 }
 
 // dati del sito tradotti con localize() / t()
-const KEYS_SKIP = new Set(['id', 'slug', 'category', 'quality', 'icon', 'model', 'form', 'shape', 'swatch', 'src', 'srcset', 'thumbnail', 'href', 'url', 'path', 'sku', 'type', 'code'])
+const KEYS_SKIP = new Set(['id', 'slug', 'woo', 'category', 'quality', 'icon', 'model', 'form', 'shape', 'swatch', 'src', 'srcset', 'thumbnail', 'href', 'url', 'path', 'sku', 'type', 'code'])
 function walk(value, where, key = '') {
   if (typeof value === 'string') {
     if (!KEYS_SKIP.has(key) && !/^(#|rgba?\(|\/|https?:)/.test(value)) texts.push([value, where])

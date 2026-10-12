@@ -1,7 +1,7 @@
 import { store } from './woo.js'
 import { requireConfig } from './env.js'
 import { ShopError } from './errors.js'
-import { productAlt, siblings } from '../src/seo/catalog.js'
+import { productAlt, siblings, siteSlug, wooSlugs } from '../src/seo/catalog.js'
 
 /*
   Catalogo dalla Store API di WooCommerce, trasformato nella forma usata dal negozio.
@@ -122,12 +122,13 @@ const image = (img, index, name, slug) => ({
 /** Prodotto della Store API -> prodotto del negozio. */
 export function normalizeProduct(p) {
   const name = decode(p.name)
+  const slug = siteSlug(p.slug)
   return {
     id: p.id,
-    slug: p.slug,
+    slug,
     name,
     type: p.type,
-    sku: p.sku || null,
+    sku: decode(p.sku) || null,
     shortDescription: safeHtml(p.short_description),
     description: safeHtml(p.description),
     summary: plain(p.short_description) || plain(p.description).slice(0, 220),
@@ -136,7 +137,7 @@ export function normalizeProduct(p) {
     reviewsAllowed: p.reviews_allowed !== false,
     prices: prices(p.prices),
     stock: stock(p),
-    images: (p.images ?? []).map((img, i) => image(img, i, name, p.slug)),
+    images: (p.images ?? []).map((img, i) => image(img, i, name, slug)),
     categories: (p.categories ?? []).map((c) => ({ id: c.id, name: decode(c.name), slug: c.slug })),
     tags: (p.tags ?? []).map((t) => ({ id: t.id, name: decode(t.name), slug: t.slug })),
     attributes: (p.attributes ?? []).map((a) => ({
@@ -157,7 +158,7 @@ export function normalizeProduct(p) {
 function normalizeVariation(v, attributes) {
   return {
     id: v.id,
-    sku: v.sku || null,
+    sku: decode(v.sku) || null,
     attributes,
     onSale: !!v.on_sale,
     prices: prices(v.prices),
@@ -265,15 +266,20 @@ export async function listProducts({ page = 1, perPage = 24, category, search } 
   })
 }
 
-/** Un prodotto dal suo slug, con tutte le variazioni (prezzo, SKU, stock, immagine). */
+/**
+ * Un prodotto dal suo slug, con tutte le variazioni (prezzo, SKU, stock, immagine). Cerca anche con gli
+ * slug di WooCommerce dello stesso prodotto (src/seo/catalog.js, wooSlugs): il prodotto ha sempre lo slug del sito.
+ */
 export function getProduct(slug) {
   if (!/^[a-z0-9][a-z0-9-]{0,190}$/i.test(String(slug ?? ''))) {
     return Promise.reject(new ShopError(404, 'not_found', 'Prodotto non trovato.'))
   }
   return cached(`product:${slug}`, 10_000, async () => {
-    const res = await store('/products', { query: { slug, per_page: 1 } })
-    const raw = res.data?.[0]
-    if (!raw || !inScope(await shopScope(), raw.categories ?? [])) throw new ShopError(404, 'not_found', 'Prodotto non trovato.')
+    const slugs = wooSlugs(slug)
+    const res = await store('/products', { query: { slug: slugs.join(','), per_page: slugs.length } })
+    const scope = await shopScope()
+    const raw = (res.data ?? []).find((r) => inScope(scope, r.categories ?? []))
+    if (!raw) throw new ShopError(404, 'not_found', 'Prodotto non trovato.')
     const product = normalizeProduct(raw)
     product.variations = []
     if (product.type === 'variable' && product.variationIds.length) {
@@ -311,7 +317,7 @@ export async function relatedProducts(product, limit = 4) {
     const line = siblings(product.slug, 100, product.categories).map((p) => p.slug)
     const own = new Set(product.categories.filter((c) => scope.ids.has(c.id) && c.id !== scope.root.id).map((c) => c.id))
     const rank = (raw) => {
-      const i = line.indexOf(raw.slug)
+      const i = line.indexOf(siteSlug(raw.slug))
       if (i >= 0) return i
       return (raw.categories ?? []).some((c) => own.has(c.id)) ? 1000 : 2000
     }
