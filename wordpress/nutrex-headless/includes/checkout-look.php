@@ -378,3 +378,84 @@ function nutrex_headless_look_title() {
 	);
 	return $titles[ nutrex_headless_look() ] ?? '';
 }
+
+// ---------------------------------------------------------------------------- pagamenti rapidi
+
+/*
+ * Apple Pay, Google Pay e Amazon Pay (i pulsanti rapidi di WooPayments): sulla pagina Nutrex stanno nel
+ * riquadro dei pagamenti, sotto i metodi e prima della casella dei termini, non in cima al modulo.
+ * WooCommerce riscrive il riquadro a ogni aggiornamento del checkout (wc-ajax update_order_review) e
+ * WooPayments rimette i pulsanti dopo ogni aggiornamento (evento updated_checkout). Quali pulsanti si
+ * vedono lo decidono le impostazioni di WooPayments e il browser del cliente (Apple Pay solo sui
+ * dispositivi Apple).
+ */
+
+/** I pulsanti rapidi che WooPayments mette in cima al checkout: array( funzione, priorita' ) o null. */
+function nutrex_headless_express_buttons() {
+	global $wp_filter;
+	static $found = null;
+	if ( null === $found && ! empty( $wp_filter['woocommerce_checkout_before_customer_details'] ) ) {
+		foreach ( $wp_filter['woocommerce_checkout_before_customer_details']->callbacks as $priority => $callbacks ) {
+			foreach ( $callbacks as $callback ) {
+				$function = $callback['function'];
+				if ( is_array( $function ) && 'display_express_checkout_buttons' === ( $function[1] ?? '' ) && is_a( $function[0], 'WC_Payments_Express_Checkout_Button_Display_Handler' ) ) {
+					$found = array( $function, $priority );
+					break 2;
+				}
+			}
+		}
+	}
+	return $found;
+}
+
+/**
+ * Il riquadro dei pagamenti che si sta scrivendo e' quello della pagina Nutrex: la pagina, o il suo
+ * aggiornamento (un carrello solo Nutrex si paga solo li', separation.php).
+ */
+function nutrex_headless_express_here() {
+	if ( 'checkout' === nutrex_headless_look() ) {
+		return true;
+	}
+	$ajax = isset( $_GET['wc-ajax'] ) ? sanitize_key( wp_unslash( $_GET['wc-ajax'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	return 'update_order_review' === $ajax && nutrex_headless_is_nutrex_cart();
+}
+
+// via dalla cima del modulo...
+add_action(
+	'template_redirect',
+	function () {
+		$buttons = 'checkout' === nutrex_headless_look() ? nutrex_headless_express_buttons() : null;
+		if ( $buttons ) {
+			remove_action( 'woocommerce_checkout_before_customer_details', $buttons[0], $buttons[1] );
+		}
+	},
+	PHP_INT_MAX
+);
+
+// ...e dentro il riquadro dei pagamenti, prima dell'informativa e della casella dei termini
+add_action(
+	'woocommerce_checkout_before_terms_and_conditions',
+	function () {
+		$buttons = nutrex_headless_express_here() ? nutrex_headless_express_buttons() : null;
+		if ( ! $buttons ) {
+			return;
+		}
+		ob_start();
+		call_user_func( $buttons[0] );
+		$html = trim( (string) ob_get_clean() );
+		if ( '' !== $html ) {
+			echo '<div class="nx-express"><p class="nx-express__or">' . esc_html( nutrex_headless_t( 'Oppure paga con' ) ) . '</p>' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+	}
+);
+
+// pulsanti arrotondati come "Effettua ordine"
+add_filter(
+	'wcpay_express_checkout_js_params',
+	function ( $params ) {
+		if ( 'checkout' === nutrex_headless_look() && isset( $params['button'] ) && is_array( $params['button'] ) ) {
+			$params['button']['radius'] = (int) floor( min( 55, max( 40, (int) ( $params['button']['height'] ?? 48 ) ) ) / 2 );
+		}
+		return $params;
+	}
+);

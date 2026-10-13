@@ -449,6 +449,31 @@ body.nutrex-look #payment div.payment_box::before {
   border-bottom-color: rgba(255, 255, 255, 0.8);
 }
 
+/* pagamenti rapidi (Apple Pay, Google Pay, Amazon Pay) sotto i metodi, prima dei termini (checkout-look.php):
+   scritta e spazio solo quando WooPayments mostra almeno un pulsante */
+body.nutrex-look #payment .nx-express:has(#wcpay-express-checkout-element.is-ready) {
+  margin: 0 0 22px;
+}
+
+body.nutrex-look #payment .nx-express__or {
+  display: none;
+  margin: 0 0 12px;
+  color: var(--nx-soft);
+  font: 500 14px/1.3 var(--nx-mono);
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+body.nutrex-look #payment .nx-express:has(#wcpay-express-checkout-element.is-ready) .nx-express__or {
+  display: block;
+}
+
+/* (la scritta "— OR —" di WooPayments sotto i pulsanti qui non serve) */
+body.nutrex-look #payment #wcpay-express-checkout-button-separator {
+  display: none !important;
+}
+
 body.nutrex-look .wc-block-components-totals-footer-item :is(.wc-block-components-totals-item__label, .wc-block-components-totals-item__value) {
   font-weight: 600;
 }

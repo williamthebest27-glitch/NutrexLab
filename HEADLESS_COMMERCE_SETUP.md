@@ -171,6 +171,12 @@ thedoubletwenty.
   per Google la pagina del prodotto e' quella di nutrexlab.it. Le categorie Nutrex portano a `/integratori`.
 - Sull'estratto conto, e nelle finestre di Apple Pay e Google Pay, il cliente vede il nome impostato nel
   metodo di pagamento (Stripe, PayPal...): e' lo stesso conto di thedoubletwenty (stesso titolare).
+- I pulsanti rapidi di WooPayments (Apple Pay, Google Pay, Amazon Pay) sulla pagina di pagamento Nutrex stanno
+  nel riquadro dei pagamenti, sotto i metodi e prima della casella dei termini, con la scritta "Oppure paga con"
+  (plugin 2.4.1); su thedoubletwenty restano in cima al modulo. Quali compaiono lo decidono le impostazioni
+  dei pagamenti rapidi di WooPayments (attivi nella pagina di pagamento) e il dispositivo del cliente: Apple
+  Pay sui dispositivi Apple, Google Pay su Chrome e Android. Amazon Pay compare solo quando e' attivo nel
+  conto WooPayments/Stripe.
 - Chi ha un account lo usa dall'area clienti Nutrex (`/account` su nutrexlab.it); al pagamento chi non ha fatto
   l'accesso vede il promemoria "Registrati e risparmi un ulteriore 5% sul primo ordine" e il link "Accedi",
   che riportano al pagamento.

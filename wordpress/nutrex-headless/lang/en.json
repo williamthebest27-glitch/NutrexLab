@@ -78,5 +78,6 @@
   "Pagamento": "Checkout",
   "Account": "Account",
   "Nome": "First name",
-  "Cognome": "Last name"
+  "Cognome": "Last name",
+  "Oppure paga con": "Or pay with"
 }
