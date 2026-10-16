@@ -268,7 +268,7 @@ describe('pagina prodotto per Google e social', () => {
   test('titolo e descrizione curati, canonical sul dominio principale, dati strutturati con le varianti', async () => {
     const product = await getProduct('collagene')
     const html = await renderProductPage(template, { product, slug: 'collagene' })
-    assert.match(html, /<title>Collagene Marino in Polvere 10\.000 mg \| Nutrex Lab<\/title>/)
+    assert.match(html, /<title>Collagene Marino Idrolizzato in Polvere \| Nutrex Lab<\/title>/)
     assert.equal(html.match(/<title>/g).length, 1, 'un solo titolo')
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.nutrexlab\.it\/prodotto\/collagene" \/>/)
     assert.match(html, /<meta property="og:url" content="https:\/\/www\.nutrexlab\.it\/prodotto\/collagene" \/>/)

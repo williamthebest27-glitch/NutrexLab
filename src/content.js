@@ -37,7 +37,7 @@ export const COPY = {
     meta: {
       title: 'Collagene Marino | Nutrex Lab',
       description:
-        'Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 10.000 mg in ogni misurino. Prodotto in Italia.',
+        'Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 9.834 mg di collagene in ogni misurino da 10 g. Prodotto in Italia.',
     },
     hero: {
       name: 'Collagene marino.',
@@ -47,25 +47,25 @@ export const COPY = {
     },
     about: {
       title: 'Collagene<br>marino',
-      copy: 'Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico, coenzima Q10 e biotina.',
+      copy: 'Collagene idrolizzato di tipo I da pesce: 9.834&nbsp;mg in ogni misurino da 10&nbsp;g. Con acido ialuronico, coenzima Q10 e biotina.',
     },
     tags: ['Gusto neutro', 'Senza glutine', 'Senza lattosio'],
     pins: {
       band: ['Sigillo di garanzia', "Integro fino all'apertura"],
-      dose: ['10.000 mg', 'Collagene per dose'],
+      dose: ['9.834 mg', 'Collagene per dose'],
       gmp: QUALITY_PIN,
     },
     ing: {
       intro: 'Otto attivi in ogni misurino da 10&nbsp;g.',
-      hero: { name: 'Collagene marino', sub: 'Idrolizzato, tipo I', value: 10000, unit: 'mg' },
+      hero: { name: 'Collagene marino', sub: 'Idrolizzato, tipo I', value: 9834, unit: 'mg' },
       items: [
-        { name: 'Vitamina C', value: 232, unit: 'mg', nrv: 290 },
-        { name: 'Acido ialuronico', value: 145, unit: 'mg', note: 'Sodio ialuronato' },
-        { name: 'Coenzima Q10', value: 29, unit: 'mg', note: 'Ubichinone' },
-        { name: 'Zinco', value: 29, unit: 'mg', nrv: 290 },
-        { name: 'Vitamina E', value: 35, unit: 'mg', nrv: 290 },
-        { name: 'Riboflavina (B2)', value: 4.1, decimals: 1, unit: 'mg', nrv: 293 },
-        { name: 'Biotina', value: 145, unit: 'µg', nrv: 290 },
+        { name: 'Vitamina C', value: 80, unit: 'mg', nrv: 100 },
+        { name: 'Acido ialuronico', value: 50, unit: 'mg', note: 'Sodio ialuronato' },
+        { name: 'Coenzima Q10', value: 10, unit: 'mg', note: 'Ubichinone' },
+        { name: 'Zinco', value: 10, unit: 'mg', nrv: 100 },
+        { name: 'Vitamina E', value: 12, unit: 'mg', nrv: 100 },
+        { name: 'Riboflavina (B2)', value: 1.4, decimals: 1, unit: 'mg', nrv: 100 },
+        { name: 'Biotina', value: 450, unit: 'µg', nrv: 900 },
       ],
       note: VNR_NOTE,
     },
@@ -75,8 +75,8 @@ export const COPY = {
       copy: "Il collagene è formato da tre catene proteiche avvolte in un'unica elica. L'idrolisi lo scompone in piccoli peptidi.",
       claim: 'La vitamina C contribuisce alla normale formazione del collagene per la normale funzione della pelle.',
       data: [
-        { label: 'Collagene per dose', value: 10000, unit: 'mg' },
-        { label: 'Vitamina C', value: 290, unit: '% VNR' },
+        { label: 'Collagene per dose', value: 9834, unit: 'mg' },
+        { label: 'Vitamina C', value: 100, unit: '% VNR' },
         { label: 'Origine', text: 'Tipo I', unit: 'Marino' },
       ],
     },

@@ -5,7 +5,7 @@ export default {
   "Scopri il collagene": "Discover collagen",
   "Scopri il collagene marino": "Discover marine collagen",
   "Collagene<br>marino": "Marine<br>collagen",
-  "Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico, coenzima Q10 e biotina.": "Hydrolysed type I collagen from fish: 10,000&nbsp;mg in every scoop. With hyaluronic acid, coenzyme Q10 and biotin.",
+  "Collagene idrolizzato di tipo I da pesce: 9.834&nbsp;mg in ogni misurino da 10&nbsp;g. Con acido ialuronico, coenzima Q10 e biotina.": "Hydrolysed type I collagen from fish: 9,834&nbsp;mg in every 10&nbsp;g scoop. With hyaluronic acid, coenzyme Q10 and biotin.",
   "Gusto neutro": "Neutral taste",
   "Senza glutine": "Gluten-free",
   "Senza lattosio": "Lactose-free",

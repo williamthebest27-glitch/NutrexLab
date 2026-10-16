@@ -260,7 +260,7 @@ describe('pagina prodotto nelle altre lingue', () => {
     const de = await dictionary('de')
     const tde = translator(de).t
     assert.equal(html.match(/<title/g).length, 1, 'un solo titolo')
-    assert.ok(html.includes(`>${tde('Collagene Marino in Polvere 10.000 mg | Nutrex Lab')}</title>`))
+    assert.ok(html.includes(`>${tde('Collagene Marino Idrolizzato in Polvere | Nutrex Lab')}</title>`))
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.nutrexlab\.it\/de\/prodotto\/collagene" \/>/)
     assert.equal(hreflangs(html).fr, 'https://www.nutrexlab.it/fr/prodotto/collagene')
     assert.equal(hreflangs(html)['x-default'], 'https://www.nutrexlab.it/en/prodotto/collagene')

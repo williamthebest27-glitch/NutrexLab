@@ -49,7 +49,7 @@ export const PRODUCTS = [
     slug: 'collagene',
     name: 'Collagene marino in polvere',
     label: 'Collagene marino',
-    note: 'In polvere · 10.000 mg',
+    note: 'In polvere · 9.834 mg',
     category: 'collagene',
     pack: 'barattolo da 500 g',
     quality: ['glutine', 'lattosio', 'neutro'],
@@ -60,16 +60,16 @@ export const PRODUCTS = [
       ['cellule', 'Protezione cellulare', 'Vitamina C, vitamina E, zinco e riboflavina contribuiscono alla protezione delle cellule dallo stress ossidativo.'],
     ],
     summary:
-      'Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 10.000 mg in ogni misurino. Prodotto in Italia.',
-    title: 'Collagene Marino in Polvere 10.000 mg | Nutrex Lab',
+      'Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 9.834 mg di collagene in ogni misurino da 10 g. Prodotto in Italia.',
+    title: 'Collagene Marino Idrolizzato in Polvere | Nutrex Lab',
     description:
-      'Collagene marino idrolizzato di tipo I: 10.000 mg per misurino con vitamina C, acido ialuronico, coenzima Q10 e biotina. Gusto neutro, 500 g, made in Italy.',
+      'Collagene marino idrolizzato di tipo I: 9.834 mg per misurino da 10 g con vitamina C, acido ialuronico, coenzima Q10 e biotina. Gusto neutro, 500 g, made in Italy.',
     faq: [
       ['Come si usa il collagene marino in polvere?', "Sciogli un misurino raso da 10 g in un bicchiere d'acqua, una volta al giorno. Il gusto è neutro."],
       ['Quanto dura un barattolo?', 'Il barattolo da 500 g contiene 50 dosi da 10 g: 50 giorni con un misurino al giorno.'],
       [
         'Cosa contiene una dose?',
-        'Un misurino da 10 g apporta 10.000 mg di collagene marino idrolizzato di tipo I, 232 mg di vitamina C (290% VNR), 145 mg di acido ialuronico, 29 mg di coenzima Q10, 29 mg di zinco, 35 mg di vitamina E, 4,1 mg di riboflavina (B2) e 145 µg di biotina.',
+        'Un misurino da 10 g apporta 9.834 mg di collagene marino idrolizzato di tipo I, 80 mg di vitamina C (100% VNR), 50 mg di acido ialuronico, 10 mg di coenzima Q10, 10 mg di zinco (100% VNR), 12 mg di vitamina E (100% VNR), 1,4 mg di riboflavina (B2, 100% VNR) e 450 µg di biotina (900% VNR).',
       ],
       ['È senza glutine e senza lattosio?', 'Sì: il collagene marino in polvere Nutrex Lab è senza glutine e senza lattosio.'],
     ],
@@ -98,7 +98,7 @@ export const PRODUCTS = [
       ['Quanto dura un flacone?', 'Il flacone contiene 180 compresse, cioè 60 dosi da tre compresse.'],
       [
         'Che differenza c’è con il collagene marino in polvere?',
-        'La fonte è la stessa: collagene marino idrolizzato di tipo I. Cambiano formato e dose: 3000 mg in tre compresse qui, 10.000 mg in un misurino da 10 g nella versione in polvere.',
+        'La fonte è la stessa: collagene marino idrolizzato di tipo I. Cambiano formato e dose: 3000 mg in tre compresse qui, 9.834 mg in un misurino da 10 g nella versione in polvere.',
       ],
       ['È senza glutine e senza lattosio?', 'Sì: il collagene marino in compresse Nutrex Lab è senza glutine e senza lattosio.'],
     ],
@@ -420,13 +420,13 @@ export const CATEGORIES = [
     eyebrow: 'Collagene idrolizzato di tipo I',
     title: 'Integratori di Collagene Marino e Bovino | Nutrex Lab',
     description:
-      'Collagene idrolizzato di tipo I in polvere e in compresse: marino da 10.000 mg o 3000 mg per dose e bovino da 2100 mg, con vitamina C e acido ialuronico.',
+      'Collagene idrolizzato di tipo I in polvere e in compresse: marino da 9.834 mg o 3000 mg per dose e bovino da 2100 mg, con vitamina C e acido ialuronico.',
     lead: '<strong>Collagene idrolizzato di tipo I, marino e bovino.</strong> In polvere da sciogliere in acqua o in compresse, con vitamina C, acido ialuronico e coenzima Q10.',
     line: 'Marino e bovino, in polvere e in compresse.',
     sections: [
       [
         'Collagene marino o bovino: cosa cambia',
-        '<p>Il collagene marino è ricavato dal pesce, quello bovino da fonte bovina: in entrambi i casi è collagene di tipo I, idrolizzato, cioè scomposto in piccoli peptidi. Cambiano la fonte, il formato e la dose: 10.000&nbsp;mg per misurino nel <a class="link" href="/prodotto/collagene">collagene marino in polvere</a>, 3000&nbsp;mg in tre compresse nel <a class="link" href="/prodotto/collagene-marino-compresse">collagene marino in compresse</a>, 2100&nbsp;mg in tre compresse nel <a class="link" href="/prodotto/collagene-bovino">collagene bovino</a>.</p>',
+        '<p>Il collagene marino è ricavato dal pesce, quello bovino da fonte bovina: in entrambi i casi è collagene di tipo I, idrolizzato, cioè scomposto in piccoli peptidi. Cambiano la fonte, il formato e la dose: 9.834&nbsp;mg per misurino nel <a class="link" href="/prodotto/collagene">collagene marino in polvere</a>, 3000&nbsp;mg in tre compresse nel <a class="link" href="/prodotto/collagene-marino-compresse">collagene marino in compresse</a>, 2100&nbsp;mg in tre compresse nel <a class="link" href="/prodotto/collagene-bovino">collagene bovino</a>.</p>',
       ],
       [
         'Polvere o compresse',
@@ -444,7 +444,7 @@ export const CATEGORIES = [
       ],
       [
         'Qual è la differenza tra collagene marino e bovino?',
-        'La fonte: il collagene marino è ricavato dal pesce, quello bovino da fonte bovina. Entrambi sono di tipo I e idrolizzati. Il collagene marino Nutrex Lab è in polvere (10.000 mg per dose) e in compresse (3000 mg per dose), il collagene bovino in compresse (2100 mg per dose).',
+        'La fonte: il collagene marino è ricavato dal pesce, quello bovino da fonte bovina. Entrambi sono di tipo I e idrolizzati. Il collagene marino Nutrex Lab è in polvere (9.834 mg per dose) e in compresse (3000 mg per dose), il collagene bovino in compresse (2100 mg per dose).',
       ],
       ['Come si assume il collagene in polvere?', "Un misurino raso da 10 g al giorno, sciolto in un bicchiere d'acqua. Ha gusto neutro e un barattolo da 500 g dura 50 giorni."],
       ['Gli integratori di collagene contengono glutine o lattosio?', 'No: collagene marino in polvere, collagene marino in compresse e collagene bovino sono senza glutine e senza lattosio.'],

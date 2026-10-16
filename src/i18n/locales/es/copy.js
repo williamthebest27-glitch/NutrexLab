@@ -5,7 +5,7 @@ export default {
   "Scopri il collagene": "Descubrir el colágeno",
   "Scopri il collagene marino": "Descubrir el colágeno marino",
   "Collagene<br>marino": "Colágeno<br>marino",
-  "Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico, coenzima Q10 e biotina.": "Colágeno hidrolizado tipo I de pescado: 10.000&nbsp;mg en cada cacito. Con ácido hialurónico, coenzima Q10 y biotina.",
+  "Collagene idrolizzato di tipo I da pesce: 9.834&nbsp;mg in ogni misurino da 10&nbsp;g. Con acido ialuronico, coenzima Q10 e biotina.": "Colágeno hidrolizado tipo I de pescado: 9.834&nbsp;mg en cada cacito de 10&nbsp;g. Con ácido hialurónico, coenzima Q10 y biotina.",
   "Gusto neutro": "Sabor neutro",
   "Senza glutine": "Sin gluten",
   "Senza lattosio": "Sin lactosa",

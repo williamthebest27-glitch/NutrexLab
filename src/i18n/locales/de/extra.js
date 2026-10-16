@@ -26,7 +26,7 @@ export default {
   "Facebook": "Facebook",
   "Il negozio non risponde in questo momento.": "Der Shop antwortet gerade nicht.",
   "10 g": "10 g",
-  "10.000 mg": "10.000 mg",
+  "9.834 mg": "9.834 mg",
   "1250 GDU": "1250 GDU",
   "625 GDU": "625 GDU",
 }

@@ -1,7 +1,7 @@
 // Titoli e descrizioni delle pagine (scheda del browser) in spagnolo: testo italiano -> traduzione ({x} = segnaposto)
 export default {
   "Collagene Marino | Nutrex Lab": "Colágeno marino | Nutrex Lab",
-  "Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 10.000 mg in ogni misurino. Prodotto in Italia.": "Colágeno marino hidrolizado tipo I con vitamina C, ácido hialurónico, coenzima Q10 y biotina. 10.000 mg en cada cacito. Fabricado en Italia.",
+  "Collagene marino idrolizzato di tipo I con vitamina C, acido ialuronico, coenzima Q10 e biotina. 9.834 mg di collagene in ogni misurino da 10 g. Prodotto in Italia.": "Colágeno marino hidrolizado tipo I con vitamina C, ácido hialurónico, coenzima Q10 y biotina. 9.834 mg de colágeno en cada cacito de 10 g. Fabricado en Italia.",
   "Bromelina Alto Dosaggio | Nutrex Lab": "Bromelina alta dosis | Nutrex Lab",
   "Bromelina alto dosaggio in compresse gastroresistenti: 500 mg di bromelina e 1875 GDU di attività enzimatica in ogni compressa. 180 compresse, prodotto in Italia.": "Bromelina alta dosis en comprimidos gastrorresistentes: 500 mg de bromelina y 1875 GDU de actividad enzimática por comprimido. 180 comprimidos, hecho en Italia.",
   "Ashwagandha KSM-66 | Nutrex Lab": "Ashwagandha KSM-66 | Nutrex Lab",
@@ -24,8 +24,8 @@ export default {
   "Vitamina C con rosa canina e bioflavonoidi: 1000 mg per compressa, il 1250% del valore di riferimento. 180 compresse, sei mesi di fornitura.": "Vitamina C con rosa mosqueta y bioflavonoides: 1000 mg por comprimido, el 1250% del valor de referencia. 180 comprimidos, seis meses de suministro.",
   "Vitamina D3 + K2 (MK-7) | Nutrex Lab": "Vitamina D3 + K2 (MK-7) | Nutrex Lab",
   "Vitamina D3 + K2 (MK-7): 2000 UI di vitamina D3 e 100 µg di vitamina K2 in una compressa al giorno. 365 compresse, un anno di fornitura. Prodotto vegano.": "Vitamina D3 + K2 (MK-7): 2000 UI de vitamina D3 y 100 µg de vitamina K2 en un comprimido al día. 365 comprimidos, un año de suministro. Producto vegano.",
-  "Collagene Marino in Polvere 10.000 mg | Nutrex Lab": "Colágeno marino en polvo 10.000 mg | Nutrex Lab",
-  "Collagene marino idrolizzato di tipo I: 10.000 mg per misurino con vitamina C, acido ialuronico, coenzima Q10 e biotina. Gusto neutro, 500 g, made in Italy.": "Colágeno marino hidrolizado tipo I: 10.000 mg por cacito con vitamina C, ácido hialurónico, coenzima Q10 y biotina. Sabor neutro, 500 g, made in Italy.",
+  "Collagene Marino Idrolizzato in Polvere | Nutrex Lab": "Colágeno marino hidrolizado en polvo | Nutrex Lab",
+  "Collagene marino idrolizzato di tipo I: 9.834 mg per misurino da 10 g con vitamina C, acido ialuronico, coenzima Q10 e biotina. Gusto neutro, 500 g, made in Italy.": "Colágeno marino hidrolizado tipo I: 9.834 mg por cacito de 10 g con vitamina C, ácido hialurónico, coenzima Q10 y biotina. Sabor neutro, 500 g, made in Italy.",
   "Collagene Marino in Compresse 3000 mg | Nutrex Lab": "Colágeno marino en comprimidos 3000 mg | Nutrex Lab",
   "Collagene marino idrolizzato di tipo I in compresse: 3000 mg per dose con acido ialuronico, coenzima Q10, vitamina C e biotina. 180 compresse, made in Italy.": "Colágeno marino hidrolizado tipo I en comprimidos: 3000 mg por dosis con ácido hialurónico, coenzima Q10, vitamina C y biotina. 180 comprimidos, made in Italy.",
   "Collagene Bovino Idrolizzato in Compresse | Nutrex Lab": "Colágeno bovino hidrolizado en comprimidos | Nutrex Lab",
@@ -47,7 +47,7 @@ export default {
   "Vitamina D3 + K2 MK-7 2000 UI, 365 Compresse | Nutrex Lab": "Vitamina D3 + K2 MK-7 2000 UI, 365 comprimidos | Nutrex Lab",
   "Vitamina D3 + K2 (MK-7): 2000 UI di vitamina D3 e 100 µg di vitamina K2 in una compressa al giorno. 365 compresse, un anno di fornitura, vegana.": "Vitamina D3 + K2 (MK-7): 2000 UI de vitamina D3 y 100 µg de vitamina K2 en un comprimido al día. 365 comprimidos, un año de suministro, vegana.",
   "Integratori di Collagene Marino e Bovino | Nutrex Lab": "Complementos de colágeno marino y bovino | Nutrex Lab",
-  "Collagene idrolizzato di tipo I in polvere e in compresse: marino da 10.000 mg o 3000 mg per dose e bovino da 2100 mg, con vitamina C e acido ialuronico.": "Colágeno hidrolizado tipo I en polvo y en comprimidos: marino de 10.000 mg o 3000 mg por dosis y bovino de 2100 mg, con vitamina C y ácido hialurónico.",
+  "Collagene idrolizzato di tipo I in polvere e in compresse: marino da 9.834 mg o 3000 mg per dose e bovino da 2100 mg, con vitamina C e acido ialuronico.": "Colágeno hidrolizado tipo I en polvo y en comprimidos: marino de 9.834 mg o 3000 mg por dosis y bovino de 2100 mg, con vitamina C y ácido hialurónico.",
   "Vitamine e Minerali: C, B12, D3+K2, Magnesio | Nutrex Lab": "Vitaminas y minerales: C, B12, D3+K2, magnesio | Nutrex Lab",
   "Integratori di vitamine e minerali Nutrex Lab: vitamina C 1000 mg, vitamina B12 metilcobalamina, vitamina D3 + K2 e magnesio bisglicinato. Prodotti in Italia.": "Complementos de vitaminas y minerales Nutrex Lab: vitamina C 1000 mg, vitamina B12 metilcobalamina, vitamina D3 + K2 y bisglicinato de magnesio. Hechos en Italia.",
   "Integratori con Estratti Vegetali Titolati | Nutrex Lab": "Complementos con extractos vegetales titulados | Nutrex Lab",
