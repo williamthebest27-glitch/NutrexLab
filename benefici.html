@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- titolo, descrizione, canonical, Open Graph e dati strutturati: src/seo/pages.js ("benefici") -->
+    <!-- seo:benefici -->
+    <!-- @head -->
+    <noscript>
+      <style>
+        [data-reveal],
+        [data-split],
+        [data-rise] { visibility: visible !important; }
+        /* senza JavaScript i prodotti si vedono tutti, uno dopo l'altro, con la foto del barattolo */
+        .bx-main .bx-view[hidden] { display: block !important; }
+        .bx-main .bx-slot__fallback[hidden] { display: block !important; }
+      </style>
+    </noscript>
+  </head>
+  <body class="bx">
+    <div class="page-sky" aria-hidden="true"></div>
+
+    <!-- @nav -->
+    <!-- @mnav -->
+
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- barattolo 3D: una sola tela per tutta la pagina, il barattolo del prodotto scelto segue lo spazio
+         [data-jar-slot] sullo schermo (src/pages/benefici.js) -->
+    <canvas class="bx-webgl" aria-hidden="true" data-bx-webgl></canvas>
+
+    <!-- menu prodotti, come nella homepage: scheda a destra che scorrendo si chiude nel pulsante PRODOTTI -->
+    <nav class="pmenu" aria-label="Prodotti Nutrex Lab" data-i18n-attr="aria-label" data-pmenu></nav>
+
+    <!-- Benefici di un prodotto alla volta: hero, benefici area per area, formula, metodo e domande frequenti.
+         Contenuto generato da src/seo/benefici-page.js con i dati di src/seo/benefici.js (matrice dei claim) -->
+    <main class="pmain bx-main">
+      <!-- benefici:pagina -->
+    </main>
+
+    <!-- @band -->
+
+    <!-- @footer -->
+
+    <script type="module" src="/src/pages/benefici.js"></script>
+  </body>
+</html>

@@ -752,3 +752,10 @@ export const PRODUCTS = [
 ]
 
 export const productById = (id) => PRODUCTS.find((p) => p.id === id)
+
+/**
+ * Rotazione del barattolo (rotY, come in choreography.js) che porta davanti alla camera la tabella
+ * nutrizionale dell'etichetta: per il collagene la tabella e' a U 0.19 (angolo -1.817, vedi ROT.ingM in
+ * choreography.js), per gli altri prodotti da geo.table. Pagina Benefici, sezione "Cosa c'e' dentro".
+ */
+export const tableYaw = (p) => (p?.geo ? -(p.geo.table - 0.5) * p.geo.span : 1.817)

@@ -124,6 +124,33 @@ export class Stage {
     return job
   }
 
+  /**
+   * Libera un barattolo scaricato che non serve piu' (geometrie, materiali, texture sulla scheda video):
+   * se torna utile si riscarica dalla cache del browser. Quello in scena non si tocca. (Pagina Benefici:
+   * dodici barattoli uno dopo l'altro, in memoria solo quelli vicini.)
+   */
+  release(id) {
+    const job = this.entries.get(id)
+    if (!job) return
+    this.entries.delete(id)
+    job
+      .then((entry) => {
+        if (entry === this.entry) {
+          this.entries.set(id, job)
+          return
+        }
+        entry.model.traverse((o) => o.geometry?.dispose())
+        for (const m of entry.materials) {
+          for (const v of Object.values(m)) if (v?.isTexture) v.dispose()
+          m.dispose()
+        }
+        entry.labelOriginal?.dispose()
+        entry.labelTextures?.forEach((t) => t.dispose())
+        entry.particles?.dispose?.()
+      })
+      .catch(() => {})
+  }
+
   async _loadEntry(product, onProgress) {
     const url = product.model
     // etichetta nella lingua del sito: si scarica insieme al modello

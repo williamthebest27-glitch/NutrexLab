@@ -10,6 +10,8 @@
   woo         nomi e descrizioni dei prodotti di WooCommerce
   legal       pagine legali e Chi siamo
   extra       titoli su due righe, etichette del JavaScript, numeri con unita'
+  benefici    pagina Benefici: aree, formule e indicazioni sulla salute (src/seo/benefici.js)
+  beneficiGruppi  pagina Benefici: indicazioni raggruppate per ingrediente (generato, npm run traduzioni-benefici)
 */
 import html from './fr/html.js'
 import ui from './fr/ui.js'
@@ -21,5 +23,7 @@ import catalog from './fr/catalog.js'
 import woo from './fr/woo.js'
 import legal from './fr/legal.js'
 import extra from './fr/extra.js'
+import benefici from './fr/benefici.js'
+import beneficiGruppi from './fr/benefici-gruppi.js'
 
-export default { html, ui, meta, products, copy, experience, catalog, woo, legal, extra }
+export default { html, ui, meta, products, copy, experience, catalog, woo, legal, extra, benefici, beneficiGruppi }

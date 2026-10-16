@@ -737,6 +737,31 @@ ul {
   }
 }
 
+/* schermi medi: quattro voci non stanno tra il logo e "Acquista ora". Voci piu' strette e niente
+   Homepage (ci porta il logo); nel menu mobile ci sono tutte */
+@media (min-width: 768px) and (max-width: 1180px) {
+  .nav {
+    column-gap: 16px;
+  }
+
+  .nav:not(.is-compact) {
+    padding-inline: clamp(18px, 4vw, 100px);
+  }
+
+  .nav__logo {
+    width: 112px;
+  }
+
+  .nav__links {
+    gap: clamp(16px, 2vw, 28px);
+    letter-spacing: 0.14em;
+  }
+
+  .nav__links > [data-goto='top'] {
+    display: none;
+  }
+}
+
 /* schermi medi: con il pulsante PRODOTTI accanto ad "Acquista ora" i link si spostano vicino al logo,
    sotto i 900 px lasciano il posto al pulsante */
 @media (min-width: 768px) and (max-width: 1180px) {

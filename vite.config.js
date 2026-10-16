@@ -5,6 +5,7 @@ import { defineConfig } from 'vite'
 import { PAGES } from './src/seo/pages.js'
 import { headTags } from './src/seo/head.js'
 import { catalogMain, staticGrid, shopFaq, shopCategories, lineSection } from './src/seo/build.js'
+import { beneficiMain } from './src/seo/benefici-page.js'
 import { translatePage, finishItalian } from './src/seo/translate.js'
 import { PREFIXED, splitLang } from './src/i18n/langs.js'
 import langMiddleware, { config as langMiddlewareConfig } from './middleware.js'
@@ -47,6 +48,7 @@ const partials = {
   - <!-- faq:integratori --> -> domande frequenti della pagina Integratori
   - <!-- categorie:tutti --> -> link alle categorie nella pagina Integratori
   - <!-- catalogo:chiave --> -> contenuto delle pagine categoria (src/seo/build.js)
+  - <!-- benefici:pagina --> -> contenuto della pagina Benefici (src/seo/benefici-page.js)
   Cambiando i dati in src/seo/ il server di sviluppo si riavvia da solo (sono dipendenze di questo file).
 */
 const seo = {
@@ -63,7 +65,8 @@ const seo = {
           return `<!--nx:seo:${key}-->${headTags(PAGES[key])}<!--/nx:seo-->`
         })
         .replace(/<!--\s*griglia:([a-z0-9-]+)\s*-->/g, (_, key) => staticGrid(key))
-        .replace(/<!--\s*catalogo:([a-z0-9-]+)\s*-->/g, (_, key) => catalogMain(key)),
+        .replace(/<!--\s*catalogo:([a-z0-9-]+)\s*-->/g, (_, key) => catalogMain(key))
+        .replace(/<!--\s*benefici:pagina\s*-->/g, () => beneficiMain()),
   },
 }
 
@@ -283,6 +286,8 @@ export default defineConfig({
         'integratori/collagene': resolve('integratori/collagene.html'),
         'integratori/vitamine-e-minerali': resolve('integratori/vitamine-e-minerali.html'),
         'integratori/estratti-vegetali': resolve('integratori/estratti-vegetali.html'),
+        // benefici dei prodotti: aree di benessere, una sezione per formula, indicazioni autorizzate
+        benefici: resolve('benefici.html'),
         prodotto: resolve('prodotto.html'),
         carrello: resolve('carrello.html'),
         ordine: resolve('ordine.html'),

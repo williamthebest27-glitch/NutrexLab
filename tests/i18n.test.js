@@ -74,6 +74,9 @@ const catalog = await imp('src/seo/catalog.js')
 texts.push(...fromHtml(build.staticGrid('tutti'), 'griglia:tutti'), ...fromHtml(build.shopFaq(), 'faq:integratori'))
 texts.push(...fromHtml(build.shopCategories(), 'categorie:tutti'), ...fromHtml(build.lineSection(), 'seo:linea'))
 for (const c of catalog.CATEGORIES) texts.push(...fromHtml(build.catalogMain(c.slug), `catalogo:${c.slug}`))
+// pagina Benefici (src/seo/benefici-page.js): tutto il contenuto e' gia' nell'HTML
+const { beneficiMain } = await imp('src/seo/benefici-page.js')
+texts.push(...fromHtml(beneficiMain(), 'benefici:pagina'))
 
 // JavaScript: t('...') e tp(n, '...', '...') (src/i18n/index.js ha solo esempi nei commenti), anche nella
 // pagina prodotto preparata sul server (server/)

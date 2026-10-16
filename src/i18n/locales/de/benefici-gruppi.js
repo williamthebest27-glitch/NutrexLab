@@ -1,0 +1,31 @@
+// Pagina Benefici, indicazioni raggruppate per ingrediente, traduzione: Deutsch.
+// File generato da `npm run traduzioni-benefici` (scripts/traduzioni-benefici.mjs) con i testi ufficiali di
+// src/i18n/locales/de/benefici.js: non modificarlo a mano.
+export default {
+  "Lo zinco contribuisce al mantenimento di una pelle normale, capelli normali e unghie normali": "Zink trägt zur Erhaltung normaler Haut, Haare und Nägel bei",
+  "La biotina contribuisce al mantenimento di una pelle normale e capelli normali": "Biotin trägt zur Erhaltung normaler Haut und Haare bei",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa e delle cartilagini": "Vitamin C trägt zu einer normalen Kollagenbildung für eine normale Funktion der Knochen und eine normale Knorpelfunktion bei",
+  "Lo zinco contribuisce al mantenimento di una pelle normale e unghie normali": "Zink trägt zur Erhaltung normaler Haut und Nägel bei",
+  "Il rame contribuisce alla normale pigmentazione della pelle e dei capelli": "Kupfer trägt zu einer normalen Hautpigmentierung und Haarpigmentierung bei",
+  "Il selenio contribuisce al mantenimento di capelli e unghie normali": "Selen trägt zur Erhaltung normaler Haare und Nägel bei",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle cartilagini e delle ossa": "Vitamin C trägt zu einer normalen Kollagenbildung für eine normale Knorpelfunktion und eine normale Funktion der Knochen bei",
+  "L’ashwagandha ha un’azione tonico-adattogena e tonica in caso di stanchezza fisica e mentale": "Ashwagandha wirkt tonisierend und adaptogen und tonisierend bei körperlicher und geistiger Müdigkeit",
+  "Il biancospino favorisce la regolare funzionalità dell’apparato cardiovascolare e contribuisce alla regolarità della pressione arteriosa": "Weißdorn unterstützt die normale Funktion des Herz-Kreislauf-Systems und trägt zu einem ausgeglichenen Blutdruck bei",
+  "La vitamina B12 contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "Vitamin B12 trägt zu einem normalen Energiestoffwechsel und zur Verringerung von Müdigkeit und Ermüdung bei",
+  "La vitamina C contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "Vitamin C trägt zu einem normalen Energiestoffwechsel und zur Verringerung von Müdigkeit und Ermüdung bei",
+  "L’uva ursina favorisce la funzionalità delle vie urinarie e il drenaggio dei liquidi corporei": "Bärentraube unterstützt die normale Funktion der Harnwege und die Entwässerung des Körpers",
+  "La vitamina C contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "Vitamin C trägt zur Verringerung von Müdigkeit und Ermüdung und zu einem normalen Energiestoffwechsel bei",
+  "La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo e accresce l’assorbimento del ferro": "Vitamin C trägt dazu bei, die Zellen vor oxidativem Stress zu schützen, und erhöht die Eisenaufnahme",
+  "Il magnesio contribuisce alla normale funzione muscolare, all’equilibrio elettrolitico e alla normale sintesi proteica": "Magnesium trägt zu einer normalen Muskelfunktion und Eiweißsynthese und zum Elektrolytgleichgewicht bei",
+  "Il magnesio contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "Magnesium trägt zur Verringerung von Müdigkeit und Ermüdung und zu einem normalen Energiestoffwechsel bei",
+  "Il magnesio contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "Magnesium trägt zu einer normalen Funktion des Nervensystems und zur normalen psychischen Funktion bei",
+  "La vitamina B6 contribuisce alla normale funzione psicologica e al normale funzionamento del sistema nervoso": "Vitamin B6 trägt zur normalen psychischen Funktion und zu einer normalen Funktion des Nervensystems bei",
+  "Il magnesio contribuisce al mantenimento di ossa e denti normali": "Magnesium trägt zur Erhaltung normaler Knochen und Zähne bei",
+  "La vitamina B12 contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "Vitamin B12 trägt zu einer normalen Funktion des Nervensystems und zur normalen psychischen Funktion bei",
+  "La vitamina B12 contribuisce alla normale formazione dei globuli rossi e al normale metabolismo dell’omocisteina e interviene nel processo di divisione delle cellule": "Vitamin B12 trägt zu einer normalen Bildung roter Blutkörperchen und einem normalen Homocystein-Stoffwechsel bei und hat eine Funktion bei der Zellteilung",
+  "La vitamina C contribuisce alla normale funzione del sistema immunitario e al mantenimento della normale funzione del sistema immunitario durante e dopo uno sforzo fisico intenso": "Vitamin C trägt zu einer normalen Funktion des Immunsystems und zu einer normalen Funktion des Immunsystems während und nach intensiver körperlicher Betätigung bei",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa, delle cartilagini e dei denti": "Vitamin C trägt zu einer normalen Kollagenbildung für eine normale Funktion der Knochen, eine normale Knorpelfunktion und eine normale Funktion der Zähne bei",
+  "La vitamina C contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "Vitamin C trägt zu einer normalen Funktion des Nervensystems und zur normalen psychischen Funktion bei",
+  "La vitamina D contribuisce al normale assorbimento/utilizzo del calcio e del fosforo e al mantenimento di ossa e denti normali": "Vitamin D trägt zu einer normalen Aufnahme/Verwertung von Calcium und Phosphor und zur Erhaltung normaler Knochen und Zähne bei",
+  "La vitamina D contribuisce a normali livelli di calcio nel sangue e interviene nel processo di divisione delle cellule": "Vitamin D trägt zu einem normalen Calciumspiegel im Blut bei und hat eine Funktion bei der Zellteilung",
+}

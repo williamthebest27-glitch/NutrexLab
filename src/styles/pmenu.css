@@ -1,0 +1,550 @@
+/* ==========================================================================
+   NUTREX LAB / Menu prodotti (PRODOTTI)
+   Scheda dei prodotti a destra (desktop) che scorrendo si chiude nel pulsante PRODOTTI accanto ad
+   "Acquista ora"; su mobile sempre pulsante con tendina. Lo usano la homepage (src/main.js) e la
+   pagina Benefici (src/pages/benefici.js), con src/ui/productMenu.js e src/ui/menuMorph.js.
+   ========================================================================== */
+
+/* Menu prodotti: pannello in vetro sul bordo destro, centrato in verticale.
+   .pmenu occupa tutta l'altezza (e' lui che sfuma con lo scroll), la scheda e' centrata dentro.
+   Ogni voce ha l'esagono nel colore del prodotto; la voce attiva e' piena. */
+.pmenu,
+.pmenu-ghost {
+  /* colori propri: la scheda e il pulsante restano chiari con testi scuri anche sopra le sezioni
+     scure (i colori della pagina cambiano con lo scroll) */
+  --fg: var(--ink);
+  --fg-soft: color-mix(in srgb, var(--ink) 62%, transparent);
+  --fg-faint: color-mix(in srgb, var(--ink) 40%, transparent);
+  --line: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.pmenu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: var(--gutter);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.pmenu__card,
+.pmenu__toggle {
+  pointer-events: auto;
+}
+
+/* pulsante PRODOTTI e tendina: solo su mobile (sul desktop la scheda e' sempre aperta) */
+.pmenu__toggle {
+  display: none;
+}
+
+.pmenu__panel {
+  display: contents;
+}
+
+.pmenu__card {
+  position: relative;
+  width: clamp(246px, 19vw, 290px);
+  max-height: min(84%, calc(var(--vh) - 150px));
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px 12px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  box-shadow:
+    0 30px 60px -34px color-mix(in srgb, var(--ink) 55%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  backdrop-filter: blur(18px) saturate(1.35);
+}
+
+.pmenu__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 6px 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pmenu__icon {
+  flex: none;
+  width: 18px;
+  height: 17px;
+  fill: var(--accent);
+}
+
+.pmenu__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 100%;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.pmenu__count {
+  margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+}
+
+/* tutti i 12 prodotti entrano nella scheda (da 720 px di altezza); su schermi piu' bassi la lista
+   scorre: le sfumature in alto e in basso indicano che ci sono altre voci */
+.pmenu__list {
+  display: grid;
+  gap: clamp(1px, 0.3vh, 4px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.pmenu__list.has-below {
+  -webkit-mask-image: linear-gradient(to top, transparent, #000 30px);
+  mask-image: linear-gradient(to top, transparent, #000 30px);
+}
+
+.pmenu__list.has-above {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 26px);
+  mask-image: linear-gradient(to bottom, transparent, #000 26px);
+}
+
+.pmenu__list.has-above.has-below {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 30px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 30px), transparent);
+}
+
+.pmenu__item {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: clamp(4px, 0.75vh, 11px) 12px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--fg-soft);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 0.4s var(--ease-out),
+    background-color 0.4s var(--ease-out),
+    box-shadow 0.4s var(--ease-out);
+}
+
+.pmenu__hex {
+  flex: none;
+  width: 20px;
+  height: 19px;
+  overflow: visible;
+  fill: transparent;
+  stroke: var(--swatch);
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  transition:
+    fill 0.45s var(--ease-out),
+    transform 0.8s var(--ease-out);
+}
+
+.pmenu__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-stretch: 100%;
+  font-size: clamp(13px, 1.05vw, 15px);
+  line-height: 1.15;
+  letter-spacing: 0.005em;
+  /* i nomi lunghi vanno a capo invece di essere tagliati */
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  transition: transform 0.6s var(--ease-out);
+}
+
+/* seconda riga: formato o variante (In polvere, Compresse, Cardio Premium...) */
+.pmenu__note {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+.pmenu__item[aria-pressed='true'] .pmenu__note {
+  color: var(--fg-soft);
+}
+
+.pmenu__num {
+  font-size: 10px;
+  color: var(--fg-faint);
+  transition: color 0.4s var(--ease-out);
+}
+
+.pmenu__item:hover,
+.pmenu__item:focus-visible {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.pmenu__item:hover .pmenu__name,
+.pmenu__item:focus-visible .pmenu__name {
+  transform: translateX(3px);
+}
+
+/* l'esagono ruota di un sesto di giro: torna identico, resta solo il movimento */
+.pmenu__item:hover .pmenu__hex,
+.pmenu__item:focus-visible .pmenu__hex {
+  transform: rotate(60deg);
+}
+
+.pmenu__item[aria-pressed='true'] {
+  color: var(--fg);
+  background: color-mix(in srgb, #fff 78%, transparent);
+  box-shadow: 0 10px 22px -14px color-mix(in srgb, var(--ink) 60%, transparent);
+}
+
+.pmenu__item[aria-pressed='true'] .pmenu__hex {
+  fill: var(--swatch);
+}
+
+.pmenu__item[aria-pressed='true'] .pmenu__num {
+  color: var(--accent);
+}
+
+@media (max-height: 800px) and (min-width: 768px) {
+  .pmenu__item {
+    padding-block: 4px;
+  }
+
+  .pmenu__note {
+    margin-top: 1px;
+  }
+}
+
+/* Pulsante PRODOTTI con tendina (classe .is-drop da main.js): su mobile sempre, su desktop appena si
+   inizia a scorrere (la scheda della hero si chiude nel pulsante, in alto a destra accanto ad
+   "Acquista ora"). La tendina contiene la stessa lista dei prodotti. */
+.pmenu.is-drop {
+  top: 12px;
+  bottom: auto;
+  right: calc(var(--gutter) + var(--cta-w, 156px) + 10px);
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.pmenu.is-drop .pmenu__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 15px 0 14px;
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  box-shadow:
+    0 16px 30px -18px color-mix(in srgb, var(--ink) 70%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 100%;
+  font-size: 11.5px;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.4s var(--ease-out);
+}
+
+.pmenu.is-drop .pmenu__toggle:hover,
+.pmenu.is-open .pmenu__toggle {
+  background: color-mix(in srgb, #fff 94%, transparent);
+}
+
+.pmenu__toggle-hex {
+  flex: none;
+  width: 15px;
+  height: 14px;
+  fill: var(--accent);
+  transition: transform 0.8s var(--ease-out);
+}
+
+.pmenu__chev {
+  flex: none;
+  width: 10px;
+  height: 7px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.45s var(--ease-out);
+}
+
+.pmenu.is-open .pmenu__toggle-hex {
+  transform: rotate(60deg);
+}
+
+.pmenu.is-open .pmenu__chev {
+  transform: rotate(180deg);
+}
+
+/* tendina chiusa: trasparente e non si tocca */
+.pmenu.is-drop .pmenu__panel {
+  display: block;
+  margin-top: 10px;
+  transform-origin: 100% 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.96);
+  transition:
+    opacity 0.25s var(--ease-out),
+    transform 0.35s var(--ease-out),
+    visibility 0s linear 0.35s;
+}
+
+.pmenu.is-drop.is-open .pmenu__panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.55s var(--ease-out),
+    visibility 0s;
+}
+
+.pmenu.is-drop .pmenu__card {
+  max-height: calc(var(--vh) - 90px);
+  padding: 8px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+
+.pmenu.is-drop .pmenu__head {
+  display: none;
+}
+
+.pmenu.is-drop .pmenu__list {
+  gap: 2px;
+}
+
+/* le voci scendono una dopo l'altra quando la tendina si apre */
+.pmenu.is-drop .pmenu__list li {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.2s var(--ease-out),
+    transform 0.3s var(--ease-out);
+}
+
+.pmenu.is-drop.is-open .pmenu__list li {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.4s var(--ease-out) calc(0.05s + var(--i) * 0.03s),
+    transform 0.6s var(--ease-out) calc(0.05s + var(--i) * 0.03s);
+}
+
+/* pulsante: la scritta sale dal basso quando atterra (menuMorph.js), riflesso di luce che lo attraversa */
+.pmenu.is-drop .pmenu__toggle {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.pmenu__toggle-label {
+  display: inline-block;
+}
+
+.pmenu__toggle::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.95) 50%, transparent 70%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.pmenu__toggle.is-shine::after {
+  animation: pmenu-shine 0.95s var(--ease-out) forwards;
+}
+
+@keyframes pmenu-shine {
+  to {
+    transform: translateX(130%);
+  }
+}
+
+/* copia della scheda che fa il viaggio tra scheda e pulsante (menuMorph.js), sopra la navbar */
+.pmenu-ghost {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.pmenu__card--ghost {
+  position: absolute;
+  margin: 0;
+  max-height: none;
+  overflow: hidden;
+  will-change: left, top, width, height;
+}
+
+.pmenu__card--ghost,
+.pmenu__card--ghost * {
+  transition: none !important;
+}
+
+/* la lista copiata non scorre: niente barre di scorrimento mentre la scheda cambia forma */
+.pmenu__card--ghost .pmenu__list {
+  overflow: hidden;
+}
+
+/* la voce attiva si spegne e si riaccende con una dissolvenza */
+.pmenu__card--ghost .pmenu__item {
+  transition:
+    background-color 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out) !important;
+}
+
+.pmenu__card--ghost.is-quiet .pmenu__item {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.pmenu-ghost__hex {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  stroke: var(--swatch);
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--swatch) 60%, transparent));
+  transition: none;
+  will-change: transform;
+}
+
+.pmenu-ghost__ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  /* mobile: niente colonna laterale. Il pulsante PRODOTTI sta sotto "Acquista ora" (stesso
+     margine destro della navbar) e apre la scheda dei prodotti come tendina */
+  /* nella hero il pulsante PRODOTTI sta sotto "Acquista ora" */
+  .pmenu,
+  .pmenu.is-drop {
+    top: 59px;
+    bottom: auto;
+    right: clamp(18px, 6vw, 100px);
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .pmenu.is-drop .pmenu__card {
+    width: min(304px, calc(100vw - 2 * clamp(18px, 6vw, 100px)));
+    max-height: calc(var(--vh) - 150px);
+  }
+
+  /* dopo la hero (classe .is-dock da main.js) il pulsante scende in basso a destra e la tendina
+     si apre verso l'alto */
+  .pmenu.is-drop.is-dock {
+    top: auto;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    right: 14px;
+    flex-direction: column-reverse;
+  }
+
+  .pmenu.is-drop.is-dock .pmenu__toggle {
+    height: 42px;
+    padding: 0 16px 0 15px;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    box-shadow:
+      0 18px 34px -14px color-mix(in srgb, var(--ink) 75%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    animation: pmenu-dock 0.55s var(--ease-out);
+  }
+
+  .pmenu.was-dock .pmenu__toggle {
+    animation: pmenu-undock 0.55s var(--ease-out);
+  }
+
+  .pmenu.is-dock .pmenu__chev {
+    transform: rotate(180deg);
+  }
+
+  .pmenu.is-dock.is-open .pmenu__chev {
+    transform: none;
+  }
+
+  .pmenu.is-drop.is-dock .pmenu__panel {
+    margin-top: 0;
+    margin-bottom: 10px;
+    transform-origin: 100% 100%;
+    transform: translateY(10px) scale(0.96);
+  }
+
+  .pmenu.is-drop.is-dock.is-open .pmenu__panel {
+    transform: none;
+  }
+
+  .pmenu.is-drop.is-dock .pmenu__card {
+    max-height: calc(var(--vh) - 110px);
+  }
+
+  @keyframes pmenu-dock {
+    from {
+      opacity: 0;
+      translate: 0 16px;
+    }
+  }
+
+  @keyframes pmenu-undock {
+    from {
+      opacity: 0;
+      translate: 0 -10px;
+    }
+  }
+
+  .pmenu__item {
+    padding: 10px 12px;
+  }
+
+  .pmenu__name {
+    font-size: 15px;
+  }
+
+  .pmenu__note {
+    font-size: 10px;
+  }
+}

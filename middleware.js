@@ -25,6 +25,7 @@ export const config = {
     '/carrello',
     '/ordine',
     '/contatti',
+    '/benefici',
     '/chi-siamo',
     '/note-legali',
     '/privacy-policy',

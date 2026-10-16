@@ -1,0 +1,31 @@
+// Pagina Benefici, indicazioni raggruppate per ingrediente, traduzione: français.
+// File generato da `npm run traduzioni-benefici` (scripts/traduzioni-benefici.mjs) con i testi ufficiali di
+// src/i18n/locales/fr/benefici.js: non modificarlo a mano.
+export default {
+  "Lo zinco contribuisce al mantenimento di una pelle normale, capelli normali e unghie normali": "Le zinc contribue au maintien d’une peau normale, de cheveux normaux et d’ongles normaux",
+  "La biotina contribuisce al mantenimento di una pelle normale e capelli normali": "La biotine contribue au maintien d’une peau normale et de cheveux normaux",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa e delle cartilagini": "La vitamine C contribue à la formation normale de collagène pour assurer la fonction normale des os et des cartilages",
+  "Lo zinco contribuisce al mantenimento di una pelle normale e unghie normali": "Le zinc contribue au maintien d’une peau normale et d’ongles normaux",
+  "Il rame contribuisce alla normale pigmentazione della pelle e dei capelli": "Le cuivre contribue à la pigmentation normale de la peau et des cheveux",
+  "Il selenio contribuisce al mantenimento di capelli e unghie normali": "Le sélénium contribue au maintien de cheveux et d’ongles normaux",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle cartilagini e delle ossa": "La vitamine C contribue à la formation normale de collagène pour assurer la fonction normale des cartilages et des os",
+  "L’ashwagandha ha un’azione tonico-adattogena e tonica in caso di stanchezza fisica e mentale": "L’ashwagandha a une action tonique et adaptogène et tonique en cas de fatigue physique et mentale",
+  "Il biancospino favorisce la regolare funzionalità dell’apparato cardiovascolare e contribuisce alla regolarità della pressione arteriosa": "L’aubépine favorise le fonctionnement normal de l’appareil cardiovasculaire et contribue à la régularité de la pression artérielle",
+  "La vitamina B12 contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "La vitamine B12 contribue à un métabolisme énergétique normal et à réduire la fatigue",
+  "La vitamina C contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "La vitamine C contribue à un métabolisme énergétique normal et à réduire la fatigue",
+  "L’uva ursina favorisce la funzionalità delle vie urinarie e il drenaggio dei liquidi corporei": "La busserole favorise le bon fonctionnement des voies urinaires et le drainage des liquides corporels",
+  "La vitamina C contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "La vitamine C contribue à réduire la fatigue et à un métabolisme énergétique normal",
+  "La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo e accresce l’assorbimento del ferro": "La vitamine C contribue à protéger les cellules contre le stress oxydatif et accroît l’absorption de fer",
+  "Il magnesio contribuisce alla normale funzione muscolare, all’equilibrio elettrolitico e alla normale sintesi proteica": "Le magnésium contribue à une fonction musculaire normale, à l’équilibre électrolytique et à une synthèse protéique normale",
+  "Il magnesio contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "Le magnésium contribue à réduire la fatigue et à un métabolisme énergétique normal",
+  "Il magnesio contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "Le magnésium contribue au fonctionnement normal du système nerveux et à des fonctions psychologiques normales",
+  "La vitamina B6 contribuisce alla normale funzione psicologica e al normale funzionamento del sistema nervoso": "La vitamine B6 contribue à des fonctions psychologiques normales et au fonctionnement normal du système nerveux",
+  "Il magnesio contribuisce al mantenimento di ossa e denti normali": "Le magnésium contribue au maintien d’une ossature normale et d’une dentition normale",
+  "La vitamina B12 contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "La vitamine B12 contribue au fonctionnement normal du système nerveux et à des fonctions psychologiques normales",
+  "La vitamina B12 contribuisce alla normale formazione dei globuli rossi e al normale metabolismo dell’omocisteina e interviene nel processo di divisione delle cellule": "La vitamine B12 contribue à la formation normale de globules rouges et au métabolisme normal de l’homocystéine et joue un rôle dans le processus de division cellulaire",
+  "La vitamina C contribuisce alla normale funzione del sistema immunitario e al mantenimento della normale funzione del sistema immunitario durante e dopo uno sforzo fisico intenso": "La vitamine C contribue au fonctionnement normal du système immunitaire et à maintenir le fonctionnement normal du système immunitaire pendant et après un exercice physique intense",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa, delle cartilagini e dei denti": "La vitamine C contribue à la formation normale de collagène pour assurer la fonction normale des os, des cartilages et des dents",
+  "La vitamina C contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "La vitamine C contribue au fonctionnement normal du système nerveux et à des fonctions psychologiques normales",
+  "La vitamina D contribuisce al normale assorbimento/utilizzo del calcio e del fosforo e al mantenimento di ossa e denti normali": "La vitamine D contribue à l’absorption et à l’utilisation normales du calcium et du phosphore, au maintien d’une ossature normale et au maintien d’une dentition normale",
+  "La vitamina D contribuisce a normali livelli di calcio nel sangue e interviene nel processo di divisione delle cellule": "La vitamine D contribue à une calcémie normale et joue un rôle dans le processus de division cellulaire",
+}

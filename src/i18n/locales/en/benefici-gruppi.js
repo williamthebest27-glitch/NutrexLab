@@ -1,0 +1,31 @@
+// Pagina Benefici, indicazioni raggruppate per ingrediente, traduzione: English.
+// File generato da `npm run traduzioni-benefici` (scripts/traduzioni-benefici.mjs) con i testi ufficiali di
+// src/i18n/locales/en/benefici.js: non modificarlo a mano.
+export default {
+  "Lo zinco contribuisce al mantenimento di una pelle normale, capelli normali e unghie normali": "Zinc contributes to the maintenance of normal skin, hair and nails",
+  "La biotina contribuisce al mantenimento di una pelle normale e capelli normali": "Biotin contributes to the maintenance of normal skin and hair",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa e delle cartilagini": "Vitamin C contributes to normal collagen formation for the normal function of bones and cartilage",
+  "Lo zinco contribuisce al mantenimento di una pelle normale e unghie normali": "Zinc contributes to the maintenance of normal skin and nails",
+  "Il rame contribuisce alla normale pigmentazione della pelle e dei capelli": "Copper contributes to normal skin and hair pigmentation",
+  "Il selenio contribuisce al mantenimento di capelli e unghie normali": "Selenium contributes to the maintenance of normal hair and nails",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle cartilagini e delle ossa": "Vitamin C contributes to normal collagen formation for the normal function of cartilage and bones",
+  "L’ashwagandha ha un’azione tonico-adattogena e tonica in caso di stanchezza fisica e mentale": "Ashwagandha has a tonic and adaptogenic action and a tonic action in case of physical and mental tiredness",
+  "Il biancospino favorisce la regolare funzionalità dell’apparato cardiovascolare e contribuisce alla regolarità della pressione arteriosa": "Hawthorn supports the normal function of the cardiovascular system and contributes to regular blood pressure",
+  "La vitamina B12 contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "Vitamin B12 contributes to normal energy-yielding metabolism and to the reduction of tiredness and fatigue",
+  "La vitamina C contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "Vitamin C contributes to normal energy-yielding metabolism and to the reduction of tiredness and fatigue",
+  "L’uva ursina favorisce la funzionalità delle vie urinarie e il drenaggio dei liquidi corporei": "Bearberry supports the normal function of the urinary tract and the drainage of body fluids",
+  "La vitamina C contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "Vitamin C contributes to the reduction of tiredness and fatigue and to normal energy-yielding metabolism",
+  "La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo e accresce l’assorbimento del ferro": "Vitamin C contributes to the protection of cells from oxidative stress and increases iron absorption",
+  "Il magnesio contribuisce alla normale funzione muscolare, all’equilibrio elettrolitico e alla normale sintesi proteica": "Magnesium contributes to normal muscle function, to electrolyte balance and to normal protein synthesis",
+  "Il magnesio contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "Magnesium contributes to a reduction of tiredness and fatigue and to normal energy-yielding metabolism",
+  "Il magnesio contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "Magnesium contributes to normal functioning of the nervous system and to normal psychological function",
+  "La vitamina B6 contribuisce alla normale funzione psicologica e al normale funzionamento del sistema nervoso": "Vitamin B6 contributes to normal psychological function and to normal functioning of the nervous system",
+  "Il magnesio contribuisce al mantenimento di ossa e denti normali": "Magnesium contributes to the maintenance of normal bones and teeth",
+  "La vitamina B12 contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "Vitamin B12 contributes to normal functioning of the nervous system and to normal psychological function",
+  "La vitamina B12 contribuisce alla normale formazione dei globuli rossi e al normale metabolismo dell’omocisteina e interviene nel processo di divisione delle cellule": "Vitamin B12 contributes to normal red blood cell formation and to normal homocysteine metabolism and has a role in the process of cell division",
+  "La vitamina C contribuisce alla normale funzione del sistema immunitario e al mantenimento della normale funzione del sistema immunitario durante e dopo uno sforzo fisico intenso": "Vitamin C contributes to the normal function of the immune system and to maintain the normal function of the immune system during and after intense physical exercise",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa, delle cartilagini e dei denti": "Vitamin C contributes to normal collagen formation for the normal function of bones, cartilage and teeth",
+  "La vitamina C contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "Vitamin C contributes to normal functioning of the nervous system and to normal psychological function",
+  "La vitamina D contribuisce al normale assorbimento/utilizzo del calcio e del fosforo e al mantenimento di ossa e denti normali": "Vitamin D contributes to normal absorption/utilisation of calcium and phosphorus and to the maintenance of normal bones and teeth",
+  "La vitamina D contribuisce a normali livelli di calcio nel sangue e interviene nel processo di divisione delle cellule": "Vitamin D contributes to normal blood calcium levels and has a role in the process of cell division",
+}

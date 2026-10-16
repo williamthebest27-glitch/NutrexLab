@@ -1,0 +1,31 @@
+// Pagina Benefici, indicazioni raggruppate per ingrediente, traduzione: español.
+// File generato da `npm run traduzioni-benefici` (scripts/traduzioni-benefici.mjs) con i testi ufficiali di
+// src/i18n/locales/es/benefici.js: non modificarlo a mano.
+export default {
+  "Lo zinco contribuisce al mantenimento di una pelle normale, capelli normali e unghie normali": "El zinc contribuye al mantenimiento de la piel, del cabello y de las uñas en condiciones normales",
+  "La biotina contribuisce al mantenimento di una pelle normale e capelli normali": "La biotina contribuye al mantenimiento de la piel y del cabello en condiciones normales",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa e delle cartilagini": "La vitamina C contribuye a la formación normal de colágeno para el funcionamiento normal de los huesos y los cartílagos",
+  "Lo zinco contribuisce al mantenimento di una pelle normale e unghie normali": "El zinc contribuye al mantenimiento de la piel y las uñas en condiciones normales",
+  "Il rame contribuisce alla normale pigmentazione della pelle e dei capelli": "El cobre contribuye a la pigmentación normal de la piel y del cabello",
+  "Il selenio contribuisce al mantenimento di capelli e unghie normali": "El selenio contribuye al mantenimiento del cabello y de las uñas en condiciones normales",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle cartilagini e delle ossa": "La vitamina C contribuye a la formación normal de colágeno para el funcionamiento normal de los cartílagos y los huesos",
+  "L’ashwagandha ha un’azione tonico-adattogena e tonica in caso di stanchezza fisica e mentale": "La ashwagandha tiene una acción tónica y adaptógena y tónica en caso de cansancio físico y mental",
+  "Il biancospino favorisce la regolare funzionalità dell’apparato cardiovascolare e contribuisce alla regolarità della pressione arteriosa": "El espino blanco favorece el funcionamiento normal del aparato cardiovascular y contribuye a la regularidad de la presión arterial",
+  "La vitamina B12 contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "La vitamina B12 contribuye al metabolismo energético normal y ayuda a disminuir el cansancio y la fatiga",
+  "La vitamina C contribuisce al normale metabolismo energetico e alla riduzione della stanchezza e dell’affaticamento": "La vitamina C contribuye al metabolismo energético normal y ayuda a disminuir el cansancio y la fatiga",
+  "L’uva ursina favorisce la funzionalità delle vie urinarie e il drenaggio dei liquidi corporei": "La gayuba favorece el funcionamiento normal de las vías urinarias y el drenaje de los líquidos corporales",
+  "La vitamina C contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "La vitamina C ayuda a disminuir el cansancio y la fatiga y contribuye al metabolismo energético normal",
+  "La vitamina C contribuisce alla protezione delle cellule dallo stress ossidativo e accresce l’assorbimento del ferro": "La vitamina C contribuye a la protección de las células frente al daño oxidativo y mejora la absorción del hierro",
+  "Il magnesio contribuisce alla normale funzione muscolare, all’equilibrio elettrolitico e alla normale sintesi proteica": "El magnesio contribuye al funcionamiento normal de los músculos, al equilibrio electrolítico y a la síntesis proteica normal",
+  "Il magnesio contribuisce alla riduzione della stanchezza e dell’affaticamento e al normale metabolismo energetico": "El magnesio ayuda a disminuir el cansancio y la fatiga y contribuye al metabolismo energético normal",
+  "Il magnesio contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "El magnesio contribuye al funcionamiento normal del sistema nervioso y a la función psicológica normal",
+  "La vitamina B6 contribuisce alla normale funzione psicologica e al normale funzionamento del sistema nervoso": "La vitamina B6 contribuye a la función psicológica normal y al funcionamiento normal del sistema nervioso",
+  "Il magnesio contribuisce al mantenimento di ossa e denti normali": "El magnesio contribuye al mantenimiento de los huesos y los dientes en condiciones normales",
+  "La vitamina B12 contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "La vitamina B12 contribuye al funcionamiento normal del sistema nervioso y a la función psicológica normal",
+  "La vitamina B12 contribuisce alla normale formazione dei globuli rossi e al normale metabolismo dell’omocisteina e interviene nel processo di divisione delle cellule": "La vitamina B12 contribuye a la formación normal de glóbulos rojos, al metabolismo normal de la homocisteína y al proceso de división celular",
+  "La vitamina C contribuisce alla normale funzione del sistema immunitario e al mantenimento della normale funzione del sistema immunitario durante e dopo uno sforzo fisico intenso": "La vitamina C contribuye al funcionamiento normal del sistema inmunitario y al funcionamiento normal del sistema inmunitario durante el ejercicio físico intenso y después de este",
+  "La vitamina C contribuisce alla normale formazione del collagene per la normale funzione delle ossa, delle cartilagini e dei denti": "La vitamina C contribuye a la formación normal de colágeno para el funcionamiento normal de los huesos, los cartílagos y los dientes",
+  "La vitamina C contribuisce al normale funzionamento del sistema nervoso e alla normale funzione psicologica": "La vitamina C contribuye al funcionamiento normal del sistema nervioso y a la función psicológica normal",
+  "La vitamina D contribuisce al normale assorbimento/utilizzo del calcio e del fosforo e al mantenimento di ossa e denti normali": "La vitamina D contribuye a la absorción y utilización normal del calcio y el fósforo y al mantenimiento de los huesos y los dientes en condiciones normales",
+  "La vitamina D contribuisce a normali livelli di calcio nel sangue e interviene nel processo di divisione delle cellule": "La vitamina D contribuye al mantenimiento de niveles normales de calcio en sangre y al proceso de división celular",
+}

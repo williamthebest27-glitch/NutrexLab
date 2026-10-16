@@ -3,6 +3,7 @@ import '@fontsource/ibm-plex-mono/400.css'
 import '@fontsource/ibm-plex-mono/500.css'
 import '@fontsource/cormorant-garamond/latin-300.css'
 import './styles/base.css'
+import './styles/pmenu.css' // menu prodotti (anche nella pagina Benefici)
 import './styles/sections.css'
 
 import gsap from 'gsap'
@@ -24,6 +25,7 @@ import { initNavLinks } from './ui/navLinks.js'
 import { initNavMenu } from './ui/navMenu.js'
 import { createProductMenu } from './ui/productMenu.js'
 import { createMenuMorph } from './ui/menuMorph.js'
+import { syncProductLinks } from './ui/productLinks.js'
 import { createMobileMenu } from './ui/mobileMenu.js'
 import { initCookieNotice } from './ui/cookieNotice.js'
 import { makeGrain } from './ui/grain.js'
@@ -104,6 +106,7 @@ let product = productById(new URLSearchParams(location.search).get('prodotto')) 
 applyCssTheme(product.theme)
 setLiquid(product.theme)
 applyCopy(product.id) // testi del prodotto, prima che SplitText li divida
+syncProductLinks(product.id, PRODUCTS[0].id) // la pagina Benefici si apre sullo stesso prodotto
 html.classList.toggle('no-lines', !product.labelAnchors)
 
 // ---------------------------------------------------------------------------
@@ -812,6 +815,7 @@ async function switchProduct(id) {
     if (product === PRODUCTS[0]) url.searchParams.delete('prodotto')
     else url.searchParams.set('prodotto', product.id)
     history.replaceState(history.state, '', url)
+    syncProductLinks(product.id, PRODUCTS[0].id)
     if (reduced) blendTheme(prev.theme, product.theme, 0.5)
   }
 

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "sync-model": "node scripts/sync-model.mjs",
+    "matrice-benefici": "node scripts/matrice-benefici.mjs",
+    "traduzioni-benefici": "node scripts/traduzioni-benefici.mjs",
     "predev": "node scripts/sync-model.mjs",
     "dev": "vite",
     "prebuild": "node scripts/sync-model.mjs",

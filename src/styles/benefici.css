@@ -1,0 +1,1180 @@
+/* ==========================================================================
+   NUTREX LAB / Pagina Benefici
+   Come la homepage, un prodotto alla volta: i colori sono quelli del prodotto scelto (applyCssTheme in
+   src/pages/benefici.js: --paper, --mist, --ink, --berry, --berry-hi, sipario...), cambiano con lui.
+   Stessi token e componenti delle altre pagine (base.css, pages.css); caratteri grandi, anche per
+   etichette, note e tabelle.
+
+   Livelli: .page-sky 0, contenuto 1, tela del barattolo 2, .nav e menu prodotti 10, .grain 30
+   ========================================================================== */
+
+/* colori del prodotto anche per fondo, testo e accenti della pagina (sfumano al cambio, base.css) */
+body.bx {
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --accent: var(--berry);
+  --page-bg: var(--paper);
+  --fg-soft: color-mix(in srgb, var(--fg) 64%, transparent);
+  --fg-faint: color-mix(in srgb, var(--fg) 46%, transparent);
+  --line: color-mix(in srgb, var(--fg) 16%, transparent);
+}
+
+/* tela del barattolo 3D: fissa, sopra al contenuto (il barattolo sta nel suo spazio vuoto), mai cliccabile */
+.bx-webgl {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.bx-main {
+  overflow-x: clip;
+}
+
+/* un prodotto alla volta: le parti degli altri sono nascoste (anche dove il CSS da' un display) */
+.bx-main [hidden] {
+  display: none !important;
+}
+
+/* spazio del barattolo: vuoto, il modello 3D ci viene disegnato sopra (src/pages/benefici.js) */
+.bx-slot {
+  position: absolute;
+  inset: 0;
+}
+
+/* senza WebGL: la foto del barattolo nello stesso spazio */
+.bx-slot__fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 30px 40px color-mix(in srgb, var(--ink) 22%, transparent));
+}
+
+/* etichette in maiuscoletto: piu' grandi del resto del sito, si leggono bene */
+.bx-main .mono {
+  font-size: clamp(13px, 0.98vw, 15.5px);
+}
+
+.bx-main .eyebrow svg {
+  width: 17px;
+  height: 16px;
+}
+
+/* testate delle sezioni */
+.bx-head {
+  max-width: 980px;
+  margin-bottom: clamp(36px, 7vh, 84px);
+}
+
+.bx-head__title {
+  display: flex;
+  align-items: flex-end;
+  margin-top: clamp(16px, 2.2vh, 26px);
+  font-size: clamp(46px, 5.6vw, 104px);
+}
+
+.bx-head__lead {
+  max-width: 44ch;
+  margin-top: clamp(20px, 3.2vh, 34px);
+  font-size: clamp(19px, 1.5vw, 25px);
+  line-height: 1.5;
+  color: var(--fg-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Hero: titolo grande, il prodotto scelto e il suo barattolo protagonista davanti alla foto.
+   Sul desktop a destra c'e' la scheda dei prodotti (fissa, come nella homepage): la hero le lascia posto.
+   -------------------------------------------------------------------------- */
+.bx-hero {
+  --menu-room: calc(clamp(246px, 19vw, 290px) + clamp(20px, 2.6vw, 48px));
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  align-items: center;
+  column-gap: clamp(24px, 3.2vw, 64px);
+  width: min(100%, 1600px);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: calc(78px + clamp(24px, 5vh, 64px)) var(--menu-room) clamp(36px, 6vh, 72px) 0;
+}
+
+/* titoli grandi quanto la colonna lo permette: la parola piu' lunga non va mai a capo a meta'
+   (le lettere sono divise una per una, SplitText) */
+.bx-hero__copy {
+  position: relative;
+  z-index: 3;
+  container-type: inline-size;
+}
+
+.bx-hero__kicker {
+  margin-top: clamp(18px, 3vh, 30px);
+  color: var(--fg-soft);
+}
+
+.bx-hero__title {
+  margin-top: clamp(12px, 1.8vh, 20px);
+  font-size: clamp(44px, 11cqi, 118px);
+}
+
+/* WOHLBEFINDEN: la parola piu' lunga tra le lingue del sito */
+html[lang='de'] .bx-hero__title {
+  font-size: clamp(40px, 9.4cqi, 104px);
+}
+
+.bx-hero__title > span {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* il prodotto scelto */
+.bx-hero__products {
+  margin-top: clamp(26px, 4.6vh, 52px);
+  padding-top: clamp(20px, 3.4vh, 34px);
+  border-top: 1px solid var(--line);
+}
+
+.bx-hp__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  color: var(--accent);
+}
+
+.bx-hp__idx {
+  color: var(--fg-faint);
+}
+
+.bx-hp__name {
+  margin-top: clamp(12px, 1.8vh, 20px);
+  font-size: clamp(30px, 8.4cqi, 72px);
+  line-height: 0.9;
+}
+
+.bx-hp__headline {
+  margin-top: clamp(14px, 2vh, 22px);
+  font-size: clamp(22px, 1.95vw, 34px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--accent);
+}
+
+/* quanti benefici e in quali aree (link ai gruppi qui sotto) */
+.bx-hp__count {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: clamp(14px, 2.2vh, 22px);
+  color: var(--fg-soft);
+}
+
+.bx-hp__count b {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 2.8vw, 50px);
+  font-weight: 600;
+  font-stretch: 112%;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.bx-hp__areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bx-hp__areas .chip {
+  height: 38px;
+  padding: 0 16px;
+  font-size: clamp(14px, 1vw, 16px);
+  font-weight: 500;
+}
+
+.bx-hp__areas .chip:hover,
+.bx-hp__areas .chip:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* acquisto: pulsante grande nel colore del prodotto, prezzo di WooCommerce e disponibilita' */
+.bx-hp__buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 26px;
+  margin-top: clamp(20px, 3.2vh, 34px);
+}
+
+.bx-hp__cta {
+  --btn-bg: var(--accent);
+}
+
+.bx-hp__cta::before,
+.bx-cta .btn::before {
+  background: var(--ink);
+}
+
+.bx-hp__price {
+  display: grid;
+  gap: 6px;
+}
+
+.bx-hp__price .price {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 2.2vw, 38px);
+  font-weight: 600;
+  font-stretch: 105%;
+  line-height: 1;
+  letter-spacing: -0.015em;
+}
+
+.bx-hp__price .price:empty {
+  display: none;
+}
+
+.bx-hp__price del.amount--old {
+  margin-right: 8px;
+  font-size: 0.62em;
+  color: var(--fg-faint);
+}
+
+.bx-hp__price ins.amount--sale {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.bx-hp__more {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: clamp(13px, 0.98vw, 15.5px);
+}
+
+/* scena: foto del prodotto, anelli delle molecole e barattolo davanti */
+.bx-hero__stage {
+  position: relative;
+  align-self: stretch;
+  min-height: min(80vh, 820px);
+}
+
+.bx-hero__photo {
+  position: absolute;
+  inset: 4% 0 14% 24%;
+  margin: 0;
+  overflow: hidden;
+  border-radius: clamp(24px, 2.4vw, 40px);
+  background: var(--mist);
+  box-shadow: 0 50px 90px -60px color-mix(in srgb, var(--ink) 70%, transparent);
+  isolation: isolate;
+}
+
+.bx-hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* luce nel colore del prodotto dietro al barattolo: lo stacca dalla foto */
+.bx-hero__stage::before {
+  content: '';
+  position: absolute;
+  left: -14%;
+  bottom: -6%;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--berry-hi) 38%, transparent), color-mix(in srgb, var(--berry) 10%, transparent) 62%, transparent);
+  pointer-events: none;
+}
+
+.bx-slot--hero {
+  inset: auto auto 0 -6%;
+  width: 66%;
+  height: 74%;
+}
+
+/* anelli e molecole: tratti sottili nel colore del prodotto, si disegnano e girano piano */
+.bx-orbit {
+  position: absolute;
+  inset: 50% auto auto 44%;
+  width: min(124%, 96vh);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.bx-orbit__spin {
+  transform-origin: 300px 300px;
+  animation: bx-spin 140s linear infinite;
+}
+
+.bx-orbit__ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent) 26%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: bx-draw 2.6s var(--ease-out) 0.4s forwards;
+}
+
+.bx-orbit__ring--in {
+  stroke: color-mix(in srgb, var(--fg) 10%, transparent);
+  stroke-dasharray: 0.004 0.012;
+  stroke-dashoffset: 0;
+  animation: none;
+}
+
+.bx-mol path,
+.bx-orbit__link {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent) 52%, transparent);
+  stroke-width: 1.2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: bx-draw 1.8s var(--ease-out) forwards;
+  animation-delay: calc(0.9s + var(--i, 0) * 0.18s);
+}
+
+.bx-orbit__link {
+  stroke: color-mix(in srgb, var(--accent) 30%, transparent);
+  stroke-dasharray: 0.02 0.03;
+  animation-name: bx-fade;
+}
+
+.bx-mol circle {
+  fill: var(--paper);
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  opacity: 0;
+  animation: bx-fade 1s var(--ease-out) forwards;
+  animation-delay: calc(1.5s + var(--i, 0) * 0.18s);
+}
+
+@keyframes bx-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bx-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Vista del prodotto: benefici area per area (barattolo fermo a sinistra), poi la formula
+   (barattolo a destra). Il barattolo passa da uno spazio all'altro seguendo lo scroll.
+   -------------------------------------------------------------------------- */
+.bx-view {
+  width: min(100%, 1600px);
+  margin: 0 auto;
+}
+
+.bx-benefits,
+.bx-inside {
+  display: grid;
+  gap: clamp(28px, 4.4vw, 96px);
+  align-items: start;
+  padding: clamp(80px, 13vh, 160px) 0 clamp(40px, 7vh, 90px);
+  scroll-margin-top: 0;
+}
+
+.bx-benefits {
+  grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
+}
+
+.bx-inside {
+  grid-template-columns: minmax(0, 0.58fr) minmax(0, 0.42fr);
+  border-top: 1px solid var(--line);
+}
+
+/* colonna del barattolo: ferma mentre si leggono i testi accanto */
+.bx-benefits__jar,
+.bx-inside__jar {
+  position: sticky;
+  top: 12vh;
+  height: min(76vh, 820px);
+}
+
+/* esagono del marchio, grande e sottile, che gira piano dietro al barattolo; luce del prodotto */
+.bx-benefits__jar::before,
+.bx-inside__jar::before {
+  content: '';
+  position: absolute;
+  inset: 8% 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--berry-hi) 30%, transparent), color-mix(in srgb, var(--berry) 8%, transparent) 64%, transparent);
+}
+
+.bx-jarhex {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 96%;
+  aspect-ratio: 26 / 24;
+  translate: -50% -50%;
+  overflow: visible;
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent) 30%, transparent);
+  stroke-width: 0.12;
+  animation: bx-spin 90s linear infinite;
+}
+
+.bx-slot--side {
+  inset: 6% 8%;
+}
+
+.bx-view__eyebrow {
+  max-width: 100%;
+}
+
+.bx-benefits__body,
+.bx-inside__body {
+  container-type: inline-size;
+}
+
+.bx-benefits .bx-head__title,
+.bx-inside .bx-head__title {
+  font-size: clamp(42px, 10cqi, 104px);
+}
+
+html[lang='de'] .bx-benefits .bx-head__title,
+html[lang='de'] .bx-inside .bx-head__title {
+  font-size: clamp(38px, 8.6cqi, 92px);
+}
+
+/* gruppi: foto dell'area e indicazioni autorizzate del prodotto in quell'area */
+.bx-groups {
+  border-top: 1px solid var(--line);
+}
+
+.bx-group {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+  gap: clamp(22px, 3vw, 56px);
+  align-items: start;
+  padding: clamp(32px, 6vh, 64px) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.bx-group:nth-child(even) .bx-group__media {
+  order: 2;
+}
+
+.bx-group--more {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* (link delle aree nella hero: il gruppo si ferma sotto la navbar) */
+.bx-group {
+  scroll-margin-top: 84px;
+}
+
+.bx-group__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  border-radius: clamp(20px, 2vw, 32px);
+  background: var(--mist);
+  isolation: isolate;
+}
+
+.bx-group__img {
+  position: absolute;
+  inset: -6% 0;
+  width: 100%;
+  height: 112%;
+  object-fit: cover;
+}
+
+/* foto con il viso vicino al bordo: nelle cornici orizzontali resta in vista la parte alta */
+.bx-group__img[data-focus='top'] {
+  object-position: 50% 0%;
+}
+
+.bx-group__n {
+  color: var(--accent);
+}
+
+.bx-group__title {
+  margin-top: 14px;
+  font-size: clamp(32px, 3.1vw, 58px);
+  line-height: 0.92;
+}
+
+.bx-group__tagline {
+  margin-top: 14px;
+  font-size: clamp(21px, 1.75vw, 31px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--fg-soft);
+}
+
+/* indicazioni autorizzate: nutriente (con la % del VNR) e testo ufficiale */
+.bx-claims {
+  display: grid;
+  gap: 12px;
+  margin-top: clamp(20px, 3vh, 30px);
+}
+
+.bx-claim {
+  position: relative;
+  padding: clamp(16px, 2vh, 20px) clamp(18px, 1.6vw, 24px) clamp(17px, 2vh, 21px) clamp(22px, 1.8vw, 28px);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent) 6%, color-mix(in srgb, #fff 58%, transparent));
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.bx-claim::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--accent);
+}
+
+.bx-claim__tag {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--accent);
+}
+
+.bx-claim__tag b {
+  margin-left: 6px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.bx-claim__tag b + span {
+  color: var(--fg-faint);
+}
+
+/* estratti vegetali: indicazioni delle linee guida ministeriali, segnalate come tali */
+.bx-claim--plant::before {
+  background: var(--berry-hi);
+}
+
+.bx-claim__kind {
+  margin-left: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-weight: 500;
+  color: var(--accent);
+}
+
+/* punti di forza del prodotto (dall'etichetta) */
+.bx-features {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: clamp(16px, 2.6vh, 26px);
+}
+
+.bx-feature {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  padding: clamp(18px, 2.4vh, 26px) clamp(18px, 1.6vw, 26px);
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+  background: color-mix(in srgb, var(--accent) 6%, color-mix(in srgb, #fff 58%, transparent));
+  font-size: clamp(18px, 1.38vw, 23px);
+  font-weight: 500;
+  line-height: 1.32;
+  letter-spacing: -0.005em;
+}
+
+.bx-feature__hex {
+  width: 22px;
+  height: 20px;
+  margin-top: 4px;
+  fill: var(--accent);
+}
+
+.bx-claim__text {
+  margin-top: 8px;
+  font-size: clamp(18px, 1.38vw, 23px);
+  line-height: 1.42;
+  letter-spacing: -0.005em;
+}
+
+.bx-claim__cond {
+  margin-top: 10px;
+  font-size: clamp(15px, 1.08vw, 17.5px);
+  line-height: 1.5;
+  color: var(--fg-soft);
+}
+
+.bx-fine {
+  max-width: 62ch;
+  margin-top: 18px;
+  font-size: clamp(15px, 1.05vw, 17px);
+  line-height: 1.55;
+  color: var(--fg-faint);
+}
+
+.bx-note {
+  max-width: 44ch;
+  padding: clamp(20px, 3vh, 30px) clamp(22px, 2vw, 32px);
+  border-radius: 22px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+  font-size: clamp(19px, 1.5vw, 24px);
+  line-height: 1.5;
+  color: var(--fg-soft);
+}
+
+.bx-benefits--none .bx-benefits__body {
+  align-self: center;
+}
+
+/* formula: tabella degli ingredienti, come funziona, come si usa */
+.bx-ing {
+  width: 100%;
+  border-collapse: collapse;
+  caption-side: top;
+  text-align: left;
+}
+
+.bx-ing caption {
+  margin-bottom: 14px;
+}
+
+.bx-block__h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin-bottom: 14px;
+  color: var(--fg);
+}
+
+.bx-block__note {
+  color: var(--fg-faint);
+}
+
+.bx-ing tr {
+  border-top: 1px solid var(--line);
+}
+
+.bx-ing tr:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.bx-ing th,
+.bx-ing td {
+  padding: clamp(12px, 1.7vh, 16px) 0;
+  vertical-align: baseline;
+}
+
+.bx-ing th {
+  font-size: clamp(17px, 1.28vw, 21px);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.bx-ing td {
+  padding-left: 18px;
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 1.04vw, 16.5px);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bx-ing__nrv {
+  width: 1%;
+  color: var(--accent);
+}
+
+.bx-ing__nrv span {
+  margin-left: 4px;
+  color: var(--fg-faint);
+}
+
+.bx-block {
+  margin-top: clamp(32px, 5vh, 52px);
+}
+
+.bx-block__text {
+  max-width: 52ch;
+  font-size: clamp(18px, 1.38vw, 22.5px);
+  line-height: 1.55;
+  color: var(--fg-soft);
+}
+
+.bx-warn {
+  max-width: 60ch;
+  margin-top: 16px;
+  font-size: clamp(15px, 1.1vw, 18px);
+  line-height: 1.55;
+  color: var(--fg-soft);
+}
+
+.bx-warn b {
+  margin-right: 8px;
+  color: var(--fg);
+}
+
+.bx-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 26px;
+  margin-top: clamp(32px, 5vh, 52px);
+}
+
+.bx-cta .btn::before {
+  background: var(--accent);
+}
+
+.bx-stock {
+  font-size: 13px;
+}
+
+.bx-stock:empty::before {
+  content: '';
+  display: inline-block;
+  width: 72px;
+  height: 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  box-shadow: none;
+}
+
+[aria-busy='true'] .bx-stock:empty::before {
+  animation: bx-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes bx-pulse {
+  to {
+    opacity: 0.35;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Metodo: sezione scura con il bordo curvo (come il sipario della homepage), nei colori del prodotto
+   -------------------------------------------------------------------------- */
+.bx-method {
+  --fg: var(--curtain-ink);
+  --fg-soft: var(--curtain-ink-soft);
+  --fg-faint: color-mix(in srgb, var(--curtain-ink) 50%, transparent);
+  --line: color-mix(in srgb, var(--curtain-ink) 16%, transparent);
+  position: relative;
+  margin: clamp(60px, 10vh, 120px) calc(var(--gutter) * -1) 0;
+  color: var(--fg);
+  scroll-margin-top: 0;
+}
+
+.bx-method__cap {
+  display: block;
+  width: 100%;
+  height: clamp(28px, 4.5vw, 70px);
+  margin-bottom: -1px;
+  fill: var(--curtain);
+  transform: scaleY(-1);
+}
+
+.bx-method__body {
+  padding: clamp(40px, 8vh, 96px) var(--gutter) clamp(64px, 12vh, 140px);
+  background:
+    radial-gradient(ellipse 60% 55% at 82% 18%, var(--curtain-glow), transparent 70%),
+    var(--curtain);
+}
+
+.bx-method__body > * {
+  width: min(100%, 1600px);
+  margin-inline: auto;
+}
+
+.bx-method .eyebrow {
+  color: var(--curtain-title-c);
+}
+
+.bx-method .hexdot {
+  fill: var(--curtain-title-c);
+  stroke: var(--curtain-title-c);
+}
+
+/* le tre regole occupano tutta la larghezza */
+.bx-rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 3.4vw, 64px);
+}
+
+.bx-rule {
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.bx-rule__n {
+  color: var(--curtain-title-c);
+}
+
+.bx-rule__t {
+  margin-top: 18px;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.1vw, 38px);
+  font-weight: 600;
+  font-stretch: 112%;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.bx-rule__d {
+  margin-top: 16px;
+  font-size: clamp(18px, 1.34vw, 22px);
+  line-height: 1.55;
+  color: var(--fg-soft);
+}
+
+.bx-sources {
+  margin-top: clamp(44px, 7vh, 84px);
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.bx-sources__t {
+  color: var(--curtain-title-c);
+}
+
+.bx-sources ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 44px;
+  margin-top: 16px;
+}
+
+.bx-sources li {
+  display: grid;
+  gap: 4px;
+}
+
+.bx-sources .link {
+  justify-self: start;
+  font-size: clamp(17px, 1.25vw, 20px);
+  font-weight: 500;
+}
+
+.bx-sources .mono {
+  color: var(--fg-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Domande frequenti e invito finale (caratteri piu' grandi delle altre pagine)
+   -------------------------------------------------------------------------- */
+.bx-end {
+  width: min(100%, 1600px);
+  margin: 0 auto;
+  padding: clamp(64px, 12vh, 140px) 0 clamp(64px, 10vh, 120px);
+}
+
+.bx-end .faq__title {
+  font-size: clamp(42px, 5vw, 92px);
+}
+
+.bx-end .faq__q {
+  font-size: clamp(19px, 1.5vw, 25px);
+}
+
+.bx-end .faq__a {
+  font-size: clamp(17px, 1.25vw, 20px);
+}
+
+.bx-end__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 40px;
+  margin-top: clamp(56px, 10vh, 110px);
+  padding-top: clamp(28px, 5vh, 48px);
+  border-top: 1px solid var(--line);
+}
+
+.bx-end__title {
+  font-size: clamp(40px, 5vw, 96px);
+}
+
+/* --------------------------------------------------------------------------
+   Schermi medi: la scheda dei prodotti resta a destra, la hero va in colonna
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) and (max-width: 1180px) {
+  .bx-hero {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 12px;
+  }
+
+  .bx-hero__stage {
+    min-height: min(66vh, 620px);
+  }
+
+  .bx-hero__photo {
+    inset: 0 4% 10% 30%;
+  }
+
+  .bx-slot--hero {
+    left: 2%;
+    width: 56%;
+  }
+
+  .bx-group {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bx-group:nth-child(even) .bx-group__media {
+    order: 0;
+  }
+
+  .bx-group__media {
+    aspect-ratio: 16 / 11;
+  }
+}
+
+/* schermi medi stretti: due regole per riga, la terza su tutta la riga */
+@media (min-width: 768px) and (max-width: 999px) {
+  .bx-rules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bx-rule:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Telefono (e tablet in verticale): una colonna. Il menu dei prodotti e' il pulsante PRODOTTI;
+   nella hero il titolo, poi foto e barattolo, poi il prodotto; nelle sezioni il barattolo in alto.
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
+  .bx-main .mono {
+    font-size: 13px;
+  }
+
+  .bx-hero {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    padding: calc(64px + 26px) 0 24px;
+  }
+
+  .bx-hero__copy {
+    display: contents;
+  }
+
+  .bx-hero__copy > .crumbs,
+  .bx-hero__kicker,
+  .bx-hero__title {
+    order: 0;
+  }
+
+  .bx-hero__title {
+    font-size: min(12vw, 64px);
+  }
+
+  html[lang='de'] .bx-hero__title {
+    font-size: min(9.6vw, 54px);
+  }
+
+  .bx-hero__stage {
+    order: 1;
+    min-height: min(112vw, 560px);
+    margin-top: 18px;
+  }
+
+  .bx-hero__products {
+    order: 2;
+    position: relative;
+    z-index: 3;
+    margin-top: 6px;
+  }
+
+  .bx-hero__photo {
+    inset: 0 0 18% 18%;
+  }
+
+  .bx-slot--hero {
+    left: -4%;
+    width: 64%;
+    height: 70%;
+  }
+
+  .bx-orbit {
+    left: 52%;
+    width: min(126vw, 620px);
+  }
+
+  .bx-hp__name {
+    font-size: min(9.4vw, 46px);
+  }
+
+  .bx-hp__headline {
+    font-size: 21px;
+  }
+
+  .bx-benefits,
+  .bx-inside {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 72px 0 32px;
+  }
+
+  .bx-benefits__body,
+  .bx-inside__body {
+    display: contents;
+  }
+
+  .bx-head {
+    margin-bottom: 18px;
+  }
+
+  .bx-head__title,
+  .bx-benefits .bx-head__title,
+  .bx-inside .bx-head__title {
+    font-size: min(11vw, 56px);
+  }
+
+  html[lang='de'] .bx-benefits .bx-head__title,
+  html[lang='de'] .bx-inside .bx-head__title {
+    font-size: min(8.4vw, 46px);
+  }
+
+  .bx-head__lead {
+    font-size: 18px;
+  }
+
+  /* il barattolo dopo il titolo della sezione, poi i testi */
+  .bx-benefits .bx-head,
+  .bx-inside .bx-head {
+    order: 0;
+  }
+
+  .bx-benefits__jar,
+  .bx-inside__jar {
+    order: 1;
+    position: relative;
+    top: 0;
+    height: min(96vw, 460px);
+    margin-bottom: 18px;
+  }
+
+  .bx-benefits__body > *:not(.bx-head),
+  .bx-inside__body > *:not(.bx-head) {
+    order: 2;
+  }
+
+  .bx-group {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 30px 0 34px;
+  }
+
+  .bx-group:nth-child(even) .bx-group__media {
+    order: 0;
+  }
+
+  .bx-group__media {
+    aspect-ratio: 4 / 3.4;
+  }
+
+  .bx-group__title {
+    font-size: min(9vw, 44px);
+  }
+
+  .bx-group__tagline {
+    font-size: 20px;
+  }
+
+  .bx-claim__text,
+  .bx-feature {
+    font-size: 18px;
+  }
+
+  .bx-features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bx-claim__cond,
+  .bx-fine,
+  .bx-warn {
+    font-size: 15.5px;
+  }
+
+  .bx-note {
+    font-size: 19px;
+  }
+
+  .bx-ing th {
+    font-size: 17px;
+  }
+
+  .bx-ing td {
+    font-size: 14px;
+  }
+
+  .bx-block__text {
+    font-size: 18px;
+  }
+
+  .bx-rules {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bx-rule__d {
+    font-size: 17px;
+  }
+
+  .bx-sources ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bx-end .faq__q {
+    font-size: 19px;
+  }
+
+  .bx-end .faq__a {
+    font-size: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bx-orbit__spin,
+  .bx-jarhex {
+    animation: none;
+  }
+
+  .bx-orbit__ring,
+  .bx-mol path,
+  .bx-orbit__link,
+  .bx-mol circle {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}

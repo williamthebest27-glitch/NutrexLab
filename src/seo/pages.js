@@ -1,4 +1,5 @@
 import { PRODUCTS, CATEGORIES, SHOP, productsIn, categoryPath } from './catalog.js'
+import { FAQ as BENEFITS_FAQ } from './benefici.js'
 import { graph, organization, website, webPage, breadcrumbs, itemList, faqPage, IDS } from './schema.js'
 
 /*
@@ -71,6 +72,27 @@ export const PAGES = {
       }),
     ]),
   ),
+
+  // benefici: indicazioni sulla salute autorizzate dei nutrienti di ogni formula (src/seo/benefici.js)
+  benefici: {
+    path: '/benefici',
+    title: 'Benefici degli Integratori e Normativa UE | Nutrex Lab',
+    socialTitle: 'Il benessere, in ogni sua forma | Nutrex Lab',
+    description:
+      'Pelle, ossa, energia, difese: cosa contiene ogni integratore Nutrex Lab e cosa dicono le indicazioni sulla salute autorizzate dall’UE (Reg. 432/2012).',
+    jsonld: graph(
+      webPage({
+        path: '/benefici',
+        name: 'Benefici',
+        description: 'Le aree di benessere, i nutrienti di ogni formula Nutrex Lab e le loro indicazioni sulla salute autorizzate dall’Unione europea.',
+        breadcrumb: true,
+        about: { '@id': IDS.org },
+      }),
+      breadcrumbs([['Home', '/'], ['Benefici', '/benefici']], '/benefici'),
+      itemList(PRODUCTS, '/benefici'),
+      faqPage(BENEFITS_FAQ, '/benefici'),
+    ),
+  },
 
   'chi-siamo': {
     path: '/chi-siamo',

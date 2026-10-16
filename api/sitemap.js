@@ -18,6 +18,7 @@ const PAGES = [
   '/',
   SHOP.path,
   ...CATEGORIES.map((c) => categoryPath(c.slug)),
+  '/benefici',
   '/chi-siamo',
   '/contatti',
   '/spedizioni-e-resi',
