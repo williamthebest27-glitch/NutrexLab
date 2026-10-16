@@ -29,6 +29,13 @@ body.bx {
   pointer-events: none;
 }
 
+/* telefono: la tela sta nella pagina attorno allo spazio del barattolo e scorre con lei (posizione e misura
+   da src/pages/benefici.js) */
+.bx-webgl.is-anchored {
+  position: absolute;
+  inset: 0 auto auto 0;
+}
+
 .bx-main {
   overflow-x: clip;
 }

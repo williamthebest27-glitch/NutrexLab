@@ -367,6 +367,49 @@ async function initJar() {
   let cleared = false
   const at = { sx: 0, sy: 0 } // posizione disegnata
 
+  /*
+    Telefono: lo scroll e' quello nativo del browser, che sposta la pagina fuori dal JavaScript; una tela fissa
+    che a ogni fotogramma insegue lo spazio del barattolo arriva sempre un attimo dopo la pagina e il barattolo
+    trema. Qui la tela si aggancia allo spazio: sta nella pagina attorno a lui (con mezzo spazio di margine
+    sopra e sotto per l'esplosione di colori) e scorre con il resto del contenuto, il barattolo resta fermo
+    dentro di lei. Da uno spazio all'altro il barattolo si chiude e si riapre, senza volo.
+  */
+  const PAD = 0.5
+  let anchored = false
+  let anchor = null // { el, top, h, w }: tela nella pagina (px) attorno allo spazio el
+
+  function setAnchored(on) {
+    if (on === anchored) return
+    anchored = on
+    anchor = null
+    glide = null
+    canvas.classList.toggle('is-anchored', on)
+    if (!on) for (const p of ['top', 'width', 'height']) canvas.style.removeProperty(p)
+  }
+
+  /** Porta la tela attorno allo spazio el (solo se lo spazio non e' gia' quello o ha cambiato posto o misura). */
+  function anchorTo(el, r = el.getBoundingClientRect()) {
+    const top = r.top + window.scrollY - r.height * PAD
+    const h = Math.round(r.height * (1 + 2 * PAD))
+    const w = html.clientWidth
+    if (anchor?.el === el && Math.abs(anchor.top - top) < 1.5 && anchor.h === h && anchor.w === w) return
+    const resized = anchor?.h !== h || anchor?.w !== w
+    anchor = { el, top: Math.round(top), h, w }
+    canvas.style.top = `${anchor.top}px`
+    canvas.style.width = `${w}px`
+    canvas.style.height = `${h}px`
+    if (resized) stage.resize()
+  }
+
+  /** Lo spazio in coordinate della tela (agganciata: la sua posizione nella pagina, che non cambia scorrendo). */
+  const onCanvas = ({ el, r }) =>
+    anchored ? { el, r: { left: r.left, top: r.top + window.scrollY - anchor.top, width: r.width, height: r.height } } : { el, r }
+
+  /** Altezza dello schermo: quella della tela fissa, o della finestra se la tela e' agganciata. */
+  const screenH = () => (anchored ? window.innerHeight : stage.size.h || window.innerHeight)
+
+  setAnchored(isPhone())
+
   // ingresso nella hero
   if (!reduced) {
     gsap.fromTo(stage.intro, { scale: 0.62, rot: -1.5, lift: -0.12 }, { scale: 1, rot: 0, lift: 0, duration: 2.4, ease: 'expo.out', delay: 0.2 })
@@ -403,15 +446,16 @@ async function initJar() {
   }
 
   /**
-   * Posizione e misura del barattolo dentro lo spazio; rotazione legata allo scroll della sezione.
-   * In "Cosa c'e' dentro" il barattolo si gira, si avvicina e mostra la tabella nutrizionale dell'etichetta.
+   * Posizione e misura del barattolo dentro lo spazio (r in coordinate della tela); rotazione legata allo
+   * scroll della sezione (vh: altezza dello schermo). In "Cosa c'e' dentro" il barattolo si gira, si avvicina
+   * e mostra la tabella nutrizionale dell'etichetta.
    */
-  function pose({ el, r }, time) {
+  function pose({ el, r }, time, vh) {
     const w = stage.size.w
     const h = stage.size.h
     const section = el.closest('section')
-    const box = section?.getBoundingClientRect() ?? r
-    const p = Math.min(1, Math.max(0, (h - box.top) / (h + box.height))) // 0 entra dal basso, 1 esce in alto
+    const box = section?.getBoundingClientRect() ?? el.getBoundingClientRect()
+    const p = Math.min(1, Math.max(0, (vh - box.top) / (vh + box.height))) // 0 entra dal basso, 1 esce in alto
     const ratio = stage.jarW / stage.jarH
     const fit = Math.min(r.height * 0.92, (r.width * 0.9) / Math.max(0.3, ratio))
     target.sx = ((r.left + r.width / 2) / w) * 2 - 1
@@ -419,7 +463,7 @@ async function initJar() {
     if (section?.classList.contains('bx-inside')) {
       // entrando nella sezione (dal fondo dello schermo a un terzo dall'alto) il barattolo gira fino alla
       // tabella, appena verso i testi a sinistra, e cresce: la tabella resta al centro dello spazio
-      const k = Math.min(1, Math.max(0, (h - box.top) / (h * 0.7)))
+      const k = Math.min(1, Math.max(0, (vh - box.top) / (vh * 0.7)))
       const e = 1 - Math.pow(1 - k, 3)
       const zoom = 1 + (isPhone() ? 0.12 : 0.32) * e
       const jarH = fit * zoom
@@ -451,17 +495,26 @@ async function initJar() {
 
   gsap.ticker.add((time, deltaMs) => {
     const dt = Math.min(0.05, deltaMs / 1000)
-    const vh = stage.size.h || window.innerHeight
+    // telefono: la risoluzione si cambia prima di disegnare (la tela si svuota, il disegno di questo fotogramma resta)
+    if (anchored) stage.adapt(dt)
+    const vh = screenH()
     const next = pick(vh)
     if (next?.el !== active?.el) {
       // un altro spazio: il barattolo ci vola (se era in scena), altrimenti ci compare
-      if (next && active && vis && !reduced) glide = { from: { ...at }, t0: time }
+      if (next && active && vis && !reduced && !anchored) glide = { from: { ...at }, t0: time }
       else glide = null
       active = next
     } else if (next) active = next
-    if (!swapping) setVisible(active ? 1 : 0)
+    // spazio in cui si disegna: con la tela agganciata il barattolo passa a un altro spazio solo da chiuso
+    let slot = active
+    if (anchored) {
+      const leaving = anchor && active?.el !== anchor.el && stage.swap.scale > 0.01
+      if (active && !leaving) anchorTo(active.el, active.r)
+      slot = leaving ? { el: anchor.el, r: anchor.el.getBoundingClientRect() } : active
+      if (!swapping) setVisible(active && !leaving ? 1 : 0)
+    } else if (!swapping) setVisible(active ? 1 : 0)
     const showing = stage.swap.scale > 0.002
-    if (!showing && !active) {
+    if (!showing && !slot) {
       if (!cleared) {
         stage.renderer.clear()
         cleared = true
@@ -469,7 +522,7 @@ async function initJar() {
       return
     }
     cleared = false
-    if (active) pose(active, time)
+    if (slot) pose(onCanvas(slot), time, vh)
     // la posizione segue lo spazio senza ritardo (lo scroll e' gia' morbido); nei voli si sposta con una curva
     let sx = target.sx
     let sy = target.sy
@@ -488,15 +541,19 @@ async function initJar() {
     }
     stage.update(dt, time, target)
     stage.render()
-    stage.adapt(dt)
+    if (!anchored) stage.adapt(dt)
   })
 
+  // telefono: la barra del browser che compare e scompare non tocca la tela agganciata (si sposta solo se lo
+  // spazio cambia posto o misura; ridimensionarla la svuoterebbe per un fotogramma)
   let resizeT = 0
   window.addEventListener('resize', () => {
     clearTimeout(resizeT)
     resizeT = setTimeout(() => {
       stage.setLayout(isPhone() ? 'mobile' : 'desktop')
-      stage.resize()
+      setAnchored(isPhone())
+      if (!anchored) stage.resize()
+      else if (anchor) anchorTo(anchor.el)
     }, 120)
   })
 
@@ -537,7 +594,12 @@ async function initJar() {
         console.error('Modello non caricato', p.model) // resta il barattolo di prima
       }
       glide = null
-      if (active) pose(active, performance.now() / 1000)
+      if (anchored) {
+        // telefono: la tela va subito attorno allo spazio della hero, dove arriva il nuovo barattolo
+        active = pick(screenH()) ?? active
+        if (active) anchorTo(active.el, active.r)
+      }
+      if (active) pose(onCanvas(active), performance.now() / 1000, screenH())
       stage.snap()
       vis = 1
       swapping = false
