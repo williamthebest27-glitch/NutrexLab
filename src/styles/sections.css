@@ -807,14 +807,8 @@ html.no-lines .ing__lines {
   will-change: transform;
 }
 
-/* testo e frase sui benefici nello stesso spazio (una cella di griglia): uno esce e l'altra entra */
-.curtain__copies {
-  display: grid;
-  margin-top: clamp(22px, 3.4vh, 40px);
-}
-
 .curtain__copy {
-  grid-area: 1 / 1;
+  margin-top: clamp(22px, 3.4vh, 40px);
   max-width: min(30ch, 38vw);
   font-size: clamp(24px, 2.3vw, 38px);
   line-height: 1.35;
@@ -1019,64 +1013,46 @@ html.no-lines .ing__lines {
   --fs-s4: min(6.3vw, 10.8vh);
 }
 
-/* --------------------------------------------------------------------------
-   Scena 5: dettagli agganciati al modello 3D
-   -------------------------------------------------------------------------- */
-.pins {
-  inset: 0;
+/* Dettagli a sinistra del barattolo (sigillo, qualita', dose): una colonna a sinistra, centrata in
+   altezza, con il punto nel colore del prodotto (lo stesso dei vecchi dettagli agganciati al
+   barattolo) e una riga sottile tra una voce e l'altra.
+   (translate e non transform: le comparse animano transform) */
+.s3__pins {
+  left: var(--gutter);
+  top: 52%;
+  translate: 0 -50%;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* .pin viene posizionato a ogni frame (translate) sul punto 3D; il contenuto
-   e' spostato in modo che il pallino cada esattamente sul punto */
-.pin {
-  --face: 1;
-  position: absolute;
-  left: 0;
-  top: 0;
-  will-change: translate, opacity;
-}
-
-.pin__body {
-  display: flex;
-  align-items: center;
-  transform: translateY(-50%);
-  opacity: var(--face);
-  transition: opacity 0.3s;
-}
-
-.pin--left .pin__body {
-  transform: translate(-100%, -50%);
-}
-
-/* punto sul barattolo: un cerchio nel colore del prodotto (anello, fondo velato e centro pieno),
-   da cui parte la linea, anche lei nel colore del prodotto */
-.pin__dot {
-  flex: none;
-  width: 22px;
-  height: 22px;
-  margin: -11px;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent) 0 3.5px, color-mix(in srgb, var(--accent) 26%, transparent) 4.5px);
-  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 16%, transparent);
-}
-
-.pin__line {
-  flex: none;
-  width: var(--line, 64px);
-  height: 2px;
-  margin-left: 11px;
-  border-radius: 2px;
-  background: var(--accent);
-  transform-origin: left center;
-}
-
-.pin__text {
-  padding-left: 16px;
+.s3__pin {
+  position: relative;
+  padding: clamp(14px, 2.2vh, 22px) 0 clamp(14px, 2.2vh, 22px) 40px;
   white-space: nowrap;
 }
 
-.pin__text b {
+.s3__pin + .s3__pin {
+  border-top: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+}
+
+/* punto: un cerchio nel colore del prodotto (anello, fondo velato e centro pieno), all'altezza del titolo */
+.s3__pin::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: calc(clamp(14px, 2.2vh, 22px) + 0.5 * clamp(22px, 2vw, 34px) - 11px);
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0 3.5px, color-mix(in srgb, var(--accent) 26%, transparent) 4.5px);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.s3__pin b {
   display: block;
   margin-bottom: 6px;
   font-family: var(--font-display);
@@ -1086,27 +1062,12 @@ html.no-lines .ing__lines {
   line-height: 1;
   letter-spacing: -0.01em;
   text-transform: uppercase;
+  color: var(--fg);
 }
 
-.pin__text span {
-  font-size: clamp(14px, 1.2vw, 19px);
+.s3__pin span {
+  font-size: clamp(13px, 1.1vw, 17px);
   color: var(--fg-soft);
-}
-
-.pin--left .pin__body {
-  flex-direction: row-reverse;
-}
-
-.pin--left .pin__line {
-  margin-left: 0;
-  margin-right: 11px;
-  transform-origin: right center;
-}
-
-.pin--left .pin__text {
-  padding-left: 0;
-  padding-right: 16px;
-  text-align: right;
 }
 
 /* --------------------------------------------------------------------------
@@ -1809,7 +1770,8 @@ html.no-lines .ing__lines {
     height: 18px;
   }
 
-  .pins {
+  /* sul telefono non c'e' spazio accanto al barattolo */
+  .s3__pins {
     display: none;
   }
 

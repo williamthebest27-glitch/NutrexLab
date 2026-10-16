@@ -6,14 +6,14 @@ import { show, hide } from './ui/text.js'
 
 /*
   Unita' di tempo = "viewport scrollate" (t = scrollY / altezza viewport).
-  Mappa (con i passi di index.html):
-    story        0 .. 6   hero, scene 1-4          (sticky)   6 .. 7  transizione
-                 (telefono: 0 .. 4.4, senza la scena del tappo: data-steps-mobile in index.html)
-    ingredients  7 .. 10                            (sticky)  10 .. 11
-    science     11 .. 14                            (sticky)  14 .. 15
-    ritual      15 .. 17.4  sezione del bicchiere   (pin)     17.4 .. 18.4
-    daily       18.4 .. 20  la durata               (sticky)  20 .. 21
-    shop        21 .. 22.2                          (sticky)  22.2 .. 23.2 entra il footer
+  Mappa (con i passi di index.html, desktop):
+    story        0 .. 3.6   hero, sipario, scena 3  (sticky)  3.6 .. 4.6  transizione
+                 (telefono: 0 .. 3.35, data-steps-mobile in index.html)
+    ingredients  4.6 .. 7.6                         (sticky)  7.6 .. 8.6
+    science      8.6 .. 11.6                        (sticky) 11.6 .. 12.6
+    ritual      12.6 .. 15  sezione del bicchiere   (pin)    15 .. 16
+    daily       16 .. 17.6  la durata               (sticky) 17.6 .. 18.6
+    shop        18.6 .. 19.8                        (sticky) 19.8 .. 20.8 entra il footer
 */
 
 const BASE = {
@@ -24,11 +24,10 @@ const BASE = {
 
 /*
   Sipario scuro della scena 2: a riposo spunta in fondo alla hero con il bordo curvo,
-  con lo scroll sale fino a coprire tutto, poi esce verso l'alto scoprendo la scena 3.
-  Resta chiuso per due momenti: il testo dell'ingrediente, poi la frase sui benefici
-  (s2claim) mentre il barattolo si avvicina e si gira di fronte.
+  con lo scroll sale fino a coprire tutto, resta chiuso il tempo di leggere il testo
+  dell'ingrediente, poi esce verso l'alto (portandosi via il testo) scoprendo la scena 3.
 */
-export const CURTAIN = { rise: [0.05, 1.0], exit: [2.9, 3.32] }
+export const CURTAIN = { rise: [0.05, 1.0], exit: [1.85, 2.27] }
 
 // sx/sy: posizione sullo schermo (-1..1), size: altezza del barattolo / altezza viewport
 /*
@@ -41,12 +40,8 @@ const ROT = {
   hero: -0.12, // barattolo inclinato e sospeso, etichetta quasi di fronte
   s2: -0.42, // barattolo a destra sul sipario scuro, fronte verso "Collagene marino"
   s2b: -0.66,
-  s2c: 0.25, // sempre sul sipario, con la frase sui benefici: si avvicina e si gira di fronte
-  s2d: 0.08, // fronte pieno
-  s3: 0.45, // barattolo a sinistra, fronte verso le parole a destra
-  s5a: -0.45, // macro del tappo: dettagli a destra
-  s5b: -0.95, // etichetta: dettagli a sinistra
-  s6: -1.7,
+  s3: 0.3, // barattolo al centro tra i dettagli a sinistra e le parole a destra, fronte verso le parole
+  s3b: 0.05, // mentre si legge si gira piano verso il fronte
   ing0: -2.4,
   // primo piano: la tabella nutrizionale (U 0.19 dell'etichetta, angolo -1.817) ruotata
   // di 0.3 rad verso la colonna dei testi a destra; sul mobile e' di fronte alla camera
@@ -61,6 +56,9 @@ const ROT = {
   shop0: -TAU, // fronte, luce da campagna
   shop1: -TAU - 0.2,
 }
+
+// scena 3 (desktop): barattolo poco a sinistra del centro, tra i dettagli a sinistra e le parole a destra
+const S3 = { sx: -0.065, size: 0.53 }
 
 /*
   Sezione del bicchiere (ritual, tra Scienza e La durata): e' opaca e copre tutto lo schermo mentre
@@ -83,16 +81,10 @@ function desktopKeys(T, R) {
     // scena 2: sul sipario scuro, dritto a destra con luce di taglio (lascia spazio ai nomi lunghi)
     { t: s + 1.0, sx: 0.58, sy: -0.01, size: 0.62, rotY: R.s2, rotX: 0, rotZ: 0, elev: 7, key: 0.9, rim: 1.6, env: 0.75, heroOut: 1 },
     { t: s + 1.7, rotY: R.s2b },
-    // il testo lascia il posto alla frase sui benefici: il barattolo si avvicina, grande e di fronte
-    // (l'aura resta spenta: sta dietro al sipario, che ha gia' la sua luce)
-    { t: s + 2.3, sx: 0.52, sy: -0.06, size: 0.92, rotY: R.s2c, elev: 8, key: 1.1, rim: 1.7, env: 0.7 },
-    { t: s + 2.8, sx: 0.58, sy: -0.08, size: 0.95, rotY: R.s2d },
-    // scena 3: il sipario esce e il barattolo passa a sinistra delle parole
-    { t: s + 3.98, sx: -0.36, sy: 0.02, size: 0.68, rotY: R.s3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
-    // (a sinistra: a destra c'e' spazio per i dettagli, con le scritte grandi)
-    { t: s + 4.7, sx: -0.58, sy: -1.0, size: 1.34, rotY: R.s5a, rotX: 0.04, elev: 24, rim: 1.2, aura: 0.55 },
-    { t: s + 5.3, sx: 0.36, sy: R.s5bY ?? S5B.sy, size: S5B.size, rotY: R.s5b, rotX: 0, elev: 11 },
-    { t: s + 6, sx: 0, sy: -0.02, size: 0.52, rotY: R.s6, elev: 9, rim: 1.3, aura: 0.7 },
+    // scena 3: il sipario esce e il barattolo passa al centro, tra i dettagli a sinistra (sigillo,
+    // qualita', dose) e le parole a destra; resta li' finche' la sezione scorre via
+    { t: s + 2.93, sx: S3.sx, sy: 0.02, size: S3.size, rotY: R.s3, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
+    { t: i - 1, rotY: R.s3b },
     { t: i, sx: -0.3, sy: -0.03, size: 0.5, rotY: R.ing0, elev: 10, key: 1, rim: 1.4, env: 0.8, aura: 0.55, ambient: 0.3 },
     // la camera entra sull'etichetta: la tabella nutrizionale, intera e leggibile, a sinistra
     { t: i + 0.8, sx: -0.66, sy: 0.8, size: 1.6, rotY: R.ing1, elev: 4, key: 1.05, rim: 0.8, env: 0.85, aura: 0, ambient: 0 },
@@ -120,12 +112,9 @@ function mobileKeys(T, R) {
     { t: s + 0.06, heroOut: 0 },
     { t: s + 1.0, sx: 0, sy: -0.4, size: 0.36, rotY: 0.1, rotX: 0, rotZ: 0, elev: 8, key: 0.9, rim: 1.6, env: 0.75, heroOut: 1 },
     { t: s + 1.7, rotY: -0.14 },
-    // la frase sui benefici: il barattolo non si avvicina (coprirebbe i testi), gira su se stesso con la
-    // luce di taglio; poi continua a girare verso "Puro. Semplice. Efficace." e, sempre girando e
-    // rimpicciolendosi, va dritto alla posa degli ingredienti: niente zoom sul tappo (i dettagli sul
-    // telefono non si vedono; la storia finisce a 4.4, data-steps-mobile)
-    { t: s + 2.8, sy: -0.38, size: 0.38, rotY: -0.75, elev: 8, key: 1.1, rim: 1.7, env: 0.7 },
-    { t: s + 3.98, sy: -0.32, size: 0.4, rotY: -1.2, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
+    // il sipario esce: il barattolo gira verso "Puro. Semplice. Efficace." e, sempre girando e
+    // rimpicciolendosi, va dritto alla posa degli ingredienti
+    { t: s + 2.93, sy: -0.32, size: 0.4, rotY: -1.2, elev: 12, key: 1, rim: 0.25, env: 1, shadow: 1 },
     { t: i, sx: 0.44, sy: 0.12, size: 0.22, rotY: R.ing0, elev: 10, key: 1, rim: 1.4, env: 0.8, aura: 0.55, ambient: 0.3 },
     // primo piano: la tabella intera, di fronte, nella meta' alta; la lista resta sotto sul fondo scuro
     { t: i + 0.8, sx: -0.08, sy: 0.86, size: 0.9, rotY: R.ingM, elev: 3, key: 1.05, rim: 0.8, env: 0.85, aura: 0, ambient: 0 },
@@ -190,10 +179,11 @@ export function buildMaster(T, layout, palette = COLORS) {
   let prev = { bg: C.paper, fg: C.ink, accent: C.berry }
   tl.set(root, vars(prev), 0)
   if (chrome.length) tl.set(chrome, { '--page-bg': prev.bg }, 0) // (il valore di partenza: tornando in cima si rilegge questo)
+  // (testi chiari dagli ingredienti in poi: cambiano a meta' del passaggio al fondo scuro, quando le
+  // parole della scena 3 sono gia' uscite)
   const steps = [
     { at: s + 1.1, dur: 0.9, bg: C.mist },
-    { at: s + 3.98, dur: 0.6, bg: C.plum, fg: C.paper, accent: C.berryHi },
-    { at: i - 0.8, dur: 0.8, bg: C.night },
+    { at: i - 0.8, dur: 0.8, bg: C.night, fg: C.paper, accent: C.berryHi },
     { at: c - 0.8, dur: 0.8, bg: C.abyss },
     { at: d - 0.8, dur: 0.8, bg: C.wine },
     { at: p - 0.8, dur: 0.8, bg: C.paper, fg: C.ink, accent: C.berry },
@@ -238,9 +228,10 @@ export function buildMaster(T, layout, palette = COLORS) {
   // --- parallasse leggera dei titoli mentre restano in scena (sul telefono le parole sono piccole e
   // restano fino alla fine della storia: corsa ridotta, altrimenti si accavallano)
   const px = layout === 'mobile' ? 0.33 : 1
-  tl.fromTo('.s3__w--1', { y: 30 * px }, { y: -30 * px, duration: 1.2 }, s + 2.93)
-  tl.fromTo('.s3__w--2', { y: 60 * px }, { y: -60 * px, duration: 1.2 }, s + 2.93)
-  tl.fromTo('.s3__w--3', { y: 90 * px }, { y: -90 * px, duration: 1.2 }, s + 2.93)
+  const s3 = i - 1 - (s + 1.88) // dall'uscita del sipario alla fine della scena
+  tl.fromTo('.s3__w--1', { y: 30 * px }, { y: -30 * px, duration: s3 }, s + 1.88)
+  tl.fromTo('.s3__w--2', { y: 60 * px }, { y: -60 * px, duration: s3 }, s + 1.88)
+  tl.fromTo('.s3__w--3', { y: 90 * px }, { y: -90 * px, duration: s3 }, s + 1.88)
   tl.fromTo('.sci__a', { x: 40 }, { x: -10, duration: 3.6 }, c - 0.4)
   tl.fromTo('.sci__b', { x: -40 }, { x: 10, duration: 3.6 }, c - 0.4)
 
@@ -280,19 +271,16 @@ export function curtainMetrics(curtain, layout) {
  */
 export function buildReveals(T, { reduced, getVh, layout = 'desktop', hooks = {} }) {
   const s = T.story, i = T.ingredients, c = T.science, d = T.daily, p = T.shop
-  // sul telefono la storia finisce a 4.4 (niente tappo): le parole restano finche' la sezione scorre via
-  const s3Out = layout === 'mobile' ? s + 4.38 : s + 3.96
+  // le parole della scena 3 restano finche' la sezione comincia a scorrere via (i - 1: fine della storia)
+  const s3Out = i - 1.05
   const list = [
-    ['s2copy', s + 0.66, s + 1.7],
-    // sul sipario, al posto del testo: la frase sui benefici del prodotto
-    ['s2claim', s + 1.85, s + 2.85],
-    ['s3a', s + 3.22, s3Out],
-    ['s3b', s + 3.36, s3Out],
-    ['s3c', s + 3.5, s3Out],
-    ['s3tags', s + 3.58, s3Out],
-    ['s3cert', s + 3.58, s3Out],
-    ['pins-a', s + 4.42, s + 5.0],
-    ['pins-b', s + 5.04, s + 5.62],
+    // (esce insieme al sipario)
+    ['s2copy', s + 0.66, s + 2.3],
+    ['s3a', s + 2.17, s3Out],
+    ['s3b', s + 2.31, s3Out],
+    ['s3c', s + 2.45, s3Out],
+    ['s3tags', s + 2.53, s3Out],
+    ['s3cert', s + 2.53, s3Out],
     ['ing-title', i - 0.25, i + 2.95],
     ['ing-intro', i + 0.05, i + 2.95],
     ['ing-card', i + 0.2, i + 2.95],
@@ -315,6 +303,8 @@ export function buildReveals(T, { reduced, getVh, layout = 'desktop', hooks = {}
   for (const [name, tIn, tOut] of list) {
     document.querySelectorAll(`[data-reveal="${name}"]`).forEach((el) => entries.push([el, tIn, tOut]))
   }
+  // dettagli a sinistra del barattolo (sigillo, qualita', dose): uno dopo l'altro, dopo le parole
+  document.querySelectorAll('[data-reveal="s3pin"]').forEach((el, k) => entries.push([el, s + 2.6 + k * 0.12, s3Out]))
   // (oltre il settimo attivo le righe arrivano piu' fitte: anche le liste lunghe si completano presto)
   document.querySelectorAll('[data-reveal="ing-item"]').forEach((el, k) => {
     entries.push([el, i + 0.55 + Math.min(k, 6) * 0.2 + Math.max(0, k - 6) * 0.1, i + 2.95])
@@ -377,57 +367,17 @@ export function tableAnchors(jarW) {
 
 /*
   Altri prodotti (geo in products.js): l'etichetta avvolge `span` radianti con il centro sul fronte;
-  u, v sono le coordinate di un punto della grafica (0..1, v = 0 in alto), misure in metri dalla base.
+  u e' la coordinata orizzontale di un punto della grafica (0..1 da sinistra).
 */
 const labelAngle = (geo, u) => (u - 0.5) * geo.span
-const labelY = (geo, v) => geo.labelBottom + (1 - v) * geo.labelHeight
 
-/*
-  Scena 5b (macro dell'etichetta, dettagli a sinistra) tarata sul collagene: i suoi due punti
-  stanno in media a 0.497 dell'altezza del barattolo. Per gli altri prodotti la camera sale o
-  scende (sy, 2 unita' = 1 viewport) finche' i loro punti cadono alla stessa altezza sullo schermo.
-*/
-const S5B = { sy: -0.15, size: 1.22, mid: 0.497 }
-
-/** Pose delle scene con i dettagli e con la tabella, perche' guardino la grafica del prodotto. */
+/** Pose della scena con la tabella, perche' guardi la grafica del prodotto. */
 function labelPoses(geo) {
   if (!geo) return {}
   const table = labelAngle(geo, geo.table)
-  // scena 5b: i due dettagli (a sinistra del barattolo) a cavallo del fronte
-  const mid = (labelAngle(geo, geo.dose.u) + labelAngle(geo, geo.gmp.u)) / 2
-  const midY = (labelY(geo, geo.dose.v) + labelY(geo, geo.gmp.v)) / 2 / geo.jarH
   return {
-    s5b: -mid,
-    s5bY: S5B.sy + 2 * S5B.size * (S5B.mid - midY),
     ing1: -table + 0.3 - TAU,
     ing2: -table + 0.266 - TAU,
     ingM: -table - TAU,
-  }
-}
-
-/** Punti del barattolo a cui sono agganciati i dettagli della scena 5 (base del barattolo = 0). */
-export function pinAnchors(jarH, jarW, geo = null) {
-  if (geo) {
-    const at = (a, r, y) => ({ local: { x: Math.sin(a) * r, y, z: Math.cos(a) * r }, normal: { x: Math.sin(a), y: 0, z: Math.cos(a) } })
-    const deg = Math.PI / 180
-    return {
-      cap: at(geo.cap.deg * deg, geo.cap.r, geo.cap.y),
-      band: at(geo.band.deg * deg, geo.band.r, geo.band.y),
-      dose: at(labelAngle(geo, geo.dose.u), geo.labelR, labelY(geo, geo.dose.v)),
-      gmp: at(labelAngle(geo, geo.gmp.u), geo.labelR, labelY(geo, geo.gmp.v)),
-    }
-  }
-  const R = jarW / 2
-  const RL = R * 0.968 // raggio dell'etichetta
-  const at = (deg, r, y) => {
-    const a = (deg * Math.PI) / 180
-    return { local: { x: Math.sin(a) * r, y, z: Math.cos(a) * r }, normal: { x: Math.sin(a), y: 0, z: Math.cos(a) } }
-  }
-  // angoli: 0 = fronte dell'etichetta, positivi verso destra (posizioni reali della grafica)
-  return {
-    cap: at(50, R, jarH - 0.0072),
-    band: at(62, R, jarH - 0.0178),
-    dose: at(25, RL, 0.0437),
-    gmp: at(85, RL, 0.0777),
   }
 }

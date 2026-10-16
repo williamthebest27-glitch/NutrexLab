@@ -228,7 +228,7 @@ function hero(h, animate) {
 }
 
 /**
- * Testi della pagina per il prodotto `id`. parts: 'all', 'top' (hero, sipario, scene 3-5: quello che
+ * Testi della pagina per il prodotto `id`. parts: 'all', 'top' (hero, sipario, scena 3: quello che
  * si vede scorrendo dalla hero) o 'rest' (ingredienti, scienza, la durata, shop). Al cambio
  * prodotto dalla hero la parte lontana si aggiorna subito dopo l'animazione, non nello stesso
  * fotogramma del nuovo barattolo (sul telefono era il fotogramma piu' lungo del cambio).
@@ -252,19 +252,18 @@ function applyTop(c, animate, id) {
 
   hero(c.hero, animate)
 
-  // sipario: ingrediente principale, poi (scorrendo) la frase sui benefici al posto del testo
+  // sipario: ingrediente principale e il suo testo
   const title = $('.curtain__title')
   if (title) title.innerHTML = c.about.title
-  setHTML($('.curtain__copy--1'), c.about.copy)
-  setHTML($('.curtain__copy--2'), c.about.claim)
+  setHTML($('.curtain__copy'), c.about.copy)
 
   // scena 3
   const tags = $('.s3__tags')
   if (tags) tags.innerHTML = c.tags.map((t) => `<span>${t}</span>`).join('')
 
-  // dettagli agganciati al barattolo
+  // dettagli a sinistra del barattolo (sigillo, qualita', dose)
   for (const [key, [b, text]] of Object.entries(c.pins)) {
-    const el = $(`[data-pin="${key}"] .pin__text`)
+    const el = $(`.s3__pin[data-pin="${key}"]`)
     if (el) el.innerHTML = `<b>${b}</b><span>${text}</span>`
   }
 }

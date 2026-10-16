@@ -56,10 +56,11 @@
     <div class="grain" aria-hidden="true"></div>
 
     <main>
-      <!-- ============ STORIA: hero + scene 1-4 ============ -->
-      <!-- sul telefono 4.4 passi: niente zoom sul tappo (i dettagli non si vedono), da "Puro. Semplice.
-           Efficace." si passa a "Cosa c'e' dentro" (choreography.js, mobileKeys) -->
-      <section class="section story" id="top" data-section="story" data-steps="6" data-steps-mobile="4.4" data-chapter="Il rituale">
+      <!-- ============ STORIA: hero, sipario, "Puro. Semplice. Efficace." ============ -->
+      <!-- da "Puro. Semplice. Efficace." (con sigillo, qualita' e dose a sinistra del barattolo) si passa
+           direttamente a "Cosa c'e' dentro". Sul telefono la scena finisce prima: le parole sono piu'
+           piccole e i dettagli a sinistra non ci sono (choreography.js, mobileKeys) -->
+      <section class="section story" id="top" data-section="story" data-steps="3.6" data-steps-mobile="3.35" data-chapter="Il rituale">
         <div class="stage stage--front">
           <h1 class="hero-title" aria-label="Il tuo rituale quotidiano." data-i18n-attr="aria-label">
             <span class="hero-il hero-x" data-split="chars" aria-hidden="true" data-i18n>Il tuo</span>
@@ -132,32 +133,13 @@
             <span>Gusto neutro</span><span>Senza glutine</span><span>Senza lattosio</span>
           </p>
 
-          <div class="pins">
-            <div class="pin" data-pin="cap" data-reveal="pins-a" data-reveal-fade>
-              <div class="pin__body">
-                <span class="pin__dot"></span><span class="pin__line"></span>
-                <span class="pin__text mono"><b>Tappo zigrinato</b><span>HDPE, presa sicura</span></span>
-              </div>
-            </div>
-            <div class="pin" data-pin="band" data-reveal="pins-a" data-reveal-fade>
-              <div class="pin__body">
-                <span class="pin__dot"></span><span class="pin__line"></span>
-                <span class="pin__text mono"><b>Sigillo di garanzia</b><span>Integro fino all'apertura</span></span>
-              </div>
-            </div>
-            <div class="pin pin--left" data-pin="dose" data-reveal="pins-b" data-reveal-fade>
-              <div class="pin__body">
-                <span class="pin__dot"></span><span class="pin__line"></span>
-                <span class="pin__text mono"><b>10.000 mg</b><span>Collagene per dose</span></span>
-              </div>
-            </div>
-            <div class="pin pin--left" data-pin="gmp" data-reveal="pins-b" data-reveal-fade>
-              <div class="pin__body">
-                <span class="pin__dot"></span><span class="pin__line"></span>
-                <span class="pin__text mono"><b>GMP / ISO 9001</b><span>Standard di qualit&agrave;</span></span>
-              </div>
-            </div>
-          </div>
+          <!-- a sinistra del barattolo: sigillo, qualita' e dose (testi in src/content.js, pins).
+               Sul telefono non c'e' spazio: restano nascosti come prima -->
+          <ul class="s3__pins mono">
+            <li class="s3__pin" data-pin="band" data-reveal="s3pin"><b>Sigillo di garanzia</b><span>Integro fino all'apertura</span></li>
+            <li class="s3__pin" data-pin="gmp" data-reveal="s3pin"><b>GMP / ISO 9001</b><span>Standard di qualit&agrave;</span></li>
+            <li class="s3__pin" data-pin="dose" data-reveal="s3pin"><b>10.000 mg</b><span>Collagene per dose</span></li>
+          </ul>
         </div>
 
         <div class="stage stage--back">
@@ -174,16 +156,10 @@
               <div class="curtain__body">
                 <div class="curtain__content" data-curtain-content>
                   <h2 class="curtain__title" id="about">Collagene<br />marino</h2>
-                  <!-- scorrendo il testo esce e al suo posto entra la frase sui benefici (stesso spazio) -->
-                  <div class="curtain__copies">
-                    <p class="body-copy curtain__copy curtain__copy--1" data-split="lines" data-reveal="s2copy">
-                      Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico,
-                      coenzima Q10 e biotina.
-                    </p>
-                    <p class="body-copy curtain__copy curtain__copy--2" data-split="lines" data-reveal="s2claim">
-                      Zinco e biotina contribuiscono al mantenimento di una pelle normale.
-                    </p>
-                  </div>
+                  <p class="body-copy curtain__copy" data-split="lines" data-reveal="s2copy">
+                    Collagene idrolizzato di tipo I da pesce: 10.000&nbsp;mg in ogni misurino. Con acido ialuronico,
+                    coenzima Q10 e biotina.
+                  </p>
                 </div>
               </div>
               <div class="curtain__foot" aria-hidden="true">

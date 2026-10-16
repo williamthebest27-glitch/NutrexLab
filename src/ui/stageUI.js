@@ -1,12 +1,11 @@
 import gsap from 'gsap'
 import { Vector3 } from 'three'
-import { pinAnchors, curtainMetrics, tableAnchors } from '../choreography.js'
+import { CURTAIN, curtainMetrics, tableAnchors } from '../choreography.js'
 
 const SVG = 'http://www.w3.org/2000/svg'
 
 /**
- * Elementi DOM che seguono il prodotto 3D: aura luminosa, dettagli della scena 5,
- * linee degli ingredienti e stato della navbar.
+ * Elementi DOM che seguono il prodotto 3D: aura luminosa, linee degli ingredienti e stato della navbar.
  */
 export function createStageUI({ T, stage, getLayout, getProduct }) {
   const aura = document.querySelector('.aura')
@@ -21,15 +20,6 @@ export function createStageUI({ T, stage, getLayout, getProduct }) {
     return y > top && y < top + cm.vh
   }
 
-  // --- dettagli agganciati al barattolo (punti ricalcolati a ogni cambio prodotto)
-  const pins = [...document.querySelectorAll('[data-pin]')].map((el) => ({
-    el,
-    left: el.classList.contains('pin--left'),
-    local: null,
-    normal: null,
-    out: { x: 0, y: 0, facing: 1 },
-  }))
-
   // --- linee ingredienti: da ogni voce alla sua riga nella tabella nutrizionale dell'etichetta
   const svg = document.querySelector('[data-ing-lines]')
   const ingEls = [document.querySelector('.ing__hero'), ...document.querySelectorAll('.ing')]
@@ -42,17 +32,10 @@ export function createStageUI({ T, stage, getLayout, getProduct }) {
   })
 
   const vec = (v) => v && new Vector3(v.x, v.y, v.z)
-  /** Punti del barattolo attivo: dettagli (tutti i prodotti) e righe della tabella (solo il collagene). */
+  /** Punti del barattolo attivo: righe della tabella (solo il collagene). */
   function anchor() {
     if (!stage) return
     const product = getProduct()
-    const pinPoints = pinAnchors(stage.jarH, stage.jarW, product.geo)
-    for (const pin of pins) {
-      const a = pinPoints[pin.el.dataset.pin]
-      pin.local = vec(a?.local)
-      pin.normal = vec(a?.normal)
-      pin.textW = 0 // testo nuovo: larghezza da rimisurare
-    }
     const rows = product.labelAnchors ? tableAnchors(stage.jarW) : []
     ingredients.forEach((it, k) => {
       it.local = vec(rows[k]?.local)
@@ -67,28 +50,6 @@ export function createStageUI({ T, stage, getLayout, getProduct }) {
       show: () => gsap.to(item, { p: 1, duration: 1.2, delay: 0.25, ease: 'power3.out', overwrite: true }),
       hide: () => gsap.to(item, { p: 0, duration: 0.45, ease: 'power2.in', overwrite: true }),
     })
-  }
-
-  function updatePins(t) {
-    const active = t > T.story + 4.3 && t < T.story + 5.75
-    if (!active) return
-    const m = stage.metrics
-    const pad = 34 + m.halfW * 0.2
-    for (const pin of pins) {
-      if (!pin.local) continue
-      stage.project(pin.local, pin.normal, pin.out)
-      const { x, y } = pin.out
-      pin.el.style.translate = `${x.toFixed(1)}px ${y.toFixed(1)}px`
-      // la linea esce sempre dalla sagoma del barattolo, cosi' il testo non copre il prodotto,
-      // ma si accorcia se il testo altrimenti uscirebbe dallo schermo
-      pin.textW ||= pin.el.querySelector('.pin__text').offsetWidth
-      let len = pin.left ? x - (m.cx - m.halfW - pad) : m.cx + m.halfW + pad - x
-      const room = pin.left ? x - pin.textW - 24 : stage.size.w - 24 - pin.textW - x
-      len = Math.min(len, room)
-      pin.el.style.setProperty('--line', `${Math.max(28, len).toFixed(0)}px`)
-      const face = Math.min(1, Math.max(0, (pin.out.facing - 0.12) / 0.25))
-      pin.el.style.setProperty('--face', face.toFixed(2))
-    }
   }
 
   function updateLines(t) {
@@ -138,19 +99,17 @@ export function createStageUI({ T, stage, getLayout, getProduct }) {
       const m = stage.metrics
       aura.style.translate = `${m.cx.toFixed(1)}px ${m.cy.toFixed(1)}px`
       aura.style.opacity = Math.max(0, Math.min(1, stage.cur.aura)).toFixed(3)
-      updatePins(t)
       updateLines(t)
     }
 
     // navbar: compatta dopo l'inizio dello scroll, chiara sopra al sipario e al footer
-    const inCurtain = t < T.story + 2.6
+    const inCurtain = t < T.story + CURTAIN.exit[1]
     nav.classList.toggle('is-compact', scrollY > 40)
     nav.classList.toggle('is-inverse', t > T.end - 0.06 || (inCurtain && overCurtain(36)))
   }
 
   function resize() {
     if (curtain) cm = curtainMetrics(curtain, getLayout())
-    for (const pin of pins) pin.textW = 0
   }
 
   return { update, resize, hooks, setProduct: anchor }

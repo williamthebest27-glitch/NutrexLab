@@ -564,11 +564,12 @@ const VITAMINA_D3_K2 = {
 const PILL_BOTTLE = 1.28
 
 /*
-  Geometria per i dettagli agganciati al barattolo e le inquadrature dell'etichetta (choreography.js).
+  Geometria per le inquadrature dell'etichetta (choreography.js).
   Misure in metri dalla base, dai barattolo_3d.py dei prodotti (jarH = altezza del modello).
   L'etichetta avvolge `span` radianti con il centro sul fronte; dose, gmp e table sono punti della
   grafica in coordinate 0..1 (u da sinistra, v dall'alto) misurati sull'etichetta_hd.png di ogni
-  prodotto: dose e gmp sono i due dettagli della scena 5b (testi in content.js, pins).
+  prodotto. Oggi si usa solo table (la tabella nutrizionale): cap, band, dose e gmp erano i punti dei
+  dettagli della scena del tappo, tolta il 2026-10-16; restano qui se un giorno servissero di nuovo.
 */
 // pilloliera con tappo a strappo (Bromelina e stesso flacone): etichetta 195 x 75 mm
 const STRAPPO = {
