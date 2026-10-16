@@ -23,7 +23,7 @@ const hidden = (i) => (i ? ' hidden' : '')
 const jarHex = `<svg class="bx-jarhex" viewBox="0 0 26 24" aria-hidden="true" focusable="false"><path d="${HEX}" /></svg>`
 
 /** Versione delle foto (public/images/benefici): cambiala quando le sostituisci, la cache si aggiorna. */
-const PHOTOS_V = 2
+const PHOTOS_V = 3
 
 /**
  * Foto in due misure (telefono 720 px, schermi grandi 1200 px), testo alternativo tradotto; focus: la parte da

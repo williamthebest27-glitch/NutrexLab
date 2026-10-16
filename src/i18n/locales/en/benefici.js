@@ -33,7 +33,7 @@ export default {
   "Una donna con una tazza di tè guarda fuori da una grande finestra, al mattino": "A woman with a cup of tea looking out of a large window in the morning",
   "Una donna sugli scogli al tramonto, con il vento tra i capelli": "A woman on the rocks at sunset, with the wind in her hair",
   "Mani che tengono un bicchiere d’acqua nella luce del mattino": "Hands holding a glass of water in the morning light",
-  "Ritratto di un uomo con capelli e barba brizzolati, alla luce del pomeriggio": "Portrait of a man with greying hair and beard, in the afternoon light",
+  "Primo piano di una donna sorridente, con il viso appoggiato alla mano, alla luce del sole": "Close-up of a smiling woman resting her face on her hand, in the sunlight",
   "Un ananas tagliato a metà su una pietra calda, al sole": "A pineapple cut in half on a warm stone, in the sun",
   "Radici essiccate e bacche di ashwagandha in una ciotola di ceramica": "Dried ashwagandha roots and berries in a ceramic bowl",
   "Un uomo in bicicletta su una strada costiera all’alba": "A man cycling along a coastal road at dawn",

@@ -710,7 +710,7 @@ export const IMAGES = {
   'area-urinario': 'Una donna cammina a piedi nudi sulla riva del mare all’alba',
   'prodotto-collagene': 'Una donna sugli scogli al tramonto, con il vento tra i capelli',
   'prodotto-collagene-marino-compresse': 'Mani che tengono un bicchiere d’acqua nella luce del mattino',
-  'prodotto-collagene-bovino': 'Ritratto di un uomo con capelli e barba brizzolati, alla luce del pomeriggio',
+  'prodotto-collagene-bovino': 'Primo piano di una donna sorridente, con il viso appoggiato alla mano, alla luce del sole',
   'prodotto-bromelina': 'Un ananas tagliato a metà su una pietra calda, al sole',
   'prodotto-ashwagandha': 'Radici essiccate e bacche di ashwagandha in una ciotola di ceramica',
   'prodotto-coenzima-q10': 'Un uomo in bicicletta su una strada costiera all’alba',

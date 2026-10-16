@@ -33,7 +33,7 @@ export default {
   "Una donna con una tazza di tè guarda fuori da una grande finestra, al mattino": "Eine Frau mit einer Tasse Tee schaut morgens aus einem großen Fenster",
   "Una donna sugli scogli al tramonto, con il vento tra i capelli": "Eine Frau bei Sonnenuntergang auf den Felsen, mit Wind im Haar",
   "Mani che tengono un bicchiere d’acqua nella luce del mattino": "Hände halten im Morgenlicht ein Glas Wasser",
-  "Ritratto di un uomo con capelli e barba brizzolati, alla luce del pomeriggio": "Porträt eines Mannes mit grau meliertem Haar und Bart im Nachmittagslicht",
+  "Primo piano di una donna sorridente, con il viso appoggiato alla mano, alla luce del sole": "Nahaufnahme einer lächelnden Frau, das Gesicht auf die Hand gestützt, im Sonnenlicht",
   "Un ananas tagliato a metà su una pietra calda, al sole": "Eine halbierte Ananas auf einem warmen Stein in der Sonne",
   "Radici essiccate e bacche di ashwagandha in una ciotola di ceramica": "Getrocknete Ashwagandha-Wurzeln und -Beeren in einer Keramikschale",
   "Un uomo in bicicletta su una strada costiera all’alba": "Ein Mann fährt bei Sonnenaufgang auf einer Küstenstraße Rad",
