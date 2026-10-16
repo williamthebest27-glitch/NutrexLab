@@ -8,9 +8,11 @@
   meta      titolo della pagina e descrizione
   hero      nome e frase sotto IL TUO, pulsante, etichetta accessibile della freccia
   about     sipario "Ingrediente principale": titolo su due righe e testo
-  tags      tre caratteristiche sotto "Puro. Semplice. Efficace."
-  pins      tre dettagli a sinistra del barattolo nella stessa scena: [titolo, testo]
-            (band = sigillo, gmp = qualita', dose; dose serve anche alla sezione del bicchiere)
+  tags      tre caratteristiche sotto "Puro. Semplice. Efficace." (diverse dai pins: stanno sullo
+            stesso schermo; sul telefono i pins non ci sono e restano solo loro)
+  pins      tre dettagli a sinistra del barattolo nella stessa scena (solo desktop e tablet): [titolo, testo]
+            (band = sigillo; gmp = qualita' o, se l'etichetta non la riporta, un dato del prodotto;
+            dose, che serve anche alla sezione del bicchiere)
   ing       tabella degli ingredienti (value + unit, nrv = % VNR oppure note = testo)
   sci       sezione scienza: titolo in due parti, testo, frase in evidenza, tre dati
   daily     la durata effettiva della confezione (duration: sezione La durata) e tre dati sull'uso
@@ -157,7 +159,7 @@ export const COPY = {
       title: 'Ashwagandha<br>KSM-66®',
       copy: 'Estratto secco di radice di <i>Withania somnifera</i>, titolato al 5% in withanolidi: 600&nbsp;mg di KSM-66® in ogni compressa.',
     },
-    tags: ['KSM-66®', 'Prodotto vegano', 'Senza glutine'],
+    tags: ['Prodotto vegano', 'Senza glutine', 'Senza lattosio'],
     pins: { ...PILL_PINS, dose: ['KSM-66®', 'Estratto di radice certificato'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Un solo attivo, titolato, in ogni compressa.',
@@ -203,7 +205,7 @@ export const COPY = {
       title: 'Coenzima<br>Q10',
       copy: '200&nbsp;mg di coenzima Q10 con acetil L-carnitina, biancospino, magnesio e vitamine C, B1 e B12, in due capsule vegetali al giorno.',
     },
-    tags: ['Capsule vegetali', 'Prodotto vegano', 'Made in Italy'],
+    tags: ['Capsule vegetali', 'Prodotto vegano', 'Biancospino'],
     pins: { ...PILL_PINS, dose: ['Cardio Premium', 'Con acetil L-carnitina'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Sette attivi in ogni dose da due capsule.',
@@ -256,7 +258,7 @@ export const COPY = {
       title: 'Collagene<br>bovino',
       copy: 'Collagene idrolizzato di tipo I: 2100&nbsp;mg ogni tre compresse, con acido ialuronico, coenzima Q10, vitamine C ed E, zinco, rame e selenio.',
     },
-    tags: ['Senza glutine', 'Senza lattosio', 'Stabilimento GMP'],
+    tags: ['Idrolizzato, tipo I', 'Senza glutine', 'Senza lattosio'],
     pins: { ...PILL_PINS, dose: ['Acido ialuronico', '100 mg per dose'], gmp: ['GMP', 'Stabilimento certificato'] },
     ing: {
       intro: 'Dieci attivi in ogni dose da tre compresse.',
@@ -312,7 +314,7 @@ export const COPY = {
       title: 'Collagene<br>marino',
       copy: 'Collagene idrolizzato di tipo I da pesce: 3000&nbsp;mg ogni tre compresse, con acido ialuronico, coenzima Q10, zinco e biotina.',
     },
-    tags: ['Senza glutine', 'Senza lattosio', 'GMP / ISO 9001'],
+    tags: ['Idrolizzato, tipo I', 'Senza glutine', 'Senza lattosio'],
     pins: { ...PILL_PINS, dose: ['Acido ialuronico', '100 mg per dose'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Otto attivi in ogni dose da tre compresse.',
@@ -366,7 +368,7 @@ export const COPY = {
       title: 'D-Mannosio<br>Uro Care',
       copy: '2400&nbsp;mg di D-mannosio in tre compresse, con cranberry titolato al 30% in PAC, uva ursina, due fermenti lattici vivi e vitamina C.',
     },
-    tags: ['Con probiotici', 'Senza glutine', 'Senza lattosio'],
+    tags: ['Con cranberry', 'Senza glutine', 'Senza lattosio'],
     pins: { ...PILL_PINS, dose: ['Uro Care', 'Con probiotici'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Sei attivi in ogni dose da tre compresse.',
@@ -418,7 +420,7 @@ export const COPY = {
       title: 'Diosmina<br>ed esperidina',
       copy: '1000&nbsp;mg di diosmina e 200&nbsp;mg di esperidina in due capsule vegetali, con estratto di semi di vite rossa, rutina e vitamina C.',
     },
-    tags: ['Capsule vegetali', 'Prodotto vegano', 'GMP / ISO 9001'],
+    tags: ['Capsule vegetali', 'Prodotto vegano', 'Con vite rossa'],
     pins: { ...PILL_PINS, dose: ['Esperidina', '200 mg per dose'], gmp: QUALITY_PIN },
     ing: {
       intro: 'Cinque attivi in ogni dose da due capsule.',
@@ -470,7 +472,7 @@ export const COPY = {
       copy: '375&nbsp;mg di magnesio da bisglicinato, il 100% del valore di riferimento, con le vitamine B1, B6 e B12 in due compresse al giorno.',
     },
     tags: ['Prodotto vegano', 'Senza glutine', 'Senza lattosio'],
-    pins: { ...SCREW_PINS, dose: ['Vitamine B1, B6, B12', '100% VNR per dose'], gmp: ['Prodotto vegano', 'Senza glutine e lattosio'] },
+    pins: { ...SCREW_PINS, dose: ['Vitamine B1, B6, B12', '100% VNR per dose'], gmp: ['375 mg', 'Di magnesio per dose'] },
     ing: {
       intro: 'Magnesio e tre vitamine del gruppo B in ogni dose da due compresse.',
       hero: { name: 'Magnesio', sub: 'Da bisglicinato, 100% VNR', value: 375, unit: 'mg' },
@@ -520,7 +522,7 @@ export const COPY = {
       copy: 'Metilcobalamina, una delle forme naturali della vitamina B12: 1000&nbsp;µg in una piccola compressa al giorno, per oltre un anno.',
     },
     tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
-    pins: { ...SCREW_PINS, dose: ['Metilcobalamina', '1000 µg per compressa'], gmp: ['Prodotto vegano', 'Senza OGM, glutine e lattosio'] },
+    pins: { ...SCREW_PINS, dose: ['Metilcobalamina', '1000 µg per compressa'], gmp: ['450 compresse', 'Oltre un anno di fornitura'] },
     ing: {
       intro: 'Un solo attivo, nella sua forma metilata.',
       hero: { name: 'Vitamina B12', sub: 'Metilcobalamina', value: 1000, unit: 'µg' },
@@ -569,7 +571,7 @@ export const COPY = {
       copy: '1000&nbsp;mg di vitamina C per compressa: acido L-ascorbico e rosa canina titolata al 70%, con 50&nbsp;mg di bioflavonoidi da agrumi.',
     },
     tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
-    pins: { ...SCREW_PINS, dose: ['Rosa canina', 'E bioflavonoidi da agrumi'], gmp: ['Prodotto vegano', 'Senza OGM, glutine e lattosio'] },
+    pins: { ...SCREW_PINS, dose: ['Rosa canina', 'E bioflavonoidi da agrumi'], gmp: ['1000 mg', 'Di vitamina C per porzione'] },
     ing: {
       intro: 'Vitamina C da due fonti, con i bioflavonoidi degli agrumi.',
       hero: { name: 'Vitamina C totale', sub: '1.250% VNR per compressa', value: 1000, unit: 'mg' },
@@ -619,7 +621,7 @@ export const COPY = {
       copy: 'Colecalciferolo e menachinone-7: 2000&nbsp;UI di vitamina D3 e 100&nbsp;µg di vitamina K2 in una compressa al giorno, per un anno.',
     },
     tags: ['Prodotto vegano', 'Senza OGM', 'Senza glutine'],
-    pins: { ...SCREW_PINS, dose: ['Vitamina K2', 'Menachinone-7 (MK-7)'], gmp: ['Prodotto vegano', 'Senza OGM, glutine e lattosio'] },
+    pins: { ...SCREW_PINS, dose: ['Vitamina K2', 'Menachinone-7 (MK-7)'], gmp: ['2000 UI', 'Di vitamina D3 per compressa'] },
     ing: {
       intro: 'Due vitamine in ogni compressa.',
       hero: { name: 'Vitamina D3', sub: 'Colecalciferolo, 1.000% VNR', value: 2000, unit: 'UI' },

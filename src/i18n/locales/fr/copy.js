@@ -300,4 +300,9 @@ export default {
   "Un anno di fornitura": "Un an de cure",
   "Acquista la vitamina D3 + K2": "Acheter la vitamine D3 + K2",
   "365 compresse. Prodotto vegano. Prodotto in Italia.": "365 comprimés. Produit végan. Fabriqué en Italie.",
+  // pillole sotto "Puro. Semplice. Efficace." e dettagli a sinistra del barattolo
+  "Con cranberry": "Avec canneberge",
+  "Con vite rossa": "Avec vigne rouge",
+  "1000 mg": "1000 mg",
+  "2000 UI": "2000 UI",
 }
